@@ -10,6 +10,7 @@ const schedule = require('node-schedule');
 const db = require('./db');
 // const Btts = require("./mongo_schema/Btts");
 const mongoose = require('mongoose');
+const { Btts } = require('./mongo_schema/Btts');
 mongoose.set('strictQuery', true);
 
 /////////// Mongo Model Schema
@@ -30,20 +31,20 @@ mongoose.set('strictQuery', true);
 // const Btts = mongoose.models?.Btts || mongoose.model('Btts', bttsSchema);
 
 // Btts model
-const Btts = mongoose.model(
-  'Btts',
-  new mongoose.Schema(
-    {
-      source: { type: String, required: true },
-      action: { type: String, required: true },
-      homeTeam: { type: String, required: true },
-      awayTeam: { type: String, required: false },
-    },
-    {
-      timestamps: true,
-    }
-  )
-);
+// const Btts = mongoose.model(
+//   'Btts',
+//   new mongoose.Schema(
+//     {
+//       source: { type: String, required: true },
+//       action: { type: String, required: true },
+//       homeTeam: { type: String, required: true },
+//       awayTeam: { type: String, required: false },
+//     },
+//     {
+//       timestamps: true,
+//     }
+//   )
+// );
 
 ///////////////////////////////
 
