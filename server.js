@@ -10,7 +10,7 @@ const schedule = require('node-schedule');
 const db = require('./db');
 // const Btts = require("./mongo_schema/Btts");
 const mongoose = require('mongoose');
-const { Btts } = require('./mongo_schema/Btts');
+const { Btts } = require('./mongo_schema/Result');
 mongoose.set('strictQuery', true);
 
 /////////// Mongo Model Schema
