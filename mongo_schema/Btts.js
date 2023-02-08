@@ -6,7 +6,8 @@ const bttsSchema = new Schema(
     source: { type: String, required: true },
     action: { type: String, required: true },
     homeTeam: { type: String, required: true },
-    awayTeam: { type: String, required: true }
+    awayTeam: { type: String, required: false },
+    date: { type: String, required: true },
   },
   {
     timestamps: true,
@@ -14,7 +15,7 @@ const bttsSchema = new Schema(
 );
 
 const Btts =
-  mongoose.models?.Btts || mongoose.model('Headline', bttsSchema);
+  mongoose.models?.Btts || mongoose.model('Btts', bttsSchema);
 
 // export default Headline;
 module.exports = { Btts };

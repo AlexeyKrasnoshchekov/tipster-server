@@ -6,11 +6,15 @@ const app = express();
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const schedule = require('node-schedule');
+const fns = require('date-fns');
 
 const db = require('./db');
+const utils = require('./utils');
 // const Btts = require("./mongo_schema/Btts");
 const mongoose = require('mongoose');
-const { Btts } = require('./mongo_schema/Result');
+const { Btts } = require('./mongo_schema/Btts');
+const { Result } = require('./mongo_schema/Result');
+const { ResultTotal } = require('./mongo_schema/ResultTotal');
 mongoose.set('strictQuery', true);
 
 /////////// Mongo Model Schema
@@ -50,6 +54,7 @@ mongoose.set('strictQuery', true);
 
 ////Get Data
 const btts = [];
+const results = [];
 
 const scrapeData = async function (req, res) {
   const url_fbp =
@@ -57,8 +62,19 @@ const scrapeData = async function (req, res) {
   const url_accum = 'https://footyaccumulators.com/football-tips/btts';
   const url_fst = 'https://www.freesupertips.com/free-football-betting-tips/';
   const url_footy = 'https://footystats.org/predictions/btts';
+  // const url_result = 'https://footystats.org/yesterday/';
+  const url_result2 = 'https://www.livescore.bz/en/yesterday/';
   const url_fbpai =
     'https://footballpredictions.ai/football-predictions/btts-predictions/';
+
+  const today = new Date();
+  const yesterday = new Date(today);
+
+  yesterday.setDate(yesterday.getDate() - 1);
+  const formattedYesterday = fns.format(yesterday, 'dd.MM.yyyy');
+  const formattedToday = fns.format(today, 'dd.MM.yyyy');
+  const yesterdayString = formattedYesterday.toString();
+  const todayString = formattedToday.toString();
 
   //FBP
   await axios(url_fbp)
@@ -76,8 +92,9 @@ const scrapeData = async function (req, res) {
         btts.push({
           source: 'fbp',
           action: 'btts',
-          homeTeam,
+          homeTeam: homeTeam.trim(),
           awayTeam,
+          date: todayString,
         });
       });
 
@@ -95,18 +112,26 @@ const scrapeData = async function (req, res) {
       $('.betHeader', html).each(function () {
         //<-- cannot be a function expression
         // const title = $(this).text();
-        const homeTeam = $(this).find('.betHeaderTitle').text().split(' vs ')[0];
+        const homeTeam = $(this)
+          .find('.betHeaderTitle')
+          .text()
+          .split(' vs ')[0];
         let homeTeam1 = '';
         if (homeTeam.includes('Yes')) {
           homeTeam1 = homeTeam.split('BTTS Yes ')[1];
         }
-        const awayTeam = $(this).find('.betHeaderTitle').text().split(' vs ')[1];
-        homeTeam1 !=='' && btts.push({
-          source: 'footy',
-          action: 'btts',
-          homeTeam: homeTeam1,
-          awayTeam,
-        });
+        const awayTeam = $(this)
+          .find('.betHeaderTitle')
+          .text()
+          .split(' vs ')[1];
+        homeTeam1 !== '' &&
+          btts.push({
+            source: 'footy',
+            action: 'btts',
+            homeTeam: homeTeam1.trim(),
+            awayTeam,
+            date: todayString,
+          });
       });
 
       // res.json(btts);
@@ -129,17 +154,100 @@ const scrapeData = async function (req, res) {
         if (isBttsFbpai === 'Yes') {
           const homeTeam = $(this)
             .find('a:first')
-            .attr("title")
+            .attr('title')
             .split(' - ')[0];
           const awayTeam = $(this)
-          .find('a:first')
-          .attr("title")
-          .split(' - ')[1];
+            .find('a:first')
+            .attr('title')
+            .split(' - ')[1];
           btts.push({
             source: 'fbpai',
             action: 'btts',
-            homeTeam,
+            homeTeam: homeTeam.trim(),
             awayTeam,
+            date: todayString,
+          });
+        }
+      });
+
+      // res.json(btts);
+    })
+    .catch((err) => console.log(err));
+  //result
+
+  // await axios(url_result)
+  //   .then((response) => {
+  //     const html = response.data;
+
+  //     // console.log('000', html);
+  //     const $ = cheerio.load(html);
+
+  //     $('.match-info', html).each(function () {
+  //       //<-- cannot be a function expression
+  //       // const title = $(this).text();
+
+  //       const homeTeam = $(this).find('.home').find('span:first').text();
+  //       const awayTeam = $(this).find('.away').find('span:first').text();
+  //       const score = $(this).find('.ft-score').text();
+
+  //       if (
+  //         score !== '' &&
+  //         awayTeam !== '' &&
+  //         homeTeam !== '' &&
+  //         yesterdayString !== ''
+  //       ) {
+  //         results.push({
+  //           score,
+  //           homeTeam: homeTeam.trim(),
+  //           awayTeam,
+  //           date: yesterdayString,
+  //         });
+  //       }
+  //     });
+
+  //     // res.json(btts);
+  //   })
+  //   .catch((err) => console.log(err));
+  //result2
+  await axios(url_result2)
+    .then((response) => {
+      const html = response.data;
+
+      // console.log('000', html);
+      const $ = cheerio.load(html);
+
+      $('.m', html).each(function () {
+        // $([class="w-6/12 md:w-7/12 clickandstop"], html).each(function () {
+        //   <-- cannot be a function expression
+        //   const title = $(this).text();
+
+        // console.log('000', $(this));
+
+        const homeTeam = $(this).find('t1:first').find('t:first').text();
+        const awayTeam = $(this).find('t2:first').find('t:first').text();
+
+        const score = $(this).find('sc:first').text();
+
+        // const obj111 = {
+        //   score,
+        //   homeTeam: homeTeam.trim(),
+        //   awayTeam,
+        //   date: yesterdayString,
+        // };
+
+        // console.log('obj111', obj111);
+
+        if (
+          score !== '' &&
+          awayTeam !== '' &&
+          homeTeam !== '' &&
+          yesterdayString !== ''
+        ) {
+          results.push({
+            score,
+            homeTeam: homeTeam.trim(),
+            awayTeam,
+            date: yesterdayString,
           });
         }
       });
@@ -165,10 +273,11 @@ const scrapeData = async function (req, res) {
           source: 'accum',
           action: 'btts',
           homeTeam: '',
+          date: todayString,
         };
 
         if (i === 0 || i % 2 === 0) {
-          accumObj.homeTeam = accumArr[i];
+          accumObj.homeTeam = accumArr[i].trim();
           // console.log('accumArr[i]', accumArr[i]);
         }
 
@@ -198,8 +307,9 @@ const scrapeData = async function (req, res) {
           btts.push({
             source: 'fst',
             action: 'btts',
-            homeTeam,
+            homeTeam: homeTeam.trim(),
             awayTeam,
+            date: todayString,
           });
         }
       });
@@ -207,6 +317,61 @@ const scrapeData = async function (req, res) {
       // res.json(btts);
     })
     .catch((err) => console.log(err));
+
+  let start = 0;
+  let next = 1;
+  let sortedBtts = btts.sort((a, b) => {
+    if (a.homeTeam < b.homeTeam) {
+      return -1;
+    }
+    if (a.homeTeam > b.homeTeam) {
+      return 1;
+    }
+    return 0;
+  });
+  while (next < sortedBtts.length) {
+    if (
+      sortedBtts[start].homeTeam.trim() === sortedBtts[next].homeTeam.trim()
+    ) {
+      if (sortedBtts[start].source === sortedBtts[next].source) {
+        sortedBtts.splice(next, 1);
+      }
+    }
+
+    start++;
+    next++;
+  }
+
+  await db.connect();
+
+  // Function call
+  // console.log('results', results);
+  // await Btts.deleteMany();
+  await Btts.insertMany(sortedBtts)
+    .then(function () {
+      console.log('Btts inserted'); // Success
+    })
+    .catch(function (error) {
+      console.log(error); // Failure
+    });
+  await Result.deleteMany();
+  await Result.insertMany(results)
+    .then(function () {
+      console.log('Results inserted'); // Success
+    })
+    .catch(function (error) {
+      console.log(error); // Failure
+    });
+  await db.disconnect();
+};
+
+const saveResults = async function (req, res) {
+  const today = new Date();
+  const yesterday = new Date(today);
+
+  yesterday.setDate(yesterday.getDate() - 1);
+  const formattedYesterday = fns.format(yesterday, 'dd.MM.yyyy');
+  const yesterdayString = formattedYesterday.toString();
 
   mongoose.connect(
     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
@@ -216,11 +381,83 @@ const scrapeData = async function (req, res) {
       useUnifiedTopology: true,
     }
   );
-  // Function call
-  console.log('btts', btts);
-  await Btts.insertMany(btts)
+
+  const bttsArr = await Btts.find({ date: yesterdayString });
+  const resultsArr = await Result.find({ date: yesterdayString });
+  // await Btts.deleteMany();
+  // console.log('bttsArr', bttsArr);
+  await db.disconnect();
+
+  let resultsTotal = [];
+  let totalElemObj = {
+    homeTeam: '',
+    awayTeam: '',
+    score: '',
+    source: '',
+    prediction: '',
+    date: yesterdayString,
+    bttsRes: false,
+    over05Res: false,
+    over15Res: false,
+    over25Res: false,
+  };
+
+  for (let i = 0; i < resultsArr.length; i++) {
+    for (let j = 0; j < bttsArr.length; j++) {
+
+      // console.log('111111', bttsArr[j].homeTeam);
+      // console.log('222222', utils.getHomeTeamName(bttsArr[j].homeTeam));
+
+      if (
+        resultsArr[i].homeTeam === bttsArr[j].homeTeam ||
+        bttsArr[j].homeTeam.includes(resultsArr[i].homeTeam) ||
+        resultsArr[i].homeTeam.includes(bttsArr[j].homeTeam) ||
+        resultsArr[i].homeTeam === utils.getHomeTeamName(bttsArr[j].homeTeam)
+      ) {
+        let totalElemObj = {
+          homeTeam: '',
+          awayTeam: '',
+          score: '',
+          source: '',
+          prediction: '',
+          date: yesterdayString,
+          bttsRes: false,
+          over05Res: false,
+          over15Res: false,
+          over25Res: false,
+        };
+
+        totalElemObj.homeTeam = resultsArr[i].homeTeam;
+        totalElemObj.awayTeam = bttsArr[j].awayTeam;
+        totalElemObj.score = resultsArr[i].score;
+        totalElemObj.source = bttsArr[j].source;
+        totalElemObj.prediction = bttsArr[j].action;
+        totalElemObj.bttsRes =
+          parseInt(resultsArr[i].score.split(' - ')[0]) > 0 &&
+          parseInt(resultsArr[i].score.split(' - ')[1]) > 0;
+        totalElemObj.over05Res =
+          parseInt(resultsArr[i].score.split(' - ')[0]) +
+            parseInt(resultsArr[i].score.split(' - ')[1]) >
+          0;
+        totalElemObj.over15Res =
+          parseInt(resultsArr[i].score.split(' - ')[0]) +
+            parseInt(resultsArr[i].score.split(' - ')[1]) >
+          1;
+        totalElemObj.over25Res =
+          parseInt(resultsArr[i].score.split(' - ')[0]) +
+            parseInt(resultsArr[i].score.split(' - ')[1]) >
+          2;
+
+        resultsTotal.push(totalElemObj);
+      }
+    }
+  }
+
+  // console.log('resultsTotal', resultsTotal);
+  await ResultTotal.deleteMany();
+  await ResultTotal.insertMany(resultsTotal)
     .then(function () {
-      console.log('Data inserted'); // Success
+      console.log('ResultsTotal inserted'); // Success
     })
     .catch(function (error) {
       console.log(error); // Failure
@@ -237,11 +474,13 @@ const scrapeData = async function (req, res) {
 // };
 
 // app.use(scrapeData);
-const job = schedule.scheduleJob({ hour: 9, minute: 30 }, scrapeData);
-// const job = schedule.scheduleJob('28 * * * *', scrapeData);
+// const job = schedule.scheduleJob({ hour: 9, minute: 30 }, scrapeData);
+// const job = schedule.scheduleJob('07 * * * *', scrapeData);
+
+const job = schedule.scheduleJob('19 * * * *', saveResults);
 // app.use(saveDataMongo);
 
-// app.use(bodyParser.json());
+app.use(bodyParser.json());
 
 app.use(cors());
 
@@ -258,15 +497,64 @@ app.get('/', function (req, res) {
 
 //   res.json(btts);
 // });
-app.get('/getBttsMongo1', async (req, res) => {
-  await db.connect();
-  const bttsArr = await Btts.find({});
+app.get('/getBttsMongo', async (req, res) => {
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      // useCreateIndex: true,
+      useUnifiedTopology: true,
+    }
+  );
+
+  const bttsArr = await Btts.find({ date: req.query.date });
   // await Btts.deleteMany();
   // console.log('bttsArr', bttsArr);
   await db.disconnect();
 
   res.json(bttsArr);
 });
+app.get('/getResultsTotalMongo', async (req, res) => {
+  // console.log('req.query.date', req.query.date);
+  // const date = req.query.date;
+
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      // useCreateIndex: true,
+      useUnifiedTopology: true,
+    }
+  );
+
+  const resultsArr = await ResultTotal.find({ date: req.query.date });
+  // const resultsArr = await Result.find({});
+  // await Btts.deleteMany();
+  // console.log('resultsArr', resultsArr);
+  await db.disconnect();
+
+  res.json(resultsArr);
+});
+// app.post('/saveTotalResultsToMongo', async (req, res) => {
+//   mongoose.connect(
+//     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+//     {
+//       useNewUrlParser: true,
+//       // useCreateIndex: true,
+//       useUnifiedTopology: true,
+//     }
+//   );
+
+//   await User.insertMany(req.body);
+
+//   // const resultsArr = await ResultTotal.find({"date": req.query.date});
+//   // const resultsArr = await Result.find({});
+//   // await Btts.deleteMany();
+//   console.log('resultsArr', resultsArr);
+//   await db.disconnect();
+
+//   res.json(resultsArr);
+// });
 // app.post('/saveBtts', (req, res) => {
 //   console.log('req.body', req.body.data);
 //   let data = req.body.data;

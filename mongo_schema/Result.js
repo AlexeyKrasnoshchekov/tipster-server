@@ -6,9 +6,10 @@ const Result = mongoose.model(
   'Result',
   new mongoose.Schema(
     {
-      resultDescription: { type: String, required: false },
-      btts: { type: Boolean, required: false },
-      over25: { type: Boolean, required: false },
+      score: { type: String, required: false },
+      homeTeam: { type: String, required: false },
+      awayTeam: { type: String, required: false },
+      date: { type: String, required: true },
     },
     {
       timestamps: true,
