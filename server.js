@@ -62,6 +62,9 @@ const scrapeData = async function (req, res) {
   const url_accum = 'https://footyaccumulators.com/football-tips/btts';
   const url_fst = 'https://www.freesupertips.com/free-football-betting-tips/';
   const url_footy = 'https://footystats.org/predictions/btts';
+  const url_betshot = 'https://www.betshoot.com/football/both-teams-to-score-tips/';
+  const url_mighty = 'https://www.mightytips.com/football-predictions/btts/';
+  const url_passion = 'https://passionpredict.com/both-team-to-score';
   // const url_onemill = 'https://onemillionpredictions.com/saturday-football-predictions/both-teams-to-score/';
   const url_mybets = 'https://www.mybets.today/soccer-predictions/both-teams-to-score-predictions/';
   // const url_result = 'https://footystats.org/yesterday/';
@@ -105,38 +108,63 @@ const scrapeData = async function (req, res) {
       // res.json(btts);
     })
     .catch((err) => console.log(err));
-  //ONEMILL
-  // await axios(url_onemill)
-  //   .then((response) => {
-  //     const html = response.data;
 
-  //     // console.log('000', html);
-  //     // const $ = cheerio.load(html);
+  // MIGHTY
+  await axios(url_mighty)
+    .then((response) => {
+      const html = response.data;
 
-  //     $('tr', html).each(function () {
-  //       //<-- cannot be a function expression
-  //       // const title = $(this).text();
-  //       const homeTeam = $(this).find('.ninja_clmn_nm_team').text();
-  //       // const awayTeam = $(this).find('.awayspan').text();
-  //       const bttsYes = $(this).find('.ninja_column_3').find('span:style="color:#ffd900');
-  //       const bttsNo = $(this).find('.ninja_column_3').find('span:style="color:#ffd900');
-  //       console.log('millll', {homeTeam: homeTeam, bttsYes: bttsYes, bttsNo: bttsNo});
-  //       // const homeTeam = $(this).find('.ptmobh').text();
-  //       // const awayTeam = $(this).find('.ptmoba').text();
-  //       // const bttsYes = $(this).find('.ptprd').find('.ngreen').text();
-  //       // bttsYes === 'BTTS Yes' && btts.push({
-  //       //   source: 'pdz',
-  //       //   action: 'btts',
-  //       //   homeTeam: homeTeam.trim(),
-  //       //   awayTeam,
-  //       //   date: todayString,
-  //       // });
-  //     });
+      // console.log('000', html);
+      const $ = cheerio.load(html);
 
-  //     // res.json(btts);
-  //   })
-  //   .catch((err) => console.log(err));
-  //MYBETS
+      $('.mtl-index-page-matches__item', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const homeTeam = $(this).find('.mtl-index-page-matches__name').text().split(' vs ')[0];
+        const awayTeam = $(this).find('.mtl-index-page-matches__name').text().split(' vs ')[1];
+        const predicDate = $(this).find('.mtl-index-page-matches__date').find('p:first').find('time:first').text();
+
+        todayString.includes(predicDate) && btts.push({
+          source: 'mighty',
+          action: 'btts',
+          homeTeam: homeTeam.trim(),
+          awayTeam,
+          date: todayString,
+        });
+      });
+
+      // res.json(btts);
+    })
+    .catch((err) => console.log(err));
+  //PASSION
+  await axios(url_passion)
+    .then((response) => {
+      const html = response.data;
+
+      // console.log('000', html);
+      const $ = cheerio.load(html);
+
+      $('.table', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const homeTeam = $(this).find('tr').find('td:nth-child(3)').find('span:first').text().split(' "" ')[0].split(' VS')[0];
+        // const awayTeam = $(this).find('tr').find('td:nth-child(3)').find('span:first').text().split(' "" ')[1].split(' VS')[1];
+        // const awayTeam = $(this).find('.mtl-index-page-matches__name').text().split(' vs ')[1];
+        // const predicDate = $(this).find('.mtl-index-page-matches__date').find('p:first').find('time:first').text();
+
+        btts.push({
+          source: 'passion',
+          action: 'btts',
+          homeTeam: homeTeam.trim(),
+          awayTeam: '',
+          date: todayString,
+        });
+      });
+
+      // res.json(btts);
+    })
+    .catch((err) => console.log(err));
+  // MYBETS
   await axios(url_mybets)
     .then((response) => {
       const html = response.data;
@@ -346,7 +374,7 @@ const scrapeData = async function (req, res) {
           accumObj.predictionDate = accumArr[i + 1].predictionDate;
         }
         // console.log('accumArr[i]', accumArr[i]);
-        console.log('accumObj', accumObj);
+        // console.log('accumObj', accumObj);
         accumObj.homeTeam !== '' && btts.push(accumObj);
       }
 
@@ -409,7 +437,8 @@ const scrapeData = async function (req, res) {
   }
 
 
-  // console.log('sortedBtts', sortedBtts);
+
+  console.log('sortedBtts', sortedBtts);
 
   // const yesterday1 = new Date(new Date().setDate(new Date().getDate() - 1));
   
@@ -549,8 +578,10 @@ const saveResults = async function (req, res) {
 // };
 
 // app.use(scrapeData);
-// const jobScrape = schedule.scheduleJob({ hour: 10, minute: 54 }, scrapeData);
-const jobSave = schedule.scheduleJob({ hour: 10, minute: 56 }, saveResults);
+
+const jobScrape = schedule.scheduleJob({ hour: 16, minute: 32 }, scrapeData);
+// const jobSave = schedule.scheduleJob({ hour: 10, minute: 56 }, saveResults);
+
 // const job = schedule.scheduleJob('07 * * * *', scrapeData);
 
 // const job = schedule.scheduleJob('52 * * * *', saveResults);
