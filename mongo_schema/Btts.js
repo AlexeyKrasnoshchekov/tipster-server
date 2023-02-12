@@ -8,6 +8,7 @@ const bttsSchema = new Schema(
     homeTeam: { type: String, required: true },
     awayTeam: { type: String, required: false },
     date: { type: String, required: true },
+    predictionDate: { type: String, required: false },
   },
   {
     timestamps: true,

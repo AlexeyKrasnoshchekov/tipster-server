@@ -11,7 +11,7 @@ function getHomeTeamName(name) {
     case 'Tala\'ea El Gaish':
       return 'Tala Al Jaish';
     default:
-      console.log('нет таких названий команд');
+      // console.log('нет таких названий команд');
   }
 }
 
