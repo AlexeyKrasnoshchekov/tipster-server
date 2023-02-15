@@ -9,6 +9,7 @@ const bttsSchema = new Schema(
     awayTeam: { type: String, required: false },
     date: { type: String, required: true },
     predictionDate: { type: String, required: false },
+    checked: { type: Boolean, required: false },
   },
   {
     timestamps: true,
