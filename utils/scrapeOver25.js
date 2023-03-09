@@ -1,6 +1,7 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 const fns = require('date-fns');
+const {getHomeTeamName} = require('../utils')
 
 const scrapeOver25 = async function (over25) {
   const url_fbp =
@@ -9,8 +10,8 @@ const scrapeOver25 = async function (over25) {
     'https://footyaccumulators.com/football-tips/over-2-5-trebles';
   const url_fst = 'https://www.freesupertips.com/free-football-betting-tips/';
   const url_footy = 'https://footystats.org/predictions/over-25-goals';
-  const url_mybets =
-    'https://www.mybets.today/soccer-predictions/under-over-2-5-goals-predictions/';
+  // const url_mybets =
+  //   'https://www.mybets.today/soccer-predictions/under-over-2-5-goals-predictions/';
   const url_fbpai =
     'https://footballpredictions.ai/football-predictions/over-under-predictions/';
 
@@ -65,7 +66,7 @@ const scrapeOver25 = async function (over25) {
             source: 'passion',
             action: 'over25',
             checked: false,
-            homeTeam: elem,
+            homeTeam: getHomeTeamName(elem.trim()) !=='' ? getHomeTeamName(elem.trim()) : elem.trim(),
             awayTeam: '',
             date: todayString,
           });
@@ -103,7 +104,7 @@ const scrapeOver25 = async function (over25) {
             source: 'footy',
             action: 'over25',
             checked: false,
-            homeTeam: homeTeam1.trim(),
+            homeTeam: getHomeTeamName(homeTeam1.trim()) !=='' ? getHomeTeamName(homeTeam1.trim()) : homeTeam1.trim(),
             awayTeam,
             date: todayString,
           });
@@ -140,7 +141,7 @@ const scrapeOver25 = async function (over25) {
               source: 'fbpai',
               action: 'over25',
               checked: false,
-              homeTeam: homeTeam.trim(),
+              homeTeam: getHomeTeamName(homeTeam.trim()) !=='' ? getHomeTeamName(homeTeam.trim()) : homeTeam.trim(),
               awayTeam,
               date: todayString,
             });
@@ -176,7 +177,8 @@ const scrapeOver25 = async function (over25) {
         };
 
         if (i === 0 || i % 2 === 0) {
-          accumObj.homeTeam = accumArr[i].team.trim();
+          // accumObj.homeTeam = accumArr[i].team.trim();
+          accumObj.homeTeam = getHomeTeamName(accumArr[i].team.trim()) !=='' ? getHomeTeamName(accumArr[i].team.trim()) : accumArr[i].team.trim();
           accumObj.predictionDate = accumArr[i + 1].predictionDate;
         }
         // console.log('accumArr[i]', accumArr[i]);
@@ -204,7 +206,7 @@ const scrapeOver25 = async function (over25) {
               source: 'fst',
               action: 'over25',
               checked: false,
-              homeTeam: homeTeam.trim(),
+              homeTeam: getHomeTeamName(homeTeam.trim()) !=='' ? getHomeTeamName(homeTeam.trim()) : homeTeam.trim(),
               awayTeam,
               date: todayString,
             });
@@ -216,10 +218,11 @@ const scrapeOver25 = async function (over25) {
     .catch((err) => console.log(err));
 
   //FBP
+  // await axios(url_fbp)
   await axios(url_fbp)
     .then((response) => {
       const html = response.data;
-
+      // console.log(response.data);
       // console.log('000', html);
       const $ = cheerio.load(html);
 
@@ -241,7 +244,7 @@ const scrapeOver25 = async function (over25) {
             source: 'fbp',
             action: 'over25',
             checked: false,
-            homeTeam: homeTeam.trim(),
+            homeTeam: getHomeTeamName(homeTeam.trim()) !=='' ? getHomeTeamName(homeTeam.trim()) : homeTeam.trim(),
             awayTeam,
             date: todayString,
             predictionDate: predictionDate,
@@ -252,37 +255,42 @@ const scrapeOver25 = async function (over25) {
     })
     .catch((err) => console.log(err));
   // MYBETS
-  await axios(url_mybets)
-    .then((response) => {
-      const html = response.data;
+  // await axios(url_mybets)
+  //   .then((response) => {
+  //     const html = response.data;
 
-      // console.log('000', html);
-      const $ = cheerio.load(html);
+  //     // console.log('000', html);
+  //     const $ = cheerio.load(html);
 
-      $('.linkgames', html).each(function () {
-        //<-- cannot be a function expression
-        // const title = $(this).text();
-        // const homeTeam = $(this).find('.homeTeam').find('span:first').text();
-        const homeTeam = $(this).find('.homespan').text();
-        const awayTeam = $(this).find('.awayspan').text();
-        const over25text = $(this).find('.tipdiv').find('span:first').text();
-        const over25Yes = over25text === 'Over';
-        console.log('over25Mybets', over25);
-        homeTeam !== '' &&
-          over25Yes &&
-          over25.push({
-            source: 'mybets',
-            action: 'over25',
-            checked: false,
-            homeTeam: homeTeam.trim(),
-            awayTeam,
-            date: todayString,
-          });
-      });
+  //     $('.linkgames', html).each(function () {
+  //       //<-- cannot be a function expression
+  //       // const title = $(this).text();
+  //       // const homeTeam = $(this).find('.homeTeam').find('span:first').text();
+  //       const homeTeam = $(this).find('.homespan').text();
+  //       const awayTeam = $(this).find('.awayspan').text();
+  //       const over25text = $(this).find('.tipdiv').find('span:first').text();
+  //       const over25Yes = over25text === 'Over';
+  //       // console.log('over25Mybets', over25);
 
-      // res.json(over25);
-    })
-    .catch((err) => console.log(err));
+  //       if (homeTeam.trim() === 'Accrington ST') {
+  //         console.log('over25 HT', getHomeTeamName(homeTeam.trim()))
+  //       };
+
+  //       homeTeam !== '' &&
+  //         over25Yes &&
+  //         over25.push({
+  //           source: 'mybets',
+  //           action: 'over25',
+  //           checked: false,
+  //           homeTeam: getHomeTeamName(homeTeam.trim()) !=='' ? getHomeTeamName(homeTeam.trim()) : homeTeam.trim(),
+  //           awayTeam,
+  //           date: todayString,
+  //         });
+  //     });
+
+  //     // res.json(over25);
+  //   })
+  //   .catch((err) => console.log(err));
 };
 
 module.exports = { scrapeOver25 };

@@ -13,16 +13,21 @@ const { Btts } = require('./mongo_schema/Btts');
 const { Result } = require('./mongo_schema/Result');
 const { ResultTotal } = require('./mongo_schema/ResultTotal');
 const { TodayBet } = require('./mongo_schema/TodayBet');
+const { TodayBetArr } = require('./mongo_schema/TodayBetArr');
 const { scrapeBtts } = require('./utils/scrapeBtts');
 const { scrapeResults } = require('./utils/scrapeResults');
 const { scrapeOver25 } = require('./utils/scrapeOver25');
+const { scrapeClubStat } = require('./utils/scrapeClubStat');
+const { scrapeWinData } = require('./utils/scrapeWinData');
+const { WinData } = require('./mongo_schema/winDataModel');
 mongoose.set('strictQuery', true);
 
 ///////////////////////////////////Get Data
 let results = [];
 let allData = [];
+let winData = [];
 
-const scrapeAndSaveData = async function (req, res) {
+const scrapeAndSaveData = async () => {
   await scrapeBtts(allData);
 
   await scrapeOver25(allData);
@@ -44,7 +49,10 @@ const scrapeAndSaveData = async function (req, res) {
     if (
       sortedBtts[start].homeTeam.trim() === sortedBtts[next].homeTeam.trim()
     ) {
-      if (sortedBtts[start].action === sortedBtts[next].action && sortedBtts[start].source === sortedBtts[next].source) {
+      if (
+        sortedBtts[start].action === sortedBtts[next].action &&
+        sortedBtts[start].source === sortedBtts[next].source
+      ) {
         sortedBtts.splice(next, 1);
       }
     }
@@ -53,13 +61,10 @@ const scrapeAndSaveData = async function (req, res) {
     next++;
   }
 
-  // console.log('sortedBtts', sortedBtts);
-
   mongoose.connect(
     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
     {
       useNewUrlParser: true,
-      // useCreateIndex: true,
       useUnifiedTopology: true,
     }
   );
@@ -70,14 +75,20 @@ const scrapeAndSaveData = async function (req, res) {
     })
     .catch(function (error) {
       console.log(error); // Failure
-    });  
+    });
 
   await db.disconnect();
 };
 const scrapeAndSaveResults = async function (req, res) {
   await scrapeResults(results);
 
-  console.log('resultsddd', results);
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  );
 
   await Result.insertMany(results)
     .then(function () {
@@ -87,24 +98,47 @@ const scrapeAndSaveResults = async function (req, res) {
       console.log(error); // Failure
     });
 
-  
+  await db.disconnect();
 };
-
-const deleteRawResults = async function (req, res) {
-  const yesterday1 = new Date(new Date().setDate(new Date().getDate() - 2));
+const scrapeAndSaveWinData = async function (req, res) {
+  await scrapeWinData(winData);
 
   mongoose.connect(
     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
     {
       useNewUrlParser: true,
-      // useCreateIndex: true,
       useUnifiedTopology: true,
     }
   );
 
-  console.log('yesterday1', yesterday1);
+  await WinData.insertMany(winData)
+    .then(function () {
+      console.log('winData inserted'); // Success
+    })
+    .catch(function (error) {
+      console.log(error); // Failure
+    });
 
-  await Result.deleteMany({ Timestamp: { $gt: yesterday1 } });
+  await db.disconnect();
+};
+
+const deleteRawResults = async function (req, res) {
+  const today = new Date();
+  const yesterday = new Date(today);
+
+  yesterday.setDate(yesterday.getDate() - 1);
+  const formattedYesterday = fns.format(yesterday, 'dd.MM.yyyy');
+  const yesterdayString = formattedYesterday.toString();
+
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  );
+
+  await Result.deleteMany({ date: yesterdayString });
 
   await db.disconnect();
 };
@@ -122,40 +156,147 @@ const deleteBttsByDate = async function (req, res) {
     }
   );
 
-  console.log('todayString', todayString);
-
   await Btts.deleteMany({ date: todayString });
+  console.log('Btts deleted'); // Success
+  await db.disconnect();
+};
+const deleteWinDataByDate = async function (req, res) {
+  const today = new Date();
+  const formattedToday = fns.format(today, 'dd.MM.yyyy');
+  const todayString = formattedToday.toString();
 
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      // useCreateIndex: true,
+      useUnifiedTopology: true,
+    }
+  );
+
+  await WinData.deleteMany({ date: todayString });
+  console.log('WinData deleted'); // Success
+  await db.disconnect();
+};
+const deleteTodayBetByDate = async function (req, res) {
+  const today = new Date();
+  const formattedToday = fns.format(today, 'dd.MM.yyyy');
+  const todayString = formattedToday.toString();
+
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      // useCreateIndex: true,
+      useUnifiedTopology: true,
+    }
+  );
+
+  // console.log('todayString', todayString);
+
+  await TodayBet.deleteMany({ date: todayString });
+  console.log('TodayBets deleted'); // Success
   await db.disconnect();
 };
 
+const saveResultsTotal = async function (req, res) {
+  const today = new Date();
+  const yesterday = new Date(today);
 
-const jobScrapeAndSaveData = schedule.scheduleJob({ hour: 11, minute: 57 }, scrapeAndSaveData);
-const jobScrapeAndSaveResults = schedule.scheduleJob({ hour: 11, minute: 57 }, scrapeAndSaveResults);
-// const jobSave = schedule.scheduleJob({ hour: 15, minute: 47 }, deleteBttsByDate);
-// const jobSave = schedule.scheduleJob({ hour: 15, minute: 16 }, scrapeAndSaveOver25);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const formattedYesterday = fns.format(yesterday, 'dd.MM.yyyy');
+  const yesterdayString = formattedYesterday.toString();
 
-// const job = schedule.scheduleJob('07 * * * *', scrapeData);
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  );
 
-// const job = schedule.scheduleJob('52 * * * *', saveResults);
-// app.use(saveDataMongo);
+  const bttsArr = await Btts.find({ date: yesterdayString });
+  const resultsArr = await Result.find({ date: yesterdayString });
+
+  let resultsTotal = [];
+
+  for (let i = 0; i < resultsArr.length; i++) {
+    for (let j = 0; j < bttsArr.length; j++) {
+      if (
+        resultsArr[i].homeTeam === bttsArr[j].homeTeam ||
+        bttsArr[j].homeTeam.includes(resultsArr[i].homeTeam) ||
+        resultsArr[i].homeTeam.includes(bttsArr[j].homeTeam) ||
+        resultsArr[i].homeTeam === utils.getHomeTeamName(bttsArr[j].homeTeam)
+      ) {
+        let totalElemObj = {
+          homeTeam: '',
+          awayTeam: '',
+          score: '',
+          source: '',
+          prediction: '',
+          date: yesterdayString,
+          bttsRes: false,
+          over05Res: false,
+          over15Res: false,
+          over25Res: false,
+        };
+
+        totalElemObj.homeTeam = resultsArr[i].homeTeam;
+        totalElemObj.awayTeam = bttsArr[j].awayTeam;
+        totalElemObj.score = resultsArr[i].score;
+        totalElemObj.source = bttsArr[j].source;
+        totalElemObj.prediction = bttsArr[j].action;
+        totalElemObj.bttsRes =
+          parseInt(resultsArr[i].score.split(' - ')[0]) > 0 &&
+          parseInt(resultsArr[i].score.split(' - ')[1]) > 0;
+        totalElemObj.over05Res =
+          parseInt(resultsArr[i].score.split(' - ')[0]) +
+            parseInt(resultsArr[i].score.split(' - ')[1]) >
+          0;
+        totalElemObj.over15Res =
+          parseInt(resultsArr[i].score.split(' - ')[0]) +
+            parseInt(resultsArr[i].score.split(' - ')[1]) >
+          1;
+        totalElemObj.over25Res =
+          parseInt(resultsArr[i].score.split(' - ')[0]) +
+            parseInt(resultsArr[i].score.split(' - ')[1]) >
+          2;
+
+        resultsTotal.push(totalElemObj);
+        // console.log('totalElemObj', totalElemObj);
+      }
+    }
+  }
+  await ResultTotal.insertMany(resultsTotal)
+    .then(function () {
+      console.log('ResultsTotal inserted'); // Success
+    })
+    .catch(function (error) {
+      console.log(error); // Failure
+    });
+  await db.disconnect();
+};
+
+const jobScrapeAndSaveData = schedule.scheduleJob(
+  { hour: 8, minute: 55 },
+  scrapeAndSaveData
+);
+const jobScrapeAndSaveWinData = schedule.scheduleJob(
+  { hour: 8, minute: 53 },
+  scrapeAndSaveWinData
+);
+const jobScrapeAndSaveResults = schedule.scheduleJob(
+  { hour: 8, minute: 51 },
+  scrapeAndSaveResults
+);
+
+
 
 app.use(bodyParser.json());
 
 app.use(cors());
 
-
-
-
-
-
-
 ///////APIS
-
-
-
-
-
 
 app.get('/', function (req, res) {
   res.json('This is my webscraper');
@@ -172,14 +313,38 @@ app.get('/getBttsMongo', async (req, res) => {
   );
 
   const bttsArr = await Btts.find({ date: req.query.date });
-  // await Btts.deleteMany();
-  // console.log('bttsArr', bttsArr);
   await db.disconnect();
 
   res.json(bttsArr);
 });
-app.get('/getResultsTotalMongo', async (req, res) => {
+app.get('/getWinDataMongo', async (req, res) => {
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  );
 
+  const winDataArr = await WinData.find({ date: req.query.date });
+  await db.disconnect();
+
+  res.json(winDataArr);
+});
+app.get('/getFootyClubStat', async (req, res) => {
+  const clubStat = {
+    homeTeam: req.query.club,
+    goalsAVG: '',
+    bttsProb: '',
+    over25Prob: '',
+  };
+  await scrapeClubStat(clubStat, req.query.club);
+
+  console.log('clubStat', clubStat);
+
+  res.json(clubStat);
+});
+app.get('/getResultsTotalMongo', async (req, res) => {
   mongoose.connect(
     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
     {
@@ -196,8 +361,6 @@ app.get('/getResultsTotalMongo', async (req, res) => {
   res.json(resultsArr);
 });
 app.get('/deleteResultsTotalMongo', async (req, res) => {
-
-
   mongoose.connect(
     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
     {
@@ -213,14 +376,11 @@ app.get('/deleteResultsTotalMongo', async (req, res) => {
   res.send({ message: 'ResultTotal Deleted' });
 });
 app.get('/getResultsMongo', async (req, res) => {
-  // console.log('req.query.date', req.query.date);
-  // const date = req.query.date;
 
   mongoose.connect(
     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
     {
       useNewUrlParser: true,
-      // useCreateIndex: true,
       useUnifiedTopology: true,
     }
   );
@@ -231,8 +391,6 @@ app.get('/getResultsMongo', async (req, res) => {
   res.json(resultsArr);
 });
 app.get('/getTodayBetMongo', async (req, res) => {
-  // console.log('req.query.date', req.query.date);
-  // const date = req.query.date;
 
   mongoose.connect(
     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
@@ -243,112 +401,54 @@ app.get('/getTodayBetMongo', async (req, res) => {
     }
   );
 
-  const todayBet = await Result.find({ date: req.query.date });
-  // const resultsArr = await Result.find({});
-  // await Btts.deleteMany();
-  // console.log('resultsArr', resultsArr);
+  const todayBet = await TodayBet.find({ date: req.query.date });
   await db.disconnect();
 
   res.json(todayBet);
 });
-app.post('/saveStatMongo', async (req, res) => {
-  // console.log('req.query.date', req.query.date);
-  // const date = req.query.date;
-  // console.log('req.body', req.body);
+app.get('/getTodayBetArrMongo', async (req, res) => {
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  );
 
-  let statObj = req.body;
+  const todayBetArr = await TodayBetArr.find({ date: req.query.date });
+  await db.disconnect();
 
-  statObj.fbp.bttsMisPerc = (
-    (100 * (statObj.fbp.total - statObj.fbp.bttsMisArr.length)) /
-    statObj.fbp.total
-  ).toFixed(2);
-  statObj.fbp.over05MisPerc = (
-    (100 * (statObj.fbp.total - statObj.fbp.over05MisArr.length)) /
-    statObj.fbp.total
-  ).toFixed(2);
+  res.json(todayBetArr);
+});
 
-  statObj.fst.bttsMisPerc = (
-    (100 * (statObj.fst.total - statObj.fst.bttsMisArr.length)) /
-    statObj.fst.total
-  ).toFixed(2);
-  statObj.fst.over05MisPerc = (
-    (100 * (statObj.fst.total - statObj.fst.over05MisArr.length)) /
-    statObj.fst.total
-  ).toFixed(2);
+app.post('/saveTodayBetArrMongo', async (req, res) => {
+  console.log('req.body', req.body);
 
-  statObj.footy.bttsMisPerc = (
-    (100 * (statObj.footy.total - statObj.footy.bttsMisArr.length)) /
-    statObj.footy.total
-  ).toFixed(2);
-  statObj.footy.over05MisPerc = (
-    (100 * (statObj.footy.total - statObj.footy.over05MisArr.length)) /
-    statObj.footy.total
-  ).toFixed(2);
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      // useCreateIndex: true,
+      useUnifiedTopology: true,
+    }
+  );
 
-  statObj.accum.bttsMisPerc = (
-    (100 * (statObj.accum.total - statObj.accum.bttsMisArr.length)) /
-    statObj.accum.total
-  ).toFixed(2);
-  statObj.accum.over05MisPerc = (
-    (100 * (statObj.accum.total - statObj.accum.over05MisArr.length)) /
-    statObj.accum.total
-  ).toFixed(2);
+  let tBetArr = await new TodayBetArr(req.body);
+  await tBetArr.save(function (err) {
+    if (err) return console.error(err);
+    console.log('arr saved succussfully!');
+  });
 
-  statObj.fbpai.bttsMisPerc = (
-    (100 * (statObj.fbpai.total - statObj.fbpai.bttsMisArr.length)) /
-    statObj.fbpai.total
-  ).toFixed(2);
-  statObj.fbpai.over05MisPerc = (
-    (100 * (statObj.fbpai.total - statObj.fbpai.over05MisArr.length)) /
-    statObj.fbpai.total
-  ).toFixed(2);
-
-  statObj.mighty.bttsMisPerc = (
-    (100 * (statObj.mighty.total - statObj.mighty.bttsMisArr.length)) /
-    statObj.mighty.total
-  ).toFixed(2);
-  statObj.mighty.over05MisPerc = (
-    (100 * (statObj.mighty.total - statObj.mighty.over05MisArr.length)) /
-    statObj.mighty.total
-  ).toFixed(2);
-
-  statObj.passion.bttsMisPerc = (
-    (100 * (statObj.passion.total - statObj.passion.bttsMisArr.length)) /
-    statObj.passion.total
-  ).toFixed(2);
-  statObj.passion.over05MisPerc = (
-    (100 * (statObj.passion.total - statObj.passion.over05MisArr.length)) /
-    statObj.passion.total
-  ).toFixed(2);
-
-  statObj.mybets.bttsMisPerc = (
-    (100 * (statObj.mybets.total - statObj.mybets.bttsMisArr.length)) /
-    statObj.mybets.total
-  ).toFixed(2);
-  statObj.mybets.over05MisPerc = (
-    (100 * (statObj.mybets.total - statObj.mybets.over05MisArr.length)) /
-    statObj.mybets.total
-  ).toFixed(2);
-  console.log('statObj', statObj);
-  // mongoose.connect(
-  //   'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
-  //   {
-  //     useNewUrlParser: true,
-  //     // useCreateIndex: true,
-  //     useUnifiedTopology: true,
-  //   }
-  // );
-  // // const resultsArr = await Result.find({ date: req.query.date });
-  // // // const resultsArr = await Result.find({});
-  // await Stat.insertMany(statObj);
+  // await data.length > 0 && TodayBetArr.insertMany(data);
   // // // console.log('resultsArr', resultsArr);
-  // await db.disconnect();
-  // res.json('stat inserted');
+  await db.disconnect();
+  // console.log('today bet inserted');
+  res.json('today bet arr inserted');
 });
 app.post('/saveTodayBetMongo', async (req, res) => {
-  // console.log('req.query.date', req.query.date);
+  // console.log('req.query.date', req.query.data);
   // const date = req.query.date;
-  // console.log('req.body', req.body);
+  console.log('req.body', req.body);
 
   mongoose.connect(
     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
@@ -360,11 +460,55 @@ app.post('/saveTodayBetMongo', async (req, res) => {
   );
   // // const resultsArr = await Result.find({ date: req.query.date });
   // // // const resultsArr = await Result.find({});
-  await TodayBet.save(req.body);
+  let tBet = await new TodayBet(req.body);
+  await tBet.save(function (err) {
+    if (err) return console.error(err);
+    console.log('saved succussfully!');
+  });
   // // // console.log('resultsArr', resultsArr);
   await db.disconnect();
-  console.log('today bet inserted');
+  // console.log('today bet inserted');
   res.json('today bet inserted');
+});
+app.post('/savePredMongo', async (req, res) => {
+  // console.log('req.query.date', req.query.data);
+  // const date = req.query.date;
+  console.log('req.body', req.body);
+  let data = req.body;
+
+  if (data.homeTeam.length !== 0) {
+    data.homeTeam.forEach(async (elem) => {
+      const newBttsObj = {
+        source: data.source,
+        action: data.action,
+        homeTeam: elem,
+        date: data.date,
+      };
+
+      mongoose.connect(
+        'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+        {
+          useNewUrlParser: true,
+          // useCreateIndex: true,
+          useUnifiedTopology: true,
+        }
+      );
+      let newBtts = await new Btts(newBttsObj);
+      await newBtts.save(function (err) {
+        if (err) return console.error(err);
+        
+      });
+    
+      await db.disconnect();
+
+
+    });
+    console.log('new preds saved succussfully!');
+  }
+
+ 
+  // console.log('today bet inserted');
+  res.json('new preds inserted');
 });
 
 app.listen(PORT, () => console.log(`server running on PORT ${PORT}`));

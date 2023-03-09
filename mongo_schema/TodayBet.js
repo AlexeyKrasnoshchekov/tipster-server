@@ -7,13 +7,13 @@ const todayBetSchema = new Schema(
     coef: { type: Number, required: true },
     bets: [
       {
-        source: { type: String, required: true },
-        action: { type: String, required: true },
         homeTeam: { type: String, required: true },
-        awayTeam: { type: String, required: false },
-        date: { type: String, required: true },
-        predictionDate: { type: String, required: false },
-        checked: { type: Boolean, required: false },
+        footyStat: {
+          homeTeam: { type: String, required: false },
+          goalsAVG: { type: String, required: false },
+          bttsProb: { type: String, required: false },
+          over25Prob: { type: String, required: false },
+        },
       },
     ],
   },

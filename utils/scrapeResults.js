@@ -1,6 +1,7 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 const fns = require('date-fns');
+const { getHomeTeamName } = require('../utils');
 
 const scrapeResults = async function (results) {
   const url_result2 = 'https://www.livescore.bz/en/yesterday/';
@@ -33,7 +34,7 @@ const scrapeResults = async function (results) {
         ) {
           results.push({
             score,
-            homeTeam: homeTeam.trim(),
+            homeTeam: getHomeTeamName(homeTeam.trim()) !=='' ? getHomeTeamName(homeTeam.trim()) : homeTeam.trim(),
             awayTeam,
             date: yesterdayString,
           });
