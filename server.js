@@ -421,59 +421,24 @@ app.get('/getTodayBetArrMongo', async (req, res) => {
   res.json(todayBetArr);
 });
 
-app.post('/saveTodayBetArrMongo', async (req, res) => {
-  console.log('req.body', req.body);
-
-  mongoose.connect(
-    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
-    {
-      useNewUrlParser: true,
-      // useCreateIndex: true,
-      useUnifiedTopology: true,
-    }
-  );
-
-  let tBetArr = await new TodayBetArr(req.body);
-  await tBetArr.save(function (err) {
-    if (err) return console.error(err);
-    console.log('arr saved succussfully!');
-  });
-
-  // await data.length > 0 && TodayBetArr.insertMany(data);
-  // // // console.log('resultsArr', resultsArr);
-  await db.disconnect();
-  // console.log('today bet inserted');
-  res.json('today bet arr inserted');
-});
 app.post('/saveTodayBetMongo', async (req, res) => {
-  // console.log('req.query.date', req.query.data);
-  // const date = req.query.date;
-  console.log('req.body', req.body);
-
   mongoose.connect(
     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
     {
       useNewUrlParser: true,
-      // useCreateIndex: true,
       useUnifiedTopology: true,
     }
   );
-  // // const resultsArr = await Result.find({ date: req.query.date });
-  // // // const resultsArr = await Result.find({});
+
   let tBet = await new TodayBet(req.body);
   await tBet.save(function (err) {
     if (err) return console.error(err);
     console.log('saved succussfully!');
   });
-  // // // console.log('resultsArr', resultsArr);
   await db.disconnect();
-  // console.log('today bet inserted');
   res.json('today bet inserted');
 });
 app.post('/savePredMongo', async (req, res) => {
-  // console.log('req.query.date', req.query.data);
-  // const date = req.query.date;
-  console.log('req.body', req.body);
   let data = req.body;
 
   if (data.homeTeam.length !== 0) {
@@ -506,8 +471,6 @@ app.post('/savePredMongo', async (req, res) => {
     console.log('new preds saved succussfully!');
   }
 
- 
-  // console.log('today bet inserted');
   res.json('new preds inserted');
 });
 
