@@ -13,24 +13,28 @@ const { Btts } = require('./mongo_schema/Btts');
 const { Result } = require('./mongo_schema/Result');
 const { ResultTotal } = require('./mongo_schema/ResultTotal');
 const { TodayBet } = require('./mongo_schema/TodayBet');
-const { TodayBetArr } = require('./mongo_schema/TodayBetArr');
 const { scrapeBtts } = require('./utils/scrapeBtts');
 const { scrapeResults } = require('./utils/scrapeResults');
 const { scrapeOver25 } = require('./utils/scrapeOver25');
+const { scrapeMorphTotals } = require('./utils/scrapeMorphTotals');
 const { scrapeClubStat } = require('./utils/scrapeClubStat');
 const { scrapeWinData } = require('./utils/scrapeWinData');
+const { scrapeWinDataMorph } = require('./utils/scrapeWinDataMorph');
 const { WinData } = require('./mongo_schema/winDataModel');
 mongoose.set('strictQuery', true);
 
 ///////////////////////////////////Get Data
 let results = [];
 let allData = [];
+let allDataMorph = [];
 let winData = [];
+let winDataMorph = [];
 
 const scrapeAndSaveData = async () => {
   await scrapeBtts(allData);
 
   await scrapeOver25(allData);
+
 
   let start = 0;
   let next = 1;
@@ -79,6 +83,39 @@ const scrapeAndSaveData = async () => {
 
   await db.disconnect();
 };
+const scrapeAndSaveDataMorph = async () => {
+
+  await scrapeMorphTotals(allDataMorph);
+
+  let sortedMorph = allDataMorph.sort((a, b) => {
+    if (a.homeTeam < b.homeTeam) {
+      return -1;
+    }
+    if (a.homeTeam > b.homeTeam) {
+      return 1;
+    }
+    return 0;
+  });
+
+
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  );
+
+  await Btts.insertMany(sortedMorph)
+    .then(function () {
+      console.log('Btts Morph inserted'); // Success
+    })
+    .catch(function (error) {
+      console.log(error); // Failure
+    });
+
+  await db.disconnect();
+};
 const scrapeAndSaveResults = async function (req, res) {
   await scrapeResults(results);
 
@@ -114,6 +151,27 @@ const scrapeAndSaveWinData = async function (req, res) {
   await WinData.insertMany(winData)
     .then(function () {
       console.log('winData inserted'); // Success
+    })
+    .catch(function (error) {
+      console.log(error); // Failure
+    });
+
+  await db.disconnect();
+};
+const scrapeAndSaveWinDataMorph = async function (req, res) {
+  await scrapeWinDataMorph(winDataMorph);
+
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  );
+
+  await WinData.insertMany(winDataMorph)
+    .then(function () {
+      console.log('winData Morph inserted'); // Success
     })
     .catch(function (error) {
       console.log(error); // Failure
@@ -278,17 +336,29 @@ const saveResultsTotal = async function (req, res) {
 };
 
 const jobScrapeAndSaveData = schedule.scheduleJob(
-  { hour: 8, minute: 55 },
+  { hour: 9, minute: 18 },
   scrapeAndSaveData
 );
+const jobScrapeAndSaveDataMorph = schedule.scheduleJob(
+  { hour: 9, minute: 19 },
+  scrapeAndSaveDataMorph
+);
+// const jobDeleteBttsByDate = schedule.scheduleJob(
+//   { hour: 10, minute: 46 },
+//   deleteBttsByDate
+// );
 const jobScrapeAndSaveWinData = schedule.scheduleJob(
-  { hour: 8, minute: 53 },
+  { hour: 9, minute: 20 },
   scrapeAndSaveWinData
 );
-const jobScrapeAndSaveResults = schedule.scheduleJob(
-  { hour: 8, minute: 51 },
-  scrapeAndSaveResults
+const jobScrapeAndSaveWinDataMorph = schedule.scheduleJob(
+  { hour: 9, minute: 21 },
+  scrapeAndSaveWinDataMorph
 );
+// const jobScrapeAndSaveResults = schedule.scheduleJob(
+//   { hour: 8, minute: 51 },
+//   scrapeAndSaveResults
+// );
 
 
 
@@ -303,6 +373,21 @@ app.get('/', function (req, res) {
 });
 
 app.get('/getBttsMongo', async (req, res) => {
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      // useCreateIndex: true,
+      useUnifiedTopology: true,
+    }
+  );
+
+  const bttsArr = await Btts.find({ date: req.query.date });
+  await db.disconnect();
+
+  res.json(bttsArr);
+});
+app.get('/predictions', async (req, res) => {
   mongoose.connect(
     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
     {
@@ -440,13 +525,13 @@ app.post('/saveTodayBetMongo', async (req, res) => {
 });
 app.post('/savePredMongo', async (req, res) => {
   let data = req.body;
-
+  console.log('dataPred', data);
   if (data.homeTeam.length !== 0) {
     data.homeTeam.forEach(async (elem) => {
       const newBttsObj = {
         source: data.source,
         action: data.action,
-        homeTeam: elem,
+        homeTeam: utils.getHomeTeamName(elem) !=='' ? utils.getHomeTeamName(elem) : elem,
         date: data.date,
       };
 
@@ -461,7 +546,42 @@ app.post('/savePredMongo', async (req, res) => {
       let newBtts = await new Btts(newBttsObj);
       await newBtts.save(function (err) {
         if (err) return console.error(err);
-        
+        console.log('new pred saved succussfully!');
+      });
+    
+      await db.disconnect();
+
+
+    });
+    console.log('new preds saved succussfully!');
+  }
+
+  res.json('new preds inserted');
+});
+app.post('/predictions', async (req, res) => {
+  let data = req.body;
+  console.log('dataPred', data);
+  if (data.homeTeam.length !== 0) {
+    data.homeTeam.forEach(async (elem) => {
+      const newBttsObj = {
+        source: data.source,
+        action: data.action,
+        homeTeam: utils.getHomeTeamName(elem) !=='' ? utils.getHomeTeamName(elem) : elem,
+        date: data.date,
+      };
+
+      mongoose.connect(
+        'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+        {
+          useNewUrlParser: true,
+          // useCreateIndex: true,
+          useUnifiedTopology: true,
+        }
+      );
+      let newBtts = await new Btts(newBttsObj);
+      await newBtts.save(function (err) {
+        if (err) return console.error(err);
+        console.log('new pred saved succussfully!');
       });
     
       await db.disconnect();

@@ -4,6 +4,7 @@ const fns = require('date-fns');
 const {getHomeTeamName} = require('../utils')
 
 const scrapeOver25 = async function (over25) {
+  const url_goalnow = 'https://www.goalsnow.com/over-under-predictions/';
   const url_fbp =
     'https://footballpredictions.net/under-over-2-5-goals-betting-tips-predictions';
   const url_accum =

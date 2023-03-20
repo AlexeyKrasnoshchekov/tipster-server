@@ -38,7 +38,7 @@ const scrapeWinData = async function (winData) {
             ? getHomeTeamName(homeTeam.trim())
             : homeTeam.trim();
 
-        predictionDate.includes(day) &&
+        predictionDate.includes(`-${day}`) &&
           homeTeam !== '' &&
           prediction !== '' &&
           winData.push({
