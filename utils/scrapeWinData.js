@@ -6,8 +6,8 @@ const { getHomeTeamName } = require('../utils');
 const scrapeWinData = async function (winData) {
   const url_passion = 'https://passionpredict.com/home-wins';
   const url_mybets = 'https://www.mybets.today/recommended-soccer-predictions/';
-  const url_fbp =
-    'https://footballpredictions.net/sure-bets-sure-win-predictions';
+  // const url_fbp =
+  //   'https://footballpredictions.net/sure-bets-sure-win-predictions';
 
   const today = new Date();
   const formattedToday = fns.format(today, 'dd.MM.yyyy');
@@ -15,46 +15,46 @@ const scrapeWinData = async function (winData) {
 
   const day = today.getDate();
 
-  await axios(url_fbp)
-    .then((response) => {
-      const html = response.data;
-      // console.log(response.data);
-      // console.log('000', response);
-      const $ = cheerio.load(html);
+  // await axios(url_fbp)
+  //   .then((response) => {
+  //     const html = response.data;
+  //     // console.log(response.data);
+  //     // console.log('000', response);
+  //     const $ = cheerio.load(html);
 
-      $('.card-header', html).each(function () {
-        //<-- cannot be a function expression
-        // const title = $(this).text();
-        const prediction = $(this).find('.prediction').text();
-        let homeTeam = $(this).find('.home-team').find('.team-label').text();
-        const awayTeam = $(this).find('.away-team').find('.team-label').text();
-        const predictionDate = $(this)
-          .find('.match-preview-date')
-          .find('.full-cloak')
-          .text();
+  //     $('.card-header', html).each(function () {
+  //       //<-- cannot be a function expression
+  //       // const title = $(this).text();
+  //       const prediction = $(this).find('.prediction').text();
+  //       let homeTeam = $(this).find('.home-team').find('.team-label').text();
+  //       const awayTeam = $(this).find('.away-team').find('.team-label').text();
+  //       const predictionDate = $(this)
+  //         .find('.match-preview-date')
+  //         .find('.full-cloak')
+  //         .text();
 
-        homeTeam =
-          getHomeTeamName(homeTeam.trim()) !== ''
-            ? getHomeTeamName(homeTeam.trim())
-            : homeTeam.trim();
+  //       homeTeam =
+  //         getHomeTeamName(homeTeam.trim()) !== ''
+  //           ? getHomeTeamName(homeTeam.trim())
+  //           : homeTeam.trim();
 
-        predictionDate.includes(`-${day}`) &&
-          homeTeam !== '' &&
-          prediction !== '' &&
-          winData.push({
-            source: 'fbp',
-            action: 'win',
-            homeTeam: homeTeam,
-            awayTeam,
-            date: todayString,
-            prediction: prediction.includes(homeTeam) ? homeTeam : awayTeam,
-            predictionDate: predictionDate,
-          });
-      });
+  //       predictionDate.includes(`-${day}`) &&
+  //         homeTeam !== '' &&
+  //         prediction !== '' &&
+  //         winData.push({
+  //           source: 'fbp',
+  //           action: 'win',
+  //           homeTeam: homeTeam,
+  //           awayTeam,
+  //           date: todayString,
+  //           prediction: prediction.includes(homeTeam) ? homeTeam : awayTeam,
+  //           predictionDate: predictionDate,
+  //         });
+  //     });
 
-      // res.json(btts);
-    })
-    .catch((err) => console.log(err));
+  //     // res.json(btts);
+  //   })
+  //   .catch((err) => console.log(err));
 
   // //PASSION
   await axios(url_passion)

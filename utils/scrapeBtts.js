@@ -7,16 +7,20 @@ const puppeteer = require('puppeteer');
 const { getHomeTeamName } = require('../utils');
 
 const scrapeBtts = async function (btts) {
-  const url_fbp =
-    'https://footballpredictions.net/btts-tips-both-teams-to-score-predictions';
-  const url_accum = 'https://footyaccumulators.com/football-tips/btts';
-  const url_fst = 'https://www.freesupertips.com/free-football-betting-tips/';
+  // const url_fbp =
+  //   'https://footballpredictions.net/btts-tips-both-teams-to-score-predictions';
+  // const url_accum = 'https://footyaccumulators.com/football-tips/btts';
+  // const url_fst = 'https://www.freesupertips.com/free-football-betting-tips/';
   const url_footy = 'https://footystats.org/predictions/btts';
-  const url_mighty = 'https://www.mightytips.com/football-predictions/btts/';
+  // const url_mighty = 'https://www.mightytips.com/football-predictions/btts/';
+  // const url_wdw = 'https://www.windrawwin.com/accumulator-tips/today/';
   // const url_mybets =
   //   'https://www.mybets.today/soccer-predictions/both-teams-to-score-predictions/';
-  const url_fbpai =
-    'https://footballpredictions.ai/football-predictions/btts-predictions/';
+  // const url_fbpai =
+  //   'https://footballpredictions.ai/football-predictions/btts-predictions/';
+  // const url_goalnow =
+  //   'https://www.goalsnow.com/accumulator-btts-both-teams-to-score/';
+  const url_gnow_accum = 'https://www.goalsnow.com/accumulator-btts-both-teams-to-score/';
 
   const today = new Date();
   const yesterday = new Date(today);
@@ -114,94 +118,215 @@ const scrapeBtts = async function (btts) {
   //   await browser.close();
   // })();
 
+    //Goalnow
+    // await axios(url_goalnow)
+    // .then((response) => {
+    //   const html = response.data;
 
-  // FBP
-  await axios(url_fbp)
-  .then((response) => {
-    const html = response.data;
-    // console.log(response.data);
-    // console.log('000', response);
-    const $ = cheerio.load(html);
+    //   // console.log('000', html);
+    //   const $ = cheerio.load(html);
 
-    $('.match-preview', html).each(function () {
-      //<-- cannot be a function expression
-      // const title = $(this).text();
-      const homeTeam = $(this)
-        .find('.home-team')
-        .find('.team-label')
-        .text();
-      const awayTeam = $(this)
-        .find('.away-team')
-        .find('.team-label')
-        .text();
-      const predictionDate = $(this)
-        .find('.match-preview-date')
-        .find('.full-cloak')
-        .text();
+    //   $('.accasdisplay', html).each(function () {
+    //     //<-- cannot be a function expression
+    //     // const title = $(this).text();
+    //     const homeTeam = $(this)
+    //       .find('.row3:first')
+    //       .find('.whitespace')
+    //       .text();
+    //     // let homeTeam1 = '';
+    //     // if (homeTeam.includes('2.5 Goals')) {
+    //     //   homeTeam1 = homeTeam.split('Over 2.5 Goals ')[1];
+    //     // }
+    //     // const awayTeam = $(this)
+    //     //   .find('.goalsaway')
+    //     //   .text();
+    //     const pred = $(this)
+    //       .find('.row4')
+    //       .find('span:first')
+    //       .text();
+    //     homeTeam !== '' && pred.includes('Yes') &&
+    //     btts.push({
+    //         source: 'goalsnow',
+    //         action: 'btts',
+    //         checked: false,
+    //         homeTeam: getHomeTeamName(homeTeam.trim()) !=='' ? getHomeTeamName(homeTeam.trim()) : homeTeam.trim(),
+    //         awayTeam:'',
+    //         date: todayString,
+    //       });
+    //   });
 
-        if (homeTeam.trim() === 'Al-Gharafa') {
-          console.log('ghghgj', getHomeTeamName(homeTeam.trim()))
-        };
-      homeTeam !== '' &&
-        btts.push({
-          source: 'fbp',
-          action: 'btts',
-          checked: false,
-          homeTeam: getHomeTeamName(homeTeam.trim()) !=='' ? getHomeTeamName(homeTeam.trim()) : homeTeam.trim(),
-          awayTeam,
-          date: todayString,
-          predictionDate: predictionDate,
-        });
-    });
+    //   // res.json(over25);
+    // })
+    // .catch((err) => console.log(err));
 
-    // res.json(btts);
-  })
-  .catch((err) => console.log(err));
-
-  // MIGHTY
-  await axios(url_mighty)
+    //GoalnowAccum
+    await axios(url_gnow_accum)
     .then((response) => {
       const html = response.data;
 
       // console.log('000', html);
       const $ = cheerio.load(html);
 
-      $('.mtl-index-page-matches__item', html).each(function () {
+      $('.accasdisplay', html).each(function () {
         //<-- cannot be a function expression
         // const title = $(this).text();
         const homeTeam = $(this)
-          .find('.mtl-index-page-matches__name')
-          .text()
-          .split(' vs ')[0];
-        const awayTeam = $(this)
-          .find('.mtl-index-page-matches__name')
-          .text()
-          .split(' vs ')[1];
-        const predicDate = $(this)
-          .find('.mtl-index-page-matches__date')
-          .find('p:first')
-          .find('time:first')
+          .find('.row3:first')
+          .find('.whitespace')
           .text();
-
-          if (homeTeam.trim() === 'Accrington ST') {
-            console.log('btts HT', getHomeTeamName(homeTeam.trim()))
-          };
-
-        todayString.includes(predicDate) &&
-          homeTeam !== '' &&
-          btts.push({
-            source: 'mighty',
+        // let homeTeam1 = '';
+        // if (homeTeam.includes('2.5 Goals')) {
+        //   homeTeam1 = homeTeam.split('Over 2.5 Goals ')[1];
+        // }
+        // const awayTeam = $(this)
+        //   .find('.goalsaway')
+        //   .text();
+        const pred = $(this)
+          .find('.row4')
+          .find('span:first')
+          .text();
+        homeTeam !== '' && pred.includes('Yes') &&
+        btts.push({
+            source: 'gnowAcc',
             action: 'btts',
             checked: false,
             homeTeam: getHomeTeamName(homeTeam.trim()) !=='' ? getHomeTeamName(homeTeam.trim()) : homeTeam.trim(),
-            awayTeam,
+            awayTeam:'',
             date: todayString,
           });
       });
 
-      // res.json(btts);
+      // res.json(over25);
     })
     .catch((err) => console.log(err));
+    //WDW
+    // await axios(url_wdw)
+    // .then((response) => {
+    //   const html = response.data;
+
+    //   // console.log('000', html);
+    //   const $ = cheerio.load(html);
+
+    //   $('.accasdisplay', html).each(function () {
+    //     //<-- cannot be a function expression
+    //     // const title = $(this).text();
+    //     const homeTeam = $(this)
+    //       .find('.row3:first')
+    //       .find('.whitespace')
+    //       .text();
+    //     // let homeTeam1 = '';
+    //     // if (homeTeam.includes('2.5 Goals')) {
+    //     //   homeTeam1 = homeTeam.split('Over 2.5 Goals ')[1];
+    //     // }
+    //     // const awayTeam = $(this)
+    //     //   .find('.goalsaway')
+    //     //   .text();
+    //     const pred = $(this)
+    //       .find('.row4')
+    //       .find('span:first')
+    //       .text();
+    //     homeTeam !== '' && pred.includes('Yes') &&
+    //     btts.push({
+    //         source: 'goalsnow',
+    //         action: 'btts',
+    //         checked: false,
+    //         homeTeam: getHomeTeamName(homeTeam.trim()) !=='' ? getHomeTeamName(homeTeam.trim()) : homeTeam.trim(),
+    //         awayTeam:'',
+    //         date: todayString,
+    //       });
+    //   });
+
+    //   // res.json(over25);
+    // })
+    // .catch((err) => console.log(err));
+
+  // FBP
+  // await axios(url_fbp)
+  // .then((response) => {
+  //   const html = response.data;
+  //   // console.log(response.data);
+  //   // console.log('000', response);
+  //   const $ = cheerio.load(html);
+
+  //   $('.match-preview', html).each(function () {
+  //     //<-- cannot be a function expression
+  //     // const title = $(this).text();
+  //     const homeTeam = $(this)
+  //       .find('.home-team')
+  //       .find('.team-label')
+  //       .text();
+  //     const awayTeam = $(this)
+  //       .find('.away-team')
+  //       .find('.team-label')
+  //       .text();
+  //     const predictionDate = $(this)
+  //       .find('.match-preview-date')
+  //       .find('.full-cloak')
+  //       .text();
+
+  //       if (homeTeam.trim() === 'Al-Gharafa') {
+  //         console.log('ghghgj', getHomeTeamName(homeTeam.trim()))
+  //       };
+  //     homeTeam !== '' &&
+  //       btts.push({
+  //         source: 'fbp',
+  //         action: 'btts',
+  //         checked: false,
+  //         homeTeam: getHomeTeamName(homeTeam.trim()) !=='' ? getHomeTeamName(homeTeam.trim()) : homeTeam.trim(),
+  //         awayTeam,
+  //         date: todayString,
+  //         predictionDate: predictionDate,
+  //       });
+  //   });
+
+  //   // res.json(btts);
+  // })
+  // .catch((err) => console.log(err));
+
+  // MIGHTY
+  // await axios(url_mighty)
+  //   .then((response) => {
+  //     const html = response.data;
+
+  //     // console.log('000', html);
+  //     const $ = cheerio.load(html);
+
+  //     $('.mtl-index-page-matches__item', html).each(function () {
+  //       //<-- cannot be a function expression
+  //       // const title = $(this).text();
+  //       const homeTeam = $(this)
+  //         .find('.mtl-index-page-matches__name')
+  //         .text()
+  //         .split(' vs ')[0];
+  //       const awayTeam = $(this)
+  //         .find('.mtl-index-page-matches__name')
+  //         .text()
+  //         .split(' vs ')[1];
+  //       const predicDate = $(this)
+  //         .find('.mtl-index-page-matches__date')
+  //         .find('p:first')
+  //         .find('time:first')
+  //         .text();
+
+  //         if (homeTeam.trim() === 'Accrington ST') {
+  //           console.log('btts HT', getHomeTeamName(homeTeam.trim()))
+  //         };
+
+  //       todayString.includes(predicDate) &&
+  //         homeTeam !== '' &&
+  //         btts.push({
+  //           source: 'mighty',
+  //           action: 'btts',
+  //           checked: false,
+  //           homeTeam: getHomeTeamName(homeTeam.trim()) !=='' ? getHomeTeamName(homeTeam.trim()) : homeTeam.trim(),
+  //           awayTeam,
+  //           date: todayString,
+  //         });
+  //     });
+
+  //     // res.json(btts);
+  //   })
+  //   .catch((err) => console.log(err));
   // //PASSION
   await axios(
     `https://passionpredict.com/both-team-to-score?dt=${year}-${month}-${day}`
@@ -307,6 +432,8 @@ const scrapeBtts = async function (btts) {
           .text()
           .split(' vs ')[1];
 
+          console.log('homeTeam1',homeTeam1);
+
         homeTeam1 !== '' &&
           btts.push({
             source: 'footy',
@@ -322,108 +449,108 @@ const scrapeBtts = async function (btts) {
     })
     .catch((err) => console.log(err));
   // //Fbpai
-  await axios(url_fbpai)
-    .then((response) => {
-      const html = response.data;
+  // await axios(url_fbpai)
+  //   .then((response) => {
+  //     const html = response.data;
 
-      // console.log('000', html);
-      const $ = cheerio.load(html);
+  //     // console.log('000', html);
+  //     const $ = cheerio.load(html);
 
-      $('.footgame', html).each(function () {
-        //<-- cannot be a function expression
-        // const title = $(this).text();
+  //     $('.footgame', html).each(function () {
+  //       //<-- cannot be a function expression
+  //       // const title = $(this).text();
 
-        const isBttsFbpai = $(this).find('.match-tip-show').text();
+  //       const isBttsFbpai = $(this).find('.match-tip-show').text();
 
-        if (isBttsFbpai === 'Yes') {
-          const homeTeam = $(this)
-            .find('a:first')
-            .attr('title')
-            .split(' - ')[0];
-          const awayTeam = $(this)
-            .find('a:first')
-            .attr('title')
-            .split(' - ')[1];
+  //       if (isBttsFbpai === 'Yes') {
+  //         const homeTeam = $(this)
+  //           .find('a:first')
+  //           .attr('title')
+  //           .split(' - ')[0];
+  //         const awayTeam = $(this)
+  //           .find('a:first')
+  //           .attr('title')
+  //           .split(' - ')[1];
 
-          homeTeam !== '' &&
-            btts.push({
-              source: 'fbpai',
-              action: 'btts',
-              checked: false,
-              homeTeam: getHomeTeamName(homeTeam.trim()) !=='' ? getHomeTeamName(homeTeam.trim()) : homeTeam.trim(),
-              awayTeam,
-              date: todayString,
-            });
-        }
-      });
+  //         homeTeam !== '' &&
+  //           btts.push({
+  //             source: 'fbpai',
+  //             action: 'btts',
+  //             checked: false,
+  //             homeTeam: getHomeTeamName(homeTeam.trim()) !=='' ? getHomeTeamName(homeTeam.trim()) : homeTeam.trim(),
+  //             awayTeam,
+  //             date: todayString,
+  //           });
+  //       }
+  //     });
 
-      // res.json(btts);
-    })
-    .catch((err) => console.log(err));
+  //     // res.json(btts);
+  //   })
+  //   .catch((err) => console.log(err));
   // //ACCUM
-  await axios(url_accum)
-    .then((response) => {
-      const html = response.data;
-      // console.log('000', html);
-      const $ = cheerio.load(html);
-      const accumArr = [];
+  // await axios(url_accum)
+  //   .then((response) => {
+  //     const html = response.data;
+  //     // console.log('000', html);
+  //     const $ = cheerio.load(html);
+  //     const accumArr = [];
 
-      $('.zWPB', html).each(function () {
-        const accumElem = $(this).find('div:first').text();
-        const accumDate = $(this).find('.date').text();
-        // console.log('accumDate', accumDate);
-        accumArr.push({ team: accumElem, predictionDate: accumDate });
-      });
+  //     $('.zWPB', html).each(function () {
+  //       const accumElem = $(this).find('div:first').text();
+  //       const accumDate = $(this).find('.date').text();
+  //       // console.log('accumDate', accumDate);
+  //       accumArr.push({ team: accumElem, predictionDate: accumDate });
+  //     });
 
-      for (let i = 0; i < accumArr.length - 1; i++) {
-        let accumObj = {
-          source: 'accum',
-          action: 'btts',
-          checked: false,
-          homeTeam: '',
-          date: todayString,
-          predictionDate: '',
-        };
+  //     for (let i = 0; i < accumArr.length - 1; i++) {
+  //       let accumObj = {
+  //         source: 'accum',
+  //         action: 'btts',
+  //         checked: false,
+  //         homeTeam: '',
+  //         date: todayString,
+  //         predictionDate: '',
+  //       };
 
-        if (i === 0 || i % 2 === 0) {
-          accumObj.homeTeam = getHomeTeamName(accumArr[i].team.trim()) !=='' ? getHomeTeamName(accumArr[i].team.trim()) : accumArr[i].team.trim();
-          accumObj.predictionDate = accumArr[i + 1].predictionDate;
-        }
-        // console.log('accumArr[i]', accumArr[i]);
-        // console.log('accumObj', accumObj);
-        accumObj.homeTeam !== '' && btts.push(accumObj);
-      }
-    })
-    .catch((err) => console.log(err));
+  //       if (i === 0 || i % 2 === 0) {
+  //         accumObj.homeTeam = getHomeTeamName(accumArr[i].team.trim()) !=='' ? getHomeTeamName(accumArr[i].team.trim()) : accumArr[i].team.trim();
+  //         accumObj.predictionDate = accumArr[i + 1].predictionDate;
+  //       }
+  //       // console.log('accumArr[i]', accumArr[i]);
+  //       // console.log('accumObj', accumObj);
+  //       accumObj.homeTeam !== '' && btts.push(accumObj);
+  //     }
+  //   })
+  //   .catch((err) => console.log(err));
   //FST
-  await axios(url_fst)
-    .then((response) => {
-      const html = response.data;
-      // const btts = [];
-      const $ = cheerio.load(html);
+  // await axios(url_fst)
+  //   .then((response) => {
+  //     const html = response.data;
+  //     // const btts = [];
+  //     const $ = cheerio.load(html);
 
-      $('.Leg__title', html).each(function () {
-        const isBttsFst = $(this).find('.Leg__win').text();
-        let homeTeam = '';
-        let awayTeam = '';
-        if (isBttsFst === 'Both Teams To Score') {
-          homeTeam = $(this).find('.Leg__lose').text().split('vs')[0];
-          awayTeam = $(this).find('.Leg__lose').text().split('vs')[1];
-          homeTeam !== '' &&
-            btts.push({
-              source: 'fst',
-              action: 'btts',
-              checked: false,
-              homeTeam: getHomeTeamName(homeTeam.trim()) !=='' ? getHomeTeamName(homeTeam.trim()) : homeTeam.trim(),
-              awayTeam,
-              date: todayString,
-            });
-        }
-      });
+  //     $('.Leg__title', html).each(function () {
+  //       const isBttsFst = $(this).find('.Leg__win').text();
+  //       let homeTeam = '';
+  //       let awayTeam = '';
+  //       if (isBttsFst === 'Both Teams To Score') {
+  //         homeTeam = $(this).find('.Leg__lose').text().split('vs')[0];
+  //         awayTeam = $(this).find('.Leg__lose').text().split('vs')[1];
+  //         homeTeam !== '' &&
+  //           btts.push({
+  //             source: 'fst',
+  //             action: 'btts',
+  //             checked: false,
+  //             homeTeam: getHomeTeamName(homeTeam.trim()) !=='' ? getHomeTeamName(homeTeam.trim()) : homeTeam.trim(),
+  //             awayTeam,
+  //             date: todayString,
+  //           });
+  //       }
+  //     });
 
-      // res.json(btts);
-    })
-    .catch((err) => console.log(err));
+  //     // res.json(btts);
+  //   })
+  //   .catch((err) => console.log(err));
 };
 
 module.exports = { scrapeBtts };

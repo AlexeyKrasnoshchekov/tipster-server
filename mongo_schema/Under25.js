@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
-const bttsSchema = new Schema(
+const under25Schema = new Schema(
   {
     source: { type: String, required: true },
     action: { type: String, required: true },
@@ -17,8 +17,8 @@ const bttsSchema = new Schema(
   }
 );
 
-const Btts =
-  mongoose.models?.Btts || mongoose.model('Btts', bttsSchema);
+const Under25 =
+  mongoose.models?.Under25 || mongoose.model('Under25', under25Schema);
 
 // export default Headline;
-module.exports = { Btts };
+module.exports = { Under25 };

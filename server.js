@@ -21,20 +21,76 @@ const { scrapeClubStat } = require('./utils/scrapeClubStat');
 const { scrapeWinData } = require('./utils/scrapeWinData');
 const { scrapeWinDataMorph } = require('./utils/scrapeWinDataMorph');
 const { WinData } = require('./mongo_schema/winDataModel');
+const { scrapeUnder25 } = require('./utils/scrapeUnder25');
+const { Under25 } = require('./mongo_schema/Under25');
 mongoose.set('strictQuery', true);
 
 ///////////////////////////////////Get Data
 let results = [];
 let allData = [];
+let under25Data = [];
 let allDataMorph = [];
 let winData = [];
 let winDataMorph = [];
+
+const scrapeAndSaveUnder25Data = async () => {
+  await scrapeUnder25(under25Data);
+
+  let start = 0;
+  let next = 1;
+  let sortedUnder25 = under25Data.sort((a, b) => {
+    if (a.homeTeam < b.homeTeam) {
+      return -1;
+    }
+    if (a.homeTeam > b.homeTeam) {
+      return 1;
+    }
+    return 0;
+  });
+
+  //удаление дублей
+  while (next < sortedUnder25.length) {
+    if (
+      sortedUnder25[start].homeTeam.trim() === sortedUnder25[next].homeTeam.trim()
+    ) {
+      if (
+        sortedUnder25[start].action === sortedUnder25[next].action &&
+        sortedUnder25[start].source === sortedUnder25[next].source
+      ) {
+        sortedUnder25.splice(next, 1);
+      }
+    }
+
+    start++;
+    next++;
+  }
+
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  );
+
+  await Under25.insertMany(sortedUnder25)
+    .then(function () {
+      console.log('Under25 inserted'); // Success
+    })
+    .catch(function (error) {
+      console.log(error); // Failure
+    });
+
+  await db.disconnect();
+}
 
 const scrapeAndSaveData = async () => {
   await scrapeBtts(allData);
 
   await scrapeOver25(allData);
+  
 
+  // console.log('allData',allData);
 
   let start = 0;
   let next = 1;
@@ -148,7 +204,7 @@ const scrapeAndSaveWinData = async function (req, res) {
     }
   );
 
-  await WinData.insertMany(winData)
+  await Btts.insertMany(winData)
     .then(function () {
       console.log('winData inserted'); // Success
     })
@@ -169,7 +225,7 @@ const scrapeAndSaveWinDataMorph = async function (req, res) {
     }
   );
 
-  await WinData.insertMany(winDataMorph)
+  await Btts.insertMany(winDataMorph)
     .then(function () {
       console.log('winData Morph inserted'); // Success
     })
@@ -216,6 +272,24 @@ const deleteBttsByDate = async function (req, res) {
 
   await Btts.deleteMany({ date: todayString });
   console.log('Btts deleted'); // Success
+  await db.disconnect();
+};
+const deleteUnder25ByDate = async function (req, res) {
+  const today = new Date();
+  const formattedToday = fns.format(today, 'dd.MM.yyyy');
+  const todayString = formattedToday.toString();
+
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      // useCreateIndex: true,
+      useUnifiedTopology: true,
+    }
+  );
+
+  await Under25.deleteMany({ date: todayString });
+  console.log('Under25 deleted'); // Success
   await db.disconnect();
 };
 const deleteWinDataByDate = async function (req, res) {
@@ -336,25 +410,34 @@ const saveResultsTotal = async function (req, res) {
 };
 
 const jobScrapeAndSaveData = schedule.scheduleJob(
-  { hour: 9, minute: 18 },
+  { hour: 11, minute: 19  },
   scrapeAndSaveData
 );
-const jobScrapeAndSaveDataMorph = schedule.scheduleJob(
-  { hour: 9, minute: 19 },
-  scrapeAndSaveDataMorph
+const jobScrapeAndSaveUnderData = schedule.scheduleJob(
+  { hour: 11, minute: 34 },
+  scrapeAndSaveUnder25Data
 );
-// const jobDeleteBttsByDate = schedule.scheduleJob(
-//   { hour: 10, minute: 46 },
-//   deleteBttsByDate
-// );
 const jobScrapeAndSaveWinData = schedule.scheduleJob(
-  { hour: 9, minute: 20 },
+  { hour: 11, minute: 37 },
   scrapeAndSaveWinData
 );
 const jobScrapeAndSaveWinDataMorph = schedule.scheduleJob(
-  { hour: 9, minute: 21 },
+  { hour: 11, minute: 38 },
   scrapeAndSaveWinDataMorph
 );
+// const jobScrapeAndSaveDataMorph = schedule.scheduleJob(
+//   { hour: 9, minute: 18 },
+//   scrapeAndSaveDataMorph
+// );
+// const jobDeleteBttsByDate = schedule.scheduleJob(
+//   { hour: 11, minute: 07 },
+//   deleteBttsByDate
+// );
+const jobDeleteUnder25ByDate = schedule.scheduleJob(
+  { hour: 11, minute: 33 },
+  deleteUnder25ByDate
+);
+
 // const jobScrapeAndSaveResults = schedule.scheduleJob(
 //   { hour: 8, minute: 51 },
 //   scrapeAndSaveResults
@@ -386,6 +469,21 @@ app.get('/getBttsMongo', async (req, res) => {
   await db.disconnect();
 
   res.json(bttsArr);
+});
+app.get('/getUnder25Mongo', async (req, res) => {
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      // useCreateIndex: true,
+      useUnifiedTopology: true,
+    }
+  );
+
+  const under25Arr = await Under25.find({ date: req.query.date });
+  await db.disconnect();
+
+  res.json(under25Arr);
 });
 app.get('/predictions', async (req, res) => {
   mongoose.connect(
@@ -532,6 +630,7 @@ app.post('/savePredMongo', async (req, res) => {
         source: data.source,
         action: data.action,
         homeTeam: utils.getHomeTeamName(elem) !=='' ? utils.getHomeTeamName(elem) : elem,
+        predTeam: utils.getHomeTeamName(data.predTeam) !=='' ? utils.getHomeTeamName(data.predTeam) : data.predTeam,
         date: data.date,
       };
 
