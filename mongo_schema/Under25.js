@@ -11,6 +11,7 @@ const under25Schema = new Schema(
     date: { type: String, required: true },
     predictionDate: { type: String, required: false },
     checked: { type: Boolean, required: false },
+    isAcca: { type: Boolean, required: false },
   },
   {
     timestamps: true,

@@ -36,15 +36,10 @@ const scrapeWinDataMorph = async function (winData) {
         data.forEach((elem) => {
           winData.push({
             source: 'morph',
-            action: 'win',
-            homeTeam:
-              getHomeTeamName(elem.localTeamName.trim()) !== ''
-                ? getHomeTeamName(elem.localTeamName.trim())
-                : elem.localTeamName.trim(),
-            prediction:
-              getHomeTeamName(elem.localTeamName.trim()) !== ''
-                ? getHomeTeamName(elem.localTeamName.trim())
-                : elem.localTeamName.trim(),
+            action: `win ${elem.probability}`,
+            isAcca: false,
+            homeTeam: elem.localTeamName.trim(),
+            prediction: elem.localTeamName.trim(),
             awayTeam: elem.visitorTeamName,
             date: todayString,
             predictionDate: `morph hits ${elem.hits}`,
@@ -65,19 +60,11 @@ const scrapeWinDataMorph = async function (winData) {
         data.forEach((elem) => {
           winData.push({
             source: 'morph',
-            action: 'win',
-            homeTeam:
-              getHomeTeamName(elem.localTeamName.trim()) !== ''
-                ? getHomeTeamName(elem.localTeamName.trim())
-                : elem.localTeamName.trim(),
-            prediction:
-              getHomeTeamName(elem.visitorTeamName.trim()) !== ''
-                ? getHomeTeamName(elem.visitorTeamName.trim())
-                : elem.visitorTeamName.trim(),
-            awayTeam:
-              getHomeTeamName(elem.visitorTeamName.trim()) !== ''
-                ? getHomeTeamName(elem.visitorTeamName.trim())
-                : elem.visitorTeamName.trim(),
+            action: `win ${elem.probability}`,
+            isAcca: elem.probability >= 90,
+            homeTeam: elem.localTeamName.trim(),
+            prediction: elem.visitorTeamName.trim(),
+            awayTeam: elem.visitorTeamName.trim(),
             date: todayString,
             predictionDate: `morph hits ${elem.hits}`,
           });

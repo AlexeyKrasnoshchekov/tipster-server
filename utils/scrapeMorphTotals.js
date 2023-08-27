@@ -35,8 +35,6 @@ const scrapeMorphTotals = async function (allData) {
     },
   };
 
-
-
   await axios
     .request(optionsOver15)
     .then(function (response) {
@@ -47,12 +45,10 @@ const scrapeMorphTotals = async function (allData) {
         data.forEach((elem) => {
           allData.push({
             source: 'morph',
-            action: 'over15',
-            homeTeam:
-              getHomeTeamName(elem.localTeamName.trim()) !== ''
-                ? getHomeTeamName(elem.localTeamName.trim())
-                : elem.localTeamName.trim(),
-            awayTeam: elem.visitorTeamName,
+            action: `over15 prob ${elem.probability}`,
+            isAcca: elem.probability >= 90,
+            homeTeam: elem.localTeamName.trim(),
+            awayTeam: elem.visitorTeamName.trim(),
             date: todayString,
             predictionDate: `morph hits ${elem.hits}`,
           });
@@ -72,11 +68,9 @@ const scrapeMorphTotals = async function (allData) {
         data.forEach((elem) => {
           allData.push({
             source: 'morph',
-            action: 'over25',
-            homeTeam:
-              getHomeTeamName(elem.localTeamName.trim()) !== ''
-                ? getHomeTeamName(elem.localTeamName.trim())
-                : elem.localTeamName.trim(),
+            action: `over25 prob ${elem.probability}`,
+            isAcca: elem.probability >= 90,
+            homeTeam: elem.localTeamName.trim(),
             awayTeam: elem.visitorTeamName,
             date: todayString,
             predictionDate: `morph hits ${elem.hits}`,
@@ -97,11 +91,9 @@ const scrapeMorphTotals = async function (allData) {
         data.forEach((elem) => {
           allData.push({
             source: 'morph',
-            action: 'btts',
-            homeTeam:
-              getHomeTeamName(elem.localTeamName.trim()) !== ''
-                ? getHomeTeamName(elem.localTeamName.trim())
-                : elem.localTeamName.trim(),
+            action: `btts prob ${elem.probability}`,
+            isAcca: elem.probability >= 90,
+            homeTeam: elem.localTeamName.trim(),
             awayTeam: elem.visitorTeamName,
             date: todayString,
             predictionDate: `morph hits ${elem.hits}`,

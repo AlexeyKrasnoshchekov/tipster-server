@@ -8,6 +8,6 @@ RUN npm install
 
 ADD . .
 
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "start2"]
 
 EXPOSE 8000

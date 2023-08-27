@@ -4,7 +4,28 @@ const fns = require('date-fns');
 const { getHomeTeamName } = require('../utils');
 
 const scrapeUnder25 = async function (under25) {
+
+  const today = new Date();
+  const yesterday = new Date(today);
+  const tomorrow = new Date(today);
+
+  yesterday.setDate(yesterday.getDate() - 1);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const formattedYesterday = fns.format(yesterday, 'dd.MM.yyyy');
+  const formattedToday = fns.format(today, 'dd.MM.yyyy');
+  const yesterdayString = formattedYesterday.toString();
+  const todayString = formattedToday.toString();
+  const year = today.getFullYear();
+  const day = today.getDate();
+  const dayTom = tomorrow.getDate();
+  let month = today.getMonth();
+  month = month < 10 ? `0${month + 1}` : month + 1;
+  
   const url_goalnow = 'https://www.goalsnow.com/over-under-predictions/';
+  const url_venasbet = 'https://venasbet.com/under_3_5_goals';
+  const url_nvtips = 'https://nvtips.com/ru/';
+  const url_soccertipz = 'https://www.soccertipz.com/under-over-2-5-predictions/';
+  const url_r2bet = 'https://r2bet.com/under_3_5_goals';
   // const url_gnow_accum = 'https://www.goalsnow.com/accumulator-over-2.5-goals/';
   const url_fbp =
     'https://footballpredictions.net/under-over-2-5-goals-betting-tips-predictions';
@@ -18,19 +39,200 @@ const scrapeUnder25 = async function (under25) {
     'https://www.mybets.today/soccer-predictions/under-over-2-5-goals-predictions/';
   const url_fbpai =
     'https://footballpredictions.ai/football-predictions/over-under-predictions/';
+  const url_footsuper =
+    'https://www.footballsuper.tips/todays-over-under-football-super-tips/';
+  const url_mines =
+    `https://api.betmines.com/betmines/v1/fixtures/betmines-machine?dateFormat=extended&platform=website&from=2023-08-${day}T00:00:00Z&to=2023-08-${dayTom}T07:00:00Z&minOdd=1.3&maxOdd=1.8&limit=20&minProbability=1&maxProbability=100&odds=UNDER_25&leagueIds=`;
 
-  const today = new Date();
-  const yesterday = new Date(today);
+  
 
-  yesterday.setDate(yesterday.getDate() - 1);
-  const formattedYesterday = fns.format(yesterday, 'dd.MM.yyyy');
-  const formattedToday = fns.format(today, 'dd.MM.yyyy');
-  const yesterdayString = formattedYesterday.toString();
-  const todayString = formattedToday.toString();
-  const year = today.getFullYear();
-  const day = today.getDate();
-  let month = today.getMonth();
-  month = month < 10 ? `0${month + 1}` : month + 1;
+  //VENAS
+  await axios(url_venasbet)
+    .then((response) => {
+      const html = response.data;
+
+      // console.log('000', html);
+      const $ = cheerio.load(html);
+
+      $('tr', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const homeTeam = $(this).find('td:nth-child(3)').text().split('VS')[0];
+
+        const awayTeam = $(this).find('td:nth-child(3)').text().split('VS')[1];
+
+        homeTeam !== '' &&
+        under25.push({
+            source: 'venas',
+            action: 'under25',
+            checked: false,
+            homeTeam:
+              getHomeTeamName(homeTeam.trim()) !== ''
+                ? getHomeTeamName(homeTeam.trim())
+                : homeTeam.trim().replace('FC ', ''),
+            awayTeam: getHomeTeamName(awayTeam.trim()) !== ''
+            ? getHomeTeamName(awayTeam.trim())
+            : awayTeam.trim().replace('FC ', ''),
+            date: todayString,
+          });
+      });
+
+      // res.json(over25);
+    })
+    .catch((err) => console.log(err));
+
+    //NVTIPS
+  await axios(
+    url_nvtips
+  )
+    .then((response) => {
+      const html = response.data;
+
+      // console.log('000', html);
+      const $ = cheerio.load(html);
+      let homeTeamsArr = [];
+
+      $('tr', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const homeTeam = $(this)
+          .find('td:nth-child(6)')
+          .text();
+        const underYes = $(this)
+          .find('td:nth-child(13)')
+          .find('strong:first')
+          .text();
+
+        // const awayTeam = $(this).find('tr').find('td:nth-child(3)').find('span:first').text().split(' "" ')[1].split(' VS')[1];
+        // const awayTeam = $(this).find('.mtl-index-page-matches__name').text().split(' vs ')[1];
+        // const predicDate = $(this).find('.mtl-index-page-matches__date').find('p:first').find('time:first').text();
+        // console.log('homeTeamPass', homeTeam);
+        if (underYes.includes('Менее')) {
+          homeTeamsArr.push(homeTeam);
+        }
+      });
+      // console.log('homeTeamsArr', homeTeamsArr);
+      homeTeamsArr.splice(0, 1);
+      // console.log('homeTeamsArr111', homeTeamsArr);
+      let indexOfEmpty = homeTeamsArr.indexOf('');
+      // console.log('indexOfEmpty', indexOfEmpty);
+      let todayHomeTeamsArr = homeTeamsArr.slice(indexOfEmpty + 1);
+      // console.log('todayHomeTeamsArr', todayHomeTeamsArr);
+      todayHomeTeamsArr.forEach((elem) => {
+        elem !== '' &&
+        under25.push({
+            source: 'nvtips',
+            action: 'under25',
+            checked: false,
+            homeTeam:
+              getHomeTeamName(elem) !== '' ? getHomeTeamName(elem) : elem.replace('FC ', ''),
+            awayTeam: '',
+            date: todayString,
+          });
+      });
+
+      // res.json(btts);
+    })
+    .catch((err) => console.log(err));
+
+    //SOCCERTIPZ
+  await axios(url_soccertipz)
+  .then((response) => {
+    const html = response.data;
+
+    // console.log('000', html);
+    const $ = cheerio.load(html);
+
+    $('tr', html).each(function () {
+      //<-- cannot be a function expression
+      // const title = $(this).text();
+      const homeTeam = $(this).find('td:nth-child(2)').text().split(/\r?\n/)[0];
+      const awayTeam = $(this).find('td:nth-child(2)').text().split(/\r?\n/)[1];
+
+      const tip = $(this).find('td:nth-child(3)').text();
+
+      homeTeam &&
+      homeTeam !== '' &&
+      awayTeam &&
+      awayTeam !== '' &&
+      tip.includes('Under') &&
+      under25.push({
+          source: 'soccertipz',
+          action: 'under25',
+          checked: false,
+          homeTeam:
+            getHomeTeamName(homeTeam.trim()) !== ''
+              ? getHomeTeamName(homeTeam.trim())
+              : homeTeam.trim(),
+          awayTeam: getHomeTeamName(awayTeam.trim()) !== ''
+          ? getHomeTeamName(awayTeam.trim())
+          : awayTeam.trim(),
+          date: todayString,
+        });
+    });
+
+    // res.json(over25);
+  })
+  .catch((err) => console.log(err));
+
+    // //MINES
+  await axios(url_mines)
+  .then((response) => {
+    const data = response.data;
+    console.log('minesUnder', data);
+
+    data.forEach((elem) => {
+      elem !== '' &&
+      under25.push({
+          source: 'mines',
+          action: `${elem.bestOdd} ${elem.bestOddProbability}%`,
+          homeTeam: elem.localTeam.name,
+          awayTeam: elem.visitorTeam.name,
+          date: todayString,
+          isAcca: false,
+        });
+    });
+
+    // res.json(btts);
+  })
+  .catch((err) => console.log(err));
+
+  //FOOTSUPER
+  await axios(url_footsuper)
+    .then((response) => {
+      const html = response.data;
+
+      // console.log('000', html);
+      const $ = cheerio.load(html);
+
+      $('.pool_list_item', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const homeTeam = $(this).find('.homedisp').text();
+        const awayTeam = $(this).find('.awaydisp').text();
+
+        const pred = $(this).find('.prediresults').text();
+        const percent = $(this).find('.biggestpercen').text();
+
+        homeTeam !== '' && pred.includes('UNDER') && parseInt(percent) > 68 &&
+        under25.push({
+            source: 'footsuper',
+            action: 'under25',
+            isAcca: true,
+            homeTeam:
+              getHomeTeamName(homeTeam.trim()) !== ''
+                ? getHomeTeamName(homeTeam.trim())
+                : homeTeam.trim().replace('FC ', ''),
+            awayTeam: getHomeTeamName(awayTeam.trim()) !== ''
+            ? getHomeTeamName(awayTeam.trim())
+            : awayTeam.trim().replace('FC ', ''),
+            date: todayString,
+          });
+      });
+
+      // res.json(over25);
+    })
+    .catch((err) => console.log(err));
 
   //PASSION
   await axios(
@@ -52,16 +254,16 @@ const scrapeUnder25 = async function (under25) {
           .text()
           .split(' VS')[0];
 
-          let pred = $(this).find('td:nth-child(4)').find('span:first').text();
+        let pred = $(this).find('td:nth-child(4)').find('span:first').text();
         // const pred = $(this).find('td:nth-child(4)').find('span:first').text();
         // const awayTeam = $(this).find('tr').find('td:nth-child(3)').find('span:first').text().split(' "" ')[1].split(' VS')[1];
         // const awayTeam = $(this).find('.mtl-index-page-matches__name').text().split(' vs ')[1];
         // const predicDate = $(this).find('.mtl-index-page-matches__date').find('p:first').find('time:first').text();
         // console.log('homeTeamPass', homeTeam);
         homeTeam !== '' &&
-        pred !== '' &&
-        pred.includes('Under') &&
-        homeTeamsArr.push({ homeTeam: homeTeam, pred: pred });
+          pred !== '' &&
+          pred.includes('Under') &&
+          homeTeamsArr.push({ homeTeam: homeTeam, pred: pred });
       });
 
       // console.log('homeTeamsArr', homeTeamsArr);
@@ -72,7 +274,9 @@ const scrapeUnder25 = async function (under25) {
       // let todayHomeTeamsArr = homeTeamsArr.slice(indexOfEmpty + 1);
       // console.log('todayHomeTeamsArr', todayHomeTeamsArr);
       homeTeamsArr.forEach((elem) => {
-        elem.homeTeam !== '' && elem.pred !== '' && elem.pred.includes('Under') &&
+        elem.homeTeam !== '' &&
+          elem.pred !== '' &&
+          elem.pred.includes('Under') &&
           under25.push({
             source: 'passion',
             action: 'under25',
@@ -80,7 +284,7 @@ const scrapeUnder25 = async function (under25) {
             homeTeam:
               getHomeTeamName(elem.homeTeam.trim()) !== ''
                 ? getHomeTeamName(elem.homeTeam.trim())
-                : elem.homeTeam.trim(),
+                : elem.homeTeam.trim().replace('FC ', ''),
             awayTeam: '',
             date: todayString,
           });
@@ -89,6 +293,78 @@ const scrapeUnder25 = async function (under25) {
       // res.json(over25);
     })
     .catch((err) => console.log(err));
+
+  //venasbet
+  // await axios(url_venasbet)
+  //   .then((response) => {
+  //     const html = response.data;
+
+  //     // console.log('000', html);
+  //     const $ = cheerio.load(html);
+
+  //     $('tr', html).each(function () {
+  //       //<-- cannot be a function expression
+  //       // const title = $(this).text();
+  //       const homeTeam = $(this).find('td:nth-child(3)').text().split('VS')[0];
+
+  //       const awayTeam = $(this).find('td:nth-child(3)').text().split('VS')[1];
+
+  //       homeTeam !== '' &&
+  //         under25.push({
+  //           source: 'venas',
+  //           action: 'under35',
+  //           checked: false,
+  //           homeTeam:
+  //             getHomeTeamName(homeTeam.trim()) !== ''
+  //               ? getHomeTeamName(homeTeam.trim())
+  //               : homeTeam.trim(),
+  //           awayTeam:
+  //             getHomeTeamName(awayTeam.trim()) !== ''
+  //               ? getHomeTeamName(awayTeam.trim())
+  //               : awayTeam.trim(),
+  //           date: todayString,
+  //         });
+  //     });
+
+  //     // res.json(over25);
+  //   })
+  //   .catch((err) => console.log(err));
+
+      //r2bet
+  await axios(url_r2bet)
+  .then((response) => {
+    const html = response.data;
+
+    // console.log('000', html);
+    const $ = cheerio.load(html);
+
+    $('tr', html).each(function () {
+      //<-- cannot be a function expression
+      // const title = $(this).text();
+      const homeTeam = $(this).find('td:nth-child(3)').text().split('VS')[0];
+
+      const awayTeam = $(this).find('td:nth-child(3)').text().split('VS')[1];
+      // const tip = $(this).find('td:nth-child(4)').text();
+
+      homeTeam !== '' &&
+      under25.push({
+          source: 'r2bet',
+          action: 'under35',
+          checked: false,
+          homeTeam:
+            getHomeTeamName(homeTeam.trim()) !== ''
+              ? getHomeTeamName(homeTeam.trim())
+              : homeTeam.trim().replace('FC ', ''),
+          awayTeam: getHomeTeamName(awayTeam.trim()) !== ''
+          ? getHomeTeamName(awayTeam.trim())
+          : awayTeam.trim().replace('FC ', ''),
+          date: todayString,
+        });
+    });
+
+    // res.json(over25);
+  })
+  .catch((err) => console.log(err));
 
   //Footy
   // await axios(url_footy)
@@ -234,7 +510,7 @@ const scrapeUnder25 = async function (under25) {
         // if (homeTeam.includes('2.5 Goals')) {
         //   homeTeam1 = homeTeam.split('Over 2.5 Goals ')[1];
         // }
-        
+
         const pred = $(this).find('.goalstip').find('span:first').text();
         homeTeam !== '' &&
           pred.includes('Under') &&
@@ -245,7 +521,7 @@ const scrapeUnder25 = async function (under25) {
             homeTeam:
               getHomeTeamName(homeTeam.trim()) !== ''
                 ? getHomeTeamName(homeTeam.trim())
-                : homeTeam.trim(),
+                : homeTeam.trim().replace('FC ', ''),
             awayTeam,
             date: todayString,
           });
@@ -365,7 +641,7 @@ const scrapeUnder25 = async function (under25) {
               homeTeam:
                 getHomeTeamName(homeTeam.trim()) !== ''
                   ? getHomeTeamName(homeTeam.trim())
-                  : homeTeam.trim(),
+                  : homeTeam.trim().replace('FC ', ''),
               awayTeam,
               date: todayString,
             });
@@ -471,7 +747,7 @@ const scrapeUnder25 = async function (under25) {
             homeTeam:
               getHomeTeamName(homeTeam.trim()) !== ''
                 ? getHomeTeamName(homeTeam.trim())
-                : homeTeam.trim(),
+                : homeTeam.trim().replace('FC ', ''),
             awayTeam,
             date: todayString,
             predictionDate: predictionDate,
@@ -512,7 +788,7 @@ const scrapeUnder25 = async function (under25) {
             homeTeam:
               getHomeTeamName(homeTeam.trim()) !== ''
                 ? getHomeTeamName(homeTeam.trim())
-                : homeTeam.trim(),
+                : homeTeam.trim().replace('FC ', ''),
             awayTeam,
             date: todayString,
           });

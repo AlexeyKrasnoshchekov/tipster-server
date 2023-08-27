@@ -13,16 +13,22 @@ const { Btts } = require('./mongo_schema/Btts');
 const { Result } = require('./mongo_schema/Result');
 const { ResultTotal } = require('./mongo_schema/ResultTotal');
 const { TodayBet } = require('./mongo_schema/TodayBet');
+const { WinData } = require('./mongo_schema/winDataModel');
+const { Under25 } = require('./mongo_schema/Under25');
+
 const { scrapeBtts } = require('./utils/scrapeBtts');
 const { scrapeResults } = require('./utils/scrapeResults');
 const { scrapeOver25 } = require('./utils/scrapeOver25');
+const { scrapeOverTest } = require('./utils/scrapeOverTest');
 const { scrapeMorphTotals } = require('./utils/scrapeMorphTotals');
 const { scrapeClubStat } = require('./utils/scrapeClubStat');
 const { scrapeWinData } = require('./utils/scrapeWinData');
+const { scrapeCrawlDataOther } = require('./utils/scrapeCrawlData');
 const { scrapeWinDataMorph } = require('./utils/scrapeWinDataMorph');
-const { WinData } = require('./mongo_schema/winDataModel');
 const { scrapeUnder25 } = require('./utils/scrapeUnder25');
-const { Under25 } = require('./mongo_schema/Under25');
+const { Acca } = require('./mongo_schema/Acca');
+const { Team } = require('./mongo_schema/Team');
+
 mongoose.set('strictQuery', true);
 
 ///////////////////////////////////Get Data
@@ -31,6 +37,7 @@ let allData = [];
 let under25Data = [];
 let allDataMorph = [];
 let winData = [];
+let dataCrawl = [];
 let winDataMorph = [];
 
 const scrapeAndSaveUnder25Data = async () => {
@@ -88,6 +95,9 @@ const scrapeAndSaveData = async () => {
   await scrapeBtts(allData);
 
   await scrapeOver25(allData);
+
+  // await scrapeOverTest(allData);
+  
   
 
   // console.log('allData',allData);
@@ -128,6 +138,10 @@ const scrapeAndSaveData = async () => {
       useUnifiedTopology: true,
     }
   );
+
+  // sortedBtts = sortedBtts.forEach(elem => {
+  //   elem.homeTeam = utils.getHomeTeamName(elem.homeTeam);
+  // })
 
   await Btts.insertMany(sortedBtts)
     .then(function () {
@@ -183,6 +197,51 @@ const scrapeAndSaveResults = async function (req, res) {
     }
   );
 
+  results = results.map(result => {
+    result.homeTeam = utils.formatHomeTeamName(result.homeTeam);
+    result.awayTeam = utils.formatHomeTeamName(result.awayTeam);
+
+    result.homeTeam = utils.getHomeTeamName(result.homeTeam);
+    result.awayTeam = utils.getHomeTeamName(result.awayTeam);
+
+
+    return result;
+  }) 
+  console.log('results111',results);
+  // let teams = [];
+  // const teams1 = results.map(result => {
+  //   let obj = {name: result.homeTeam};
+  //   return obj;
+  // });
+  // const teams2 = results.map(result => {
+  //   let obj = {name: result.awayTeam};
+  //   return obj;
+  // });
+  // teams = teams.concat(teams1).concat(teams2);
+
+  // const teamsMongo = await Team.find({});
+  // const uniqueArr = [];
+
+  // console.log('teams',teams);
+
+  // if (teamsMongo.length > 0) {
+  //   for(let team of teams) {
+  //     if(teamsMongo.indexOf(team) === -1) {
+  //         uniqueArr.push(team.trim());
+  //     }
+  //   }
+  // } else {
+  //   await Team.insertMany(teams)
+  //     .then(function () {
+  //       console.log('teams inserted'); // Success
+  //     })
+  //     .catch(function (error) {
+  //       console.log(error); // Failure
+  //     });
+  // }
+
+  
+
   await Result.insertMany(results)
     .then(function () {
       console.log('Results inserted'); // Success
@@ -191,10 +250,29 @@ const scrapeAndSaveResults = async function (req, res) {
       console.log(error); // Failure
     });
 
+    // if (uniqueArr.length > 0) {
+    //   await Team.insertMany(uniqueArr)
+    //   .then(function () {
+    //     console.log('unique teams inserted'); // Success
+    //   })
+    //   .catch(function (error) {
+    //     console.log(error); // Failure
+    //   });
+    // }
+
+    // const teamsMongo2 = await Team.find({});
+    // console.log('teamsMongo2',teamsMongo2);
+
   await db.disconnect();
 };
 const scrapeAndSaveWinData = async function (req, res) {
   await scrapeWinData(winData);
+
+  // await scrapeOverTest(allData);
+
+
+
+  await scrapeCrawlDataOther(dataCrawl);
 
   mongoose.connect(
     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
@@ -204,9 +282,46 @@ const scrapeAndSaveWinData = async function (req, res) {
     }
   );
 
-  await Btts.insertMany(winData)
+  // await Btts.insertMany(winData)
+  //   .then(function () {
+  //     console.log('winData inserted'); // Success
+  //   })
+  //   .catch(function (error) {
+  //     console.log(error); // Failure
+  //   });
+
+  // winData = winData.forEach(elem => {
+  //   elem.homeTeam = utils.getHomeTeamName(elem.homeTeam);
+  //   return;
+  // })
+
+  await WinData.insertMany(winData)
     .then(function () {
-      console.log('winData inserted'); // Success
+      console.log('winDataOther inserted'); // Success
+    })
+    .catch(function (error) {
+      console.log(error); // Failure
+    });
+
+  const winDataCrawl = dataCrawl.filter(item => item.action === 'win');
+
+  // winDataCrawl = winDataCrawl.forEach(elem => {
+  //   elem.homeTeam = utils.getHomeTeamName(elem.homeTeam);
+  //   return;
+  // })
+
+  await WinData.insertMany(winDataCrawl)
+    .then(function () {
+      console.log('winDataCrawl inserted'); // Success
+    })
+    .catch(function (error) {
+      console.log(error); // Failure
+    });
+
+    const overDataCrawl = dataCrawl.filter(item => (item.action === 'btts' || item.action === 'over25'));
+    await Btts.insertMany(overDataCrawl)
+    .then(function () {
+      console.log('crawl Btts inserted'); // Success
     })
     .catch(function (error) {
       console.log(error); // Failure
@@ -225,9 +340,14 @@ const scrapeAndSaveWinDataMorph = async function (req, res) {
     }
   );
 
-  await Btts.insertMany(winDataMorph)
+  // winDataMorph = winDataMorph.forEach(elem => {
+  //   elem.homeTeam = utils.getHomeTeamName(elem.homeTeam);
+  //   return;
+  // })
+
+    await WinData.insertMany(winDataMorph)
     .then(function () {
-      console.log('winData Morph inserted'); // Success
+      console.log('winDataOther inserted'); // Success
     })
     .catch(function (error) {
       console.log(error); // Failure
@@ -292,6 +412,70 @@ const deleteUnder25ByDate = async function (req, res) {
   console.log('Under25 deleted'); // Success
   await db.disconnect();
 };
+const deleteResultsTotalByDate = async function (req, res) {
+  const today = new Date();
+  const yesterday = new Date(today);
+
+  yesterday.setDate(yesterday.getDate() - 1);
+  const formattedYesterday = fns.format(yesterday, 'dd.MM.yyyy');
+  const yesterdayString = formattedYesterday.toString();
+
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      // useCreateIndex: true,
+      useUnifiedTopology: true,
+    }
+  );
+
+  await ResultTotal.deleteMany({ date: yesterdayString });
+  console.log('ResultTotal deleted'); // Success
+  await db.disconnect();
+};
+const deleteResultsByDate = async function (req, res) {
+  const today = new Date();
+  const yesterday = new Date(today);
+
+  yesterday.setDate(yesterday.getDate() - 1);
+  const formattedYesterday = fns.format(yesterday, 'dd.MM.yyyy');
+  const yesterdayString = formattedYesterday.toString();
+
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      // useCreateIndex: true,
+      useUnifiedTopology: true,
+    }
+  );
+
+  await Result.deleteMany({ date: yesterdayString });
+  console.log('Result deleted'); // Success
+  await db.disconnect();
+};
+const deleteTeamsByDate = async function (req, res) {
+  const today = new Date();
+  const yesterday = new Date(today);
+
+  yesterday.setDate(yesterday.getDate() - 1);
+  const formattedYesterday = fns.format(yesterday, 'dd.MM.yyyy');
+  const yesterdayString = formattedYesterday.toString();
+
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      // useCreateIndex: true,
+      useUnifiedTopology: true,
+    }
+  );
+
+  await Team.deleteMany({ date: yesterdayString });
+  console.log('Teams deleted'); // Success
+  await db.disconnect();
+};
+
 const deleteWinDataByDate = async function (req, res) {
   const today = new Date();
   const formattedToday = fns.format(today, 'dd.MM.yyyy');
@@ -347,15 +531,45 @@ const saveResultsTotal = async function (req, res) {
     }
   );
 
-  const bttsArr = await Btts.find({ date: yesterdayString });
-  const resultsArr = await Result.find({ date: yesterdayString });
+  let bttsArr = await Btts.find({ date: yesterdayString });
+  let sortedBtts = bttsArr.sort((a, b) => {
+    if (a.homeTeam < b.homeTeam) {
+      return -1;
+    }
+    if (a.homeTeam > b.homeTeam) {
+      return 1;
+    }
+    return 0;
+  });
+  let resultsArr = await Result.find({ date: yesterdayString });
+  let sortedResults = resultsArr.sort((a, b) => {
+    if (a.homeTeam < b.homeTeam) {
+      return -1;
+    }
+    if (a.homeTeam > b.homeTeam) {
+      return 1;
+    }
+    return 0;
+  });
+
+  // console.log('sortedBtts', sortedBtts)
+  // console.log('sortedResults', sortedResults)
 
   let resultsTotal = [];
 
-  for (let i = 0; i < resultsArr.length; i++) {
-    for (let j = 0; j < bttsArr.length; j++) {
+  for (let i = 0; i < sortedResults.length; i++) {
+    for (let j = 0; j < sortedBtts.length; j++) {
+
+      // const longestSubstring = utils.LCSubStr(sortedResults[i].homeTeam, sortedBtts[j].homeTeam, sortedResults[i].homeTeam.length ,sortedBtts[j].homeTeam.length );
+
+      // console.log('111', longestSubstring)
+      // console.log('222', (longestSubstring / sortedResults[i].homeTeam.length))
+      // console.log('222', bttsArr[0].homeTeam)
+      // console.log('333', utils.LCSubStr(resultsArr[2].homeTeam,bttsArr[0].homeTeam, resultsArr[2].homeTeam.length ,bttsArr[0].homeTeam.length ))
       if (
         resultsArr[i].homeTeam === bttsArr[j].homeTeam ||
+        // sortedResults[i].homeTeam.length === sortedBtts[j].homeTeam.length && sortedBtts[j].homeTeam.length === utils.LCSubStr(sortedResults[i].homeTeam,sortedBtts[j].homeTeam, sortedResults[i].homeTeam.length ,sortedBtts[j].homeTeam.length ) ||
+        // (longestSubstring / sortedResults[i].homeTeam.length)*100 >= 45
         bttsArr[j].homeTeam.includes(resultsArr[i].homeTeam) ||
         resultsArr[i].homeTeam.includes(bttsArr[j].homeTeam) ||
         resultsArr[i].homeTeam === utils.getHomeTeamName(bttsArr[j].homeTeam)
@@ -399,6 +613,8 @@ const saveResultsTotal = async function (req, res) {
       }
     }
   }
+
+  // console.log('resultsTotal', resultsTotal)
   await ResultTotal.insertMany(resultsTotal)
     .then(function () {
       console.log('ResultsTotal inserted'); // Success
@@ -409,39 +625,73 @@ const saveResultsTotal = async function (req, res) {
   await db.disconnect();
 };
 
+//MAIN DATA
 const jobScrapeAndSaveData = schedule.scheduleJob(
-  { hour: 11, minute: 19  },
+  { hour: 11, minute: 22  },
   scrapeAndSaveData
 );
-const jobScrapeAndSaveUnderData = schedule.scheduleJob(
-  { hour: 11, minute: 34 },
-  scrapeAndSaveUnder25Data
-);
+
 const jobScrapeAndSaveWinData = schedule.scheduleJob(
-  { hour: 11, minute: 37 },
+  { hour: 11, minute: 27 },
   scrapeAndSaveWinData
 );
+
+//MORPH DATA
 const jobScrapeAndSaveWinDataMorph = schedule.scheduleJob(
-  { hour: 11, minute: 38 },
+  { hour: 11, minute: 25 },
   scrapeAndSaveWinDataMorph
 );
-// const jobScrapeAndSaveDataMorph = schedule.scheduleJob(
-//   { hour: 9, minute: 18 },
-//   scrapeAndSaveDataMorph
-// );
-// const jobDeleteBttsByDate = schedule.scheduleJob(
-//   { hour: 11, minute: 07 },
-//   deleteBttsByDate
-// );
-const jobDeleteUnder25ByDate = schedule.scheduleJob(
-  { hour: 11, minute: 33 },
-  deleteUnder25ByDate
+const jobScrapeAndSaveDataMorph = schedule.scheduleJob(
+  { hour: 11, minute: 04 },
+  scrapeAndSaveDataMorph
 );
 
-// const jobScrapeAndSaveResults = schedule.scheduleJob(
-//   { hour: 8, minute: 51 },
-//   scrapeAndSaveResults
+//UNDER DATA
+// const jobScrapeAndSaveUnderData = schedule.scheduleJob(
+//   { hour: 14, minute: 01 },
+//   scrapeAndSaveUnder25Data
 // );
+
+
+//RESULTS DATA
+const jobScrapeAndSaveResults = schedule.scheduleJob(
+  { hour: 11, minute: 26 },
+  scrapeAndSaveResults
+);
+// const jobScrapeAndSaveResultsTotal = schedule.scheduleJob(
+//   { hour: 14, minute: 55 },
+//   saveResultsTotal
+// );
+
+
+
+//DELETE DATA
+
+// const jobDeleteBttsByDate = schedule.scheduleJob(
+//   { hour: 9, minute: 31 },
+//   deleteBttsByDate
+// );
+// const jobDeleteWinDataByDate = schedule.scheduleJob(
+//   { hour: 9, minute: 49 },
+//   deleteWinDataByDate
+// );
+// const jobDeleteUnder25ByDate = schedule.scheduleJob(
+//   { hour: 12, minute: 11 },
+//   deleteUnder25ByDate
+// );
+// const jobDeleteResultsTotalByDate = schedule.scheduleJob(
+//   { hour: 15, minute: 19 },
+//   deleteResultsTotalByDate
+// );
+// const jobDeleteResultsByDate = schedule.scheduleJob(
+//   { hour: 15, minute: 22 },
+//   deleteResultsByDate
+// );
+// const jobDeleteTeamsByDate = schedule.scheduleJob(
+//   { hour: 15, minute: 19 },
+//   deleteTeamsByDate
+// );
+
 
 
 
@@ -455,6 +705,21 @@ app.get('/', function (req, res) {
   res.json('This is my webscraper');
 });
 
+app.get('/formatClubs', async (req, res) => {
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      // useCreateIndex: true,
+      useUnifiedTopology: true,
+    }
+  );
+
+  const bttsArr = await Btts.find({ date: req.query.date });
+  await db.disconnect();
+
+  res.json(bttsArr);
+});
 app.get('/getBttsMongo', async (req, res) => {
   mongoose.connect(
     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
@@ -469,6 +734,12 @@ app.get('/getBttsMongo', async (req, res) => {
   await db.disconnect();
 
   res.json(bttsArr);
+});
+app.get('/scrapeMorph', async (req, res) => {
+
+  console.log('scrapeMorph');
+
+  
 });
 app.get('/getUnder25Mongo', async (req, res) => {
   mongoose.connect(
@@ -573,6 +844,21 @@ app.get('/getResultsMongo', async (req, res) => {
 
   res.json(resultsArr);
 });
+app.get('/getAccasMongo', async (req, res) => {
+
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  );
+
+  const accasArr = await Acca.find({ date: req.query.date });
+  await db.disconnect();
+
+  res.json(accasArr);
+});
 app.get('/getTodayBetMongo', async (req, res) => {
 
   mongoose.connect(
@@ -621,7 +907,7 @@ app.post('/saveTodayBetMongo', async (req, res) => {
   await db.disconnect();
   res.json('today bet inserted');
 });
-app.post('/savePredMongo', async (req, res) => {
+app.post('/saveBttsMongo', async (req, res) => {
   let data = req.body;
   console.log('dataPred', data);
   if (data.homeTeam.length !== 0) {
@@ -632,6 +918,7 @@ app.post('/savePredMongo', async (req, res) => {
         homeTeam: utils.getHomeTeamName(elem) !=='' ? utils.getHomeTeamName(elem) : elem,
         predTeam: utils.getHomeTeamName(data.predTeam) !=='' ? utils.getHomeTeamName(data.predTeam) : data.predTeam,
         date: data.date,
+        isAcca: data.isAcca
       };
 
       mongoose.connect(
@@ -652,10 +939,120 @@ app.post('/savePredMongo', async (req, res) => {
 
 
     });
+    console.log('new Over saved succussfully!');
+  }
+
+  res.json('new preds inserted');
+});
+app.post('/saveUnderMongo', async (req, res) => {
+  let data = req.body;
+  console.log('dataPred', data);
+  if (data.homeTeam.length !== 0) {
+    data.homeTeam.forEach(async (elem) => {
+      const newBttsObj = {
+        source: data.source,
+        action: data.action,
+        homeTeam: utils.getHomeTeamName(elem) !=='' ? utils.getHomeTeamName(elem) : elem,
+        predTeam: utils.getHomeTeamName(data.predTeam) !=='' ? utils.getHomeTeamName(data.predTeam) : data.predTeam,
+        date: data.date,
+        isAcca: data.isAcca
+      };
+
+      mongoose.connect(
+        'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+        {
+          useNewUrlParser: true,
+          // useCreateIndex: true,
+          useUnifiedTopology: true,
+        }
+      );
+      let newUnder = await new Under25(newBttsObj);
+      await newUnder.save(function (err) {
+        if (err) return console.error(err);
+        console.log('new Under saved succussfully!');
+      });
+    
+      await db.disconnect();
+
+
+    });
     console.log('new preds saved succussfully!');
   }
 
   res.json('new preds inserted');
+});
+app.post('/saveWinMongo', async (req, res) => {
+  let data = req.body;
+  console.log('dataPred', data);
+  if (data.homeTeam.length !== 0) {
+    data.homeTeam.forEach(async (elem) => {
+      const newWinObj = {
+        source: data.source,
+        action: data.action,
+        homeTeam: utils.getHomeTeamName(elem) !=='' ? utils.getHomeTeamName(elem) : elem,
+        prediction: utils.getHomeTeamName(data.prediction) !=='' ? utils.getHomeTeamName(data.prediction) : data.prediction,
+        date: data.date,
+        isAcca: data.isAcca
+      };
+
+      mongoose.connect(
+        'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+        {
+          useNewUrlParser: true,
+          // useCreateIndex: true,
+          useUnifiedTopology: true,
+        }
+      );
+      let newWin = await new WinData(newWinObj);
+      await newWin.save(function (err) {
+        if (err) return console.error(err);
+        console.log('new Win saved succussfully!');
+      });
+    
+      await db.disconnect();
+
+
+    });
+    console.log('new preds saved succussfully!');
+  }
+
+  res.json('new preds inserted');
+});
+app.post('/saveAccaMongo', async (req, res) => {
+  let data = req.body;
+  console.log('dataPred', data);
+  if (data.prediction.length !== 0) {
+    data.prediction.forEach(async (elem) => {
+      const newAccaObj = {
+        source: data.source,
+        action: data.action,
+        // homeTeam: utils.getHomeTeamName(elem) !=='' ? utils.getHomeTeamName(elem) : elem,
+        prediction: utils.getHomeTeamName(elem) !=='' ? utils.getHomeTeamName(elem) : elem,
+        date: data.date,
+      };
+
+      mongoose.connect(
+        'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+        {
+          useNewUrlParser: true,
+          // useCreateIndex: true,
+          useUnifiedTopology: true,
+        }
+      );
+      let newAcca = await new Acca(newAccaObj);
+      await newAcca.save(function (err) {
+        if (err) return console.error(err);
+        console.log('new acca saved succussfully!');
+      });
+    
+      await db.disconnect();
+
+
+    });
+    console.log('new accas saved succussfully!');
+  }
+
+  res.json('new accas inserted');
 });
 app.post('/predictions', async (req, res) => {
   let data = req.body;
@@ -694,3 +1091,6 @@ app.post('/predictions', async (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`server running on PORT ${PORT}`));
+
+// Export the Express API
+module.exports = app;

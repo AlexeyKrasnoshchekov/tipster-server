@@ -1,3 +1,21 @@
+function formatHomeTeamName(name) {
+  const regExp = /\(([^)]+)\)/;
+  const betweenParenteses = regExp.exec(name);
+
+  if (name.includes('FC')) {
+    name = name.replace('FC', '').trim();
+  }
+  if (name.includes('FK')) {
+    name = name.replace('FK', '').trim();
+  }
+  if (name.includes('(') && name.includes(')')) {
+    name = name.replace(`(${betweenParenteses})`, '').trim();
+  }
+
+  return name;
+
+}
+
 function getHomeTeamName(name) {
   // console.log('name', name);
 
@@ -322,9 +340,63 @@ function getHomeTeamName(name) {
       return 'AD Grecia';
     case 'Nova Mutum EC':
       return 'Nova Mutum';
+    case 'AZ':
+      return 'AZ Alkmaar';
+    case 'Alkmaar':
+      return 'AZ Alkmaar';
+    case 'Beşiktaş':
+      return 'Besiktas';
+    case 'Fenerbahçe':
+      return 'Fenerbahce';
+    case 'Fenerbahce (Tur)':
+      return 'Fenerbahce';
+    case 'Fenerbahce Istanbul':
+      return 'Fenerbahce';
+    case 'Twente (Ned)':
+      return 'Twente';
+    case 'Hacken':
+      return 'BK Hacken';
+    case 'Hobro I.K.':
+      return 'Hobro';
+    case 'Hobro IK':
+      return 'Hobro';
+    case 'KAA Gent':
+      return 'Gent';
+    case 'KRC Genk':
+      return 'Genk';
+    case 'KÍ':
+      return 'KI Klaksvik';
+    case 'Lille Osc':
+      return 'Lille';
+    case 'Ajax Amsterdam':
+      return 'Ajax';
+    case 'Ludogorets 1945 Razgrad':
+      return 'Ludogorets';
+    case 'Ludogorets Razgrad':
+      return 'Ludogorets';
     default:
-      return '';
+      return name;
   }
+}
+
+function LCSubStr(X, Y, m, n) {
+    
+  var LCStuff = Array(m + 1)
+    .fill()
+    .map(() => Array(n + 1).fill(0));
+
+  var result = 0;
+
+  for (let i = 0; i <= m; i++) {
+    for (let j = 0; j <= n; j++) {
+      if (i === 0 || j === 0) LCStuff[i][j] = 0;
+      else if (X[i - 1] === Y[j - 1]) {
+        LCStuff[i][j] = LCStuff[i - 1][j - 1] + 1;
+        result = Math.max(result, LCStuff[i][j]);
+      } else LCStuff[i][j] = 0;
+    }
+  }
+  return result;
 }
 
 function getFootyClubLink(name) {
@@ -445,5 +517,5 @@ function getFootyClubLink(name) {
   }
 }
 
-module.exports = { getHomeTeamName, getFootyClubLink };
+module.exports = { getHomeTeamName, getFootyClubLink, LCSubStr, formatHomeTeamName };
 // export default db;
