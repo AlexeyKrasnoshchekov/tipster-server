@@ -6,6 +6,24 @@ const bodyParser = require('body-parser');
 const schedule = require('node-schedule');
 const fns = require('date-fns');
 
+// import routes
+const bttsRouter = require('./routes/btts');
+const overRouter = require('./routes/over');
+const crawlRouter = require('./routes/crawl');
+const winRouter = require('./routes/win');
+const resultRouter = require('./routes/result');
+const totalRouter = require('./routes/total');
+const underRouter = require('./routes/under');
+
+// route middlewares
+app.use('/btts',  bttsRouter);
+app.use('/over',  overRouter);
+app.use('/crawl',  crawlRouter);
+app.use('/win',  winRouter);
+app.use('/result',  resultRouter);
+app.use('/total',  totalRouter);
+app.use('/under',  underRouter);
+
 const db = require('./db');
 const utils = require('./utils');
 const mongoose = require('mongoose');
@@ -24,10 +42,11 @@ const { scrapeMorphTotals } = require('./utils/scrapeMorphTotals');
 const { scrapeClubStat } = require('./utils/scrapeClubStat');
 const { scrapeWinData } = require('./utils/scrapeWinData');
 const { scrapeCrawlDataOther } = require('./utils/scrapeCrawlData');
-const { scrapeWinDataMorph } = require('./utils/scrapeWinDataMorph');
+// const { scrapeWinDataMorph } = require('./utils/scrapeWinDataMorph');
 const { scrapeUnder25 } = require('./utils/scrapeUnder25');
 const { Acca } = require('./mongo_schema/Acca');
 const { Team } = require('./mongo_schema/Team');
+const { Over } = require('./mongo_schema/Over');
 
 mongoose.set('strictQuery', true);
 
@@ -92,11 +111,11 @@ const scrapeAndSaveUnder25Data = async () => {
 }
 
 const scrapeAndSaveData = async () => {
-  await scrapeBtts(allData);
+  // await scrapeBtts(allData);
 
-  await scrapeOver25(allData);
+  // await scrapeOver25(allData);
 
-  // await scrapeOverTest(allData);
+  await scrapeOverTest(allData);
   
   
 
@@ -305,10 +324,6 @@ const scrapeAndSaveWinData = async function (req, res) {
 
   const winDataCrawl = dataCrawl.filter(item => item.action === 'win');
 
-  // winDataCrawl = winDataCrawl.forEach(elem => {
-  //   elem.homeTeam = utils.getHomeTeamName(elem.homeTeam);
-  //   return;
-  // })
 
   await WinData.insertMany(winDataCrawl)
     .then(function () {
@@ -626,25 +641,25 @@ const saveResultsTotal = async function (req, res) {
 };
 
 //MAIN DATA
-const jobScrapeAndSaveData = schedule.scheduleJob(
-  { hour: 11, minute: 22  },
-  scrapeAndSaveData
-);
+// const jobScrapeAndSaveData = schedule.scheduleJob(
+//   { hour: 21, minute: 29  },
+//   scrapeAndSaveData
+// );
 
-const jobScrapeAndSaveWinData = schedule.scheduleJob(
-  { hour: 11, minute: 27 },
-  scrapeAndSaveWinData
-);
+// const jobScrapeAndSaveWinData = schedule.scheduleJob(
+//   { hour: 11, minute: 27 },
+//   scrapeAndSaveWinData
+// );
 
-//MORPH DATA
-const jobScrapeAndSaveWinDataMorph = schedule.scheduleJob(
-  { hour: 11, minute: 25 },
-  scrapeAndSaveWinDataMorph
-);
-const jobScrapeAndSaveDataMorph = schedule.scheduleJob(
-  { hour: 11, minute: 04 },
-  scrapeAndSaveDataMorph
-);
+// //MORPH DATA
+// const jobScrapeAndSaveWinDataMorph = schedule.scheduleJob(
+//   { hour: 11, minute: 25 },
+//   scrapeAndSaveWinDataMorph
+// );
+// const jobScrapeAndSaveDataMorph = schedule.scheduleJob(
+//   { hour: 11, minute: 04 },
+//   scrapeAndSaveDataMorph
+// );
 
 //UNDER DATA
 // const jobScrapeAndSaveUnderData = schedule.scheduleJob(
@@ -654,10 +669,10 @@ const jobScrapeAndSaveDataMorph = schedule.scheduleJob(
 
 
 //RESULTS DATA
-const jobScrapeAndSaveResults = schedule.scheduleJob(
-  { hour: 11, minute: 26 },
-  scrapeAndSaveResults
-);
+// const jobScrapeAndSaveResults = schedule.scheduleJob(
+//   { hour: 11, minute: 26 },
+//   scrapeAndSaveResults
+// );
 // const jobScrapeAndSaveResultsTotal = schedule.scheduleJob(
 //   { hour: 14, minute: 55 },
 //   saveResultsTotal
@@ -731,9 +746,13 @@ app.get('/getBttsMongo', async (req, res) => {
   );
 
   const bttsArr = await Btts.find({ date: req.query.date });
+  const overArr = await Over.find({ date: req.query.date });
   await db.disconnect();
 
-  res.json(bttsArr);
+  let allData = [];
+  allData = allData.concat(bttsArr).concat(overArr);
+
+  res.json(allData);
 });
 app.get('/scrapeMorph', async (req, res) => {
 
@@ -809,7 +828,7 @@ app.get('/getResultsTotalMongo', async (req, res) => {
   );
 
   const resultsArr = await ResultTotal.find({ date: req.query.date });
-
+  console.log('resultsArr',resultsArr);
   await db.disconnect();
 
   res.json(resultsArr);

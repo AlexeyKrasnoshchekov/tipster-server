@@ -27,57 +27,58 @@ const scrapeOverTest = async function (over25) {
 //   const url_suresoccer = 'https://www.suresoccerpredict.com/direct-win-prediction/';
 // const url_bettingtips = 'https://www.bettingtips.today/football-accumulators-tips/';
 
-const url_betgenuine_acc = 'https://betgenuine.com/bet-of-the-day/';
- //Betgenuine_Acc
- await axios(url_betgenuine_acc)
+// const over25 = [];
+
+const url_accum =
+    'https://footyaccumulators.com/football-tips/over-2-5-trebles';
+ // ACCUM
+ await axios(url_accum)
  .then((response) => {
    const html = response.data;
-
    // console.log('000', html);
    const $ = cheerio.load(html);
+   const accumArr = [];
 
-  //  $('.bdt-tabs-area', html).each(function () {
-    //  const todayTab = $(this).data('content-id');
-     const divsWithAttribute = $('div[data-content-id="today"]');
+   const classArr = [];
+   const elemClass = $('div');
+   console.log('elemClass',elemClass);
+   
+   classArr.push(elemClass);
 
-     console.log('divsWithAttribute', divsWithAttribute);
+   console.log('classArr',classArr);
 
-     if (divsWithAttribute) {
-       $('tr', divsWithAttribute).each(function () {
-         //<-- cannot be a function expression
-         // const title = $(this).text();
-         const homeTeam = $(this).find('td:nth-child(2)').text();
-         const awayTeam = $(this).find('td:nth-child(4)').text();
-
-         console.log('000', homeTeam);
-
-         const tip = $(this).find('td:nth-child(5)').text();
-
-        //  homeTeam &&
-        //    homeTeam !== '' &&
-        //    awayTeam &&
-        //    awayTeam !== '' &&
-        //    winData.push({
-        //      source: 'betgenuine',
-        //      action: tip.includes('X') ? 'XWin' : 'Win',
-        //      checked: false,
-        //      isAcca: true,
-        //      homeTeam:
-        //        getHomeTeamName(homeTeam.trim()) !== ''
-        //          ? getHomeTeamName(homeTeam.trim())
-        //          : homeTeam.trim(),
-        //      awayTeam:
-        //        getHomeTeamName(awayTeam.trim()) !== ''
-        //          ? getHomeTeamName(awayTeam.trim())
-        //          : awayTeam.trim(),
-        //      date: todayString,
-        //      prediction: tip.includes('1') ? homeTeam : awayTeam,
-        //    });
-       });
-     }
+  //  $('.zWPB', html).each(function () {
+  //    const accumElem = $(this).find('div:first').text();
+  //    const accumDate = $(this).find('.date').text();
+  //    // console.log('accumDate', accumDate);
+  //    accumArr.push({ team: accumElem, predictionDate: accumDate });
   //  });
+  //  // console.log('accumArr', accumArr);
+  //  for (let i = 0; i < accumArr.length - 1; i++) {
+  //    let accumObj = {
+  //      source: 'accum',
+  //      action: 'over25',
+  //      checked: false,
+  //      homeTeam: '',
+  //      date: todayString,
+  //      predictionDate: '',
+  //    };
 
-   // res.json(over25);
+  //    if (i === 0 || i % 2 === 0) {
+  //      // accumObj.homeTeam = accumArr[i].team.trim();
+  //      accumObj.homeTeam =
+  //        getHomeTeamName(accumArr[i].team.trim()) !== ''
+  //          ? getHomeTeamName(accumArr[i].team.trim())
+  //          : accumArr[i].team.trim();
+  //      accumObj.predictionDate = accumArr[i + 1].predictionDate;
+  //    }
+  //    // console.log('accumArr[i]', accumArr[i]);
+  //    // console.log('accumObj', accumObj);
+  //    accumObj.homeTeam !== '' && over25.push(accumObj);
+
+
+  //  res.send('accum over loaded');
+  // console.log('over25',over25);
  })
  .catch((err) => console.log(err));
 
