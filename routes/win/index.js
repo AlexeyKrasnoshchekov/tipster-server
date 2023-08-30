@@ -61,8 +61,8 @@ const url_r2bet = 'https://r2bet.com/double_chance';
 const url_hello = 'https://hellopredict.com/Double_chance';
 const url_mybets = 'https://www.mybets.today/recommended-soccer-predictions/';
 // const url_mines = `https://api.betmines.com/betmines/v1/fixtures/betmines-machine?dateFormat=extended&platform=website&from=2023-08-${day}T00:00:00Z&to=2023-08-${dayTom}T07:00:00Z&minOdd=1.3&maxOdd=1.6&limit=20&minProbability=1&maxProbability=100&odds=1X,X2&leagueIds=`;
-const url_mines1 = `https://api.betmines.com/betmines/v1/fixtures/betmines-machine?dateFormat=extended&platform=website&from=2023-08-${day}T21:00:00Z&to=2023-08-${dayTom}T21:00:00Z&minOdd=1.1&maxOdd=1.6&limit=20&minProbability=1&maxProbability=100&odds=1&leagueIds=`;
-const url_mines2 = `https://api.betmines.com/betmines/v1/fixtures/betmines-machine?dateFormat=extended&platform=website&from=2023-08-${day}T21:00:00Z&to=2023-08-${dayTom}T21:00:00Z&minOdd=1.1&maxOdd=1.6&limit=20&minProbability=1&maxProbability=100&odds=2&leagueIds=`;
+const url_mines1 = `https://api.betmines.com/betmines/v1/fixtures/betmines-machine?dateFormat=extended&platform=website&from=2023-${month}-${day}T21:00:00Z&to=2023-${month}-${dayTom}T21:00:00Z&minOdd=1.1&maxOdd=1.6&limit=20&minProbability=1&maxProbability=100&odds=1&leagueIds=`;
+const url_mines2 = `https://api.betmines.com/betmines/v1/fixtures/betmines-machine?dateFormat=extended&platform=website&from=2023-${month}-${day}T21:00:00Z&to=2023-${month}-${dayTom}T21:00:00Z&minOdd=1.1&maxOdd=1.6&limit=20&minProbability=1&maxProbability=100&odds=2&leagueIds=`;
 const url_fbp =
   'https://footballpredictions.net/sure-bets-sure-win-predictions';
 
