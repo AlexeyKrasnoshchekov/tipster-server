@@ -54,7 +54,7 @@ app.get('/', function (req, res) {
 //   res.json(bttsArr);
 // });
 
-app.listen(PORT, () => console.log(`server running on PORT ${PORT}`));
+app.listen(PORT || 5000, () => console.log(`server running on PORT ${PORT}`));
 
 // Export the Express API
 module.exports = app;
