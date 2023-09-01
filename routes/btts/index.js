@@ -6,10 +6,13 @@ const mongoose = require('mongoose');
 mongoose.set('strictQuery', true);
 
 const axios = require('axios');
+
 const cheerio = require('cheerio');
 const fns = require('date-fns');
 const db = require('../../db');
 const { Btts } = require('../../mongo_schema/Btts');
+const { Over } = require('../../mongo_schema/Over');
+const { getHomeTeamName } = require('../../utils');
 
 const today = new Date();
 const yesterday = new Date(today);
@@ -28,8 +31,6 @@ let month = today.getMonth();
 month = month < 10 ? `0${month + 1}` : month + 1;
 
 const ORIGIN = process.env.ORIGIN;
-
-console.log('ORIGIN', ORIGIN);
 
 const bttsRouter = express.Router();
 
@@ -54,7 +55,8 @@ const btts = [];
 // Create POST route to create an todo
 // router.post('/todo/create', create);
 // Create GET route to read an todo
-bttsRouter.get('/get', cors(corsOptions), async (req, res) => {
+
+bttsRouter.get('/get', async (req, res) => {
   mongoose.connect(
     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
     {
@@ -65,9 +67,13 @@ bttsRouter.get('/get', cors(corsOptions), async (req, res) => {
   );
 
   const bttsArr = await Btts.find({ date: req.query.date });
+  const overArr = await Over.find({ date: req.query.date });
   await db.disconnect();
 
-  res.json(bttsArr);
+  let allData = [];
+  allData = allData.concat(bttsArr).concat(overArr);
+
+  res.json(allData);
 });
 bttsRouter.get('/delete', cors(corsOptions), async (req, res) => {
   // const today = new Date();
@@ -88,7 +94,49 @@ bttsRouter.get('/delete', cors(corsOptions), async (req, res) => {
   res.send('btts deleted');
   await db.disconnect();
 });
-bttsRouter.get('/save', cors(corsOptions), async (req, res) => {
+
+bttsRouter.post('/save', async (req, res) => {
+    // console.log('dataPred000');
+  let data = req.body;
+  
+//   console.log('dataPred', data);
+  if (data.homeTeam.length !== 0) {
+    data.homeTeam.forEach(async (elem) => {
+      const newBttsObj = {
+        source: data.source,
+        action: data.action,
+        homeTeam: getHomeTeamName(elem) !== '' ? getHomeTeamName(elem) : elem,
+        predTeam:
+          getHomeTeamName(data.predTeam) !== ''
+            ? getHomeTeamName(data.predTeam)
+            : data.predTeam,
+        date: data.date,
+        isAcca: data.isAcca,
+      };
+
+      mongoose.connect(
+        'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+        {
+          useNewUrlParser: true,
+          // useCreateIndex: true,
+          useUnifiedTopology: true,
+        }
+      );
+      let newBtts = await new Btts(newBttsObj);
+      await newBtts.save(function (err) {
+        if (err) return console.error(err);
+        console.log('new pred saved succussfully!');
+      });
+
+      await db.disconnect();
+    });
+    console.log('new Over saved succussfully!');
+  }
+
+  res.json('new preds inserted');
+});
+
+bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
   console.log('btts111');
   // FBP
   //   await axios(url_fbp)

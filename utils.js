@@ -17,7 +17,6 @@ function formatHomeTeamName(name) {
 }
 
 function getHomeTeamName(name) {
-  // console.log('name', name);
 
   switch (name) {
     case 'Maidenhead United':

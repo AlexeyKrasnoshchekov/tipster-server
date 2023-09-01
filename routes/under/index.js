@@ -14,8 +14,6 @@ const { Under25 } = require('../../mongo_schema/Under25');
 
 const ORIGIN = process.env.ORIGIN;
 
-console.log('ORIGIN', ORIGIN);
-
 const underRouter = express.Router();
 
 underRouter.use(cors());
@@ -24,20 +22,20 @@ const corsOptions = {
 };
 
 const today = new Date();
-  const yesterday = new Date(today);
-  const tomorrow = new Date(today);
+const yesterday = new Date(today);
+const tomorrow = new Date(today);
 
-  yesterday.setDate(yesterday.getDate() - 1);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const formattedYesterday = fns.format(yesterday, 'dd.MM.yyyy');
-  const formattedToday = fns.format(today, 'dd.MM.yyyy');
-  const yesterdayString = formattedYesterday.toString();
-  const todayString = formattedToday.toString();
-  const year = today.getFullYear();
-  const day = today.getDate();
-  const dayTom = tomorrow.getDate();
-  let month = today.getMonth();
-  month = month < 10 ? `0${month + 1}` : month + 1;
+yesterday.setDate(yesterday.getDate() - 1);
+tomorrow.setDate(tomorrow.getDate() + 1);
+const formattedYesterday = fns.format(yesterday, 'dd.MM.yyyy');
+const formattedToday = fns.format(today, 'dd.MM.yyyy');
+const yesterdayString = formattedYesterday.toString();
+const todayString = formattedToday.toString();
+const year = today.getFullYear();
+const day = today.getDate();
+const dayTom = tomorrow.getDate();
+let month = today.getMonth();
+month = month < 10 ? `0${month + 1}` : month + 1;
 
 const url_goalnow = 'https://www.goalsnow.com/over-under-predictions/';
 const url_venasbet = 'https://venasbet.com/under_3_5_goals';
@@ -87,7 +85,62 @@ underRouter.get('/delete', cors(corsOptions), async (req, res) => {
   await db.disconnect();
 });
 
-underRouter.get('/save', cors(corsOptions), async (req, res) => {
+underRouter.get('/get', async (req, res) => {
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      // useCreateIndex: true,
+      useUnifiedTopology: true,
+    }
+  );
+
+  const under25Arr = await Under25.find({ date: req.query.date });
+  await db.disconnect();
+
+  res.json(under25Arr);
+});
+
+underRouter.post('/save', async (req, res) => {
+  let data = req.body;
+  console.log('dataPred', data);
+  if (data.homeTeam.length !== 0) {
+    data.homeTeam.forEach(async (elem) => {
+      const newBttsObj = {
+        source: data.source,
+        action: data.action,
+        homeTeam: getHomeTeamName(elem) !== '' ? getHomeTeamName(elem) : elem,
+        predTeam:
+          getHomeTeamName(data.predTeam) !== ''
+            ? getHomeTeamName(data.predTeam)
+            : data.predTeam,
+        date: data.date,
+        isAcca: data.isAcca,
+      };
+
+      mongoose.connect(
+        'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+        {
+          useNewUrlParser: true,
+          // useCreateIndex: true,
+          useUnifiedTopology: true,
+        }
+      );
+      let newUnder = await new Under25(newBttsObj);
+      await newUnder.save(function (err) {
+        if (err) return console.error(err);
+        console.log('new Under saved succussfully!');
+      });
+
+      await db.disconnect();
+    });
+    console.log('new preds saved succussfully!');
+  }
+
+  res.json('new preds inserted');
+});
+
+underRouter.get('/load', cors(corsOptions), async (req, res) => {
   console.log('under111');
   //VENAS
   await axios(url_venasbet)
@@ -143,10 +196,6 @@ underRouter.get('/save', cors(corsOptions), async (req, res) => {
           .find('strong:first')
           .text();
 
-        // const awayTeam = $(this).find('tr').find('td:nth-child(3)').find('span:first').text().split(' "" ')[1].split(' VS')[1];
-        // const awayTeam = $(this).find('.mtl-index-page-matches__name').text().split(' vs ')[1];
-        // const predicDate = $(this).find('.mtl-index-page-matches__date').find('p:first').find('time:first').text();
-        // console.log('homeTeamPass', homeTeam);
         if (underYes.includes('Менее')) {
           homeTeamsArr.push(homeTeam);
         }
@@ -307,24 +356,14 @@ underRouter.get('/save', cors(corsOptions), async (req, res) => {
           .split(' VS')[0];
 
         let pred = $(this).find('td:nth-child(4)').find('span:first').text();
-        // const pred = $(this).find('td:nth-child(4)').find('span:first').text();
-        // const awayTeam = $(this).find('tr').find('td:nth-child(3)').find('span:first').text().split(' "" ')[1].split(' VS')[1];
-        // const awayTeam = $(this).find('.mtl-index-page-matches__name').text().split(' vs ')[1];
-        // const predicDate = $(this).find('.mtl-index-page-matches__date').find('p:first').find('time:first').text();
-        // console.log('homeTeamPass', homeTeam);
+
         homeTeam !== '' &&
           pred !== '' &&
           pred.includes('Under') &&
           homeTeamsArr.push({ homeTeam: homeTeam, pred: pred });
       });
 
-      // console.log('homeTeamsArr', homeTeamsArr);
-      // homeTeamsArr.splice(0, 1);
-      // console.log('homeTeamsArr111', homeTeamsArr);
-      // let indexOfEmpty = homeTeamsArr.indexOf('');
-      // console.log('indexOfEmpty', indexOfEmpty);
-      // let todayHomeTeamsArr = homeTeamsArr.slice(indexOfEmpty + 1);
-      // console.log('todayHomeTeamsArr', todayHomeTeamsArr);
+     
       homeTeamsArr.forEach((elem) => {
         elem.homeTeam !== '' &&
           elem.pred !== '' &&

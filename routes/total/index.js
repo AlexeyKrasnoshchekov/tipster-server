@@ -14,8 +14,6 @@ const { getHomeTeamName } = require('../../utils');
 
 const ORIGIN = process.env.ORIGIN;
 
-console.log('ORIGIN', ORIGIN);
-
 const totalRouter = express.Router();
 
 totalRouter.use(cors());
@@ -35,6 +33,22 @@ const yesterdayString = formattedYesterday.toString();
 // Create POST route to create an todo
 // router.post('/todo/create', create);
 // Create GET route to read an todo
+totalRouter.get('/get', async (req, res) => {
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      // useCreateIndex: true,
+      useUnifiedTopology: true,
+    }
+  );
+
+  const resultsArr = await ResultTotal.find({ date: req.query.date });
+  await db.disconnect();
+
+  res.json(resultsArr);
+});
+
 totalRouter.get('/save', cors(corsOptions), async (req, res) => {
   console.log('total111');
 
@@ -67,19 +81,10 @@ totalRouter.get('/save', cors(corsOptions), async (req, res) => {
     return 0;
   });
 
-  // console.log('sortedBtts', sortedBtts)
-  // console.log('sortedResults', sortedResults)
-
   let resultsTotal = [];
 
   for (let i = 0; i < sortedResults.length; i++) {
     for (let j = 0; j < sortedBtts.length; j++) {
-      // const longestSubstring = utils.LCSubStr(sortedResults[i].homeTeam, sortedBtts[j].homeTeam, sortedResults[i].homeTeam.length ,sortedBtts[j].homeTeam.length );
-
-      // console.log('111', longestSubstring)
-      // console.log('222', (longestSubstring / sortedResults[i].homeTeam.length))
-      // console.log('222', bttsArr[0].homeTeam)
-      // console.log('333', utils.LCSubStr(resultsArr[2].homeTeam,bttsArr[0].homeTeam, resultsArr[2].homeTeam.length ,bttsArr[0].homeTeam.length ))
       if (
         resultsArr[i].homeTeam === bttsArr[j].homeTeam ||
         // sortedResults[i].homeTeam.length === sortedBtts[j].homeTeam.length && sortedBtts[j].homeTeam.length === utils.LCSubStr(sortedResults[i].homeTeam,sortedBtts[j].homeTeam, sortedResults[i].homeTeam.length ,sortedBtts[j].homeTeam.length ) ||

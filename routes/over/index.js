@@ -14,8 +14,6 @@ const { Over } = require('../../mongo_schema/Over');
 
 const ORIGIN = process.env.ORIGIN;
 
-console.log('ORIGIN', ORIGIN);
-
 const overRouter = express.Router();
 
 overRouter.use(cors());
@@ -83,7 +81,7 @@ overRouter.get('/delete', cors(corsOptions), async (req, res) => {
   await db.disconnect();
 });
 
-overRouter.get('/save', cors(corsOptions), async (req, res) => {
+overRouter.get('/load', cors(corsOptions), async (req, res) => {
     console.log('over111')
   //GoalnowAccum
   await axios(url_gnow_accum)

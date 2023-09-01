@@ -14,8 +14,6 @@ const { WinData } = require('../../mongo_schema/WinDataModel');
 
 const ORIGIN = process.env.ORIGIN;
 
-console.log('ORIGIN', ORIGIN);
-
 const winRouter = express.Router();
 
 winRouter.use(cors());
@@ -92,7 +90,61 @@ winRouter.get('/delete', cors(corsOptions), async (req, res) => {
   await db.disconnect();
 });
 
-winRouter.get('/save', cors(corsOptions), async (req, res) => {
+winRouter.get('/get', async (req, res) => {
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  );
+
+  const winDataArr = await WinData.find({ date: req.query.date });
+  await db.disconnect();
+
+  res.json(winDataArr);
+});
+
+winRouter.post('/save', async (req, res) => {
+  let data = req.body;
+
+  if (data.homeTeam.length !== 0) {
+    data.homeTeam.forEach(async (elem) => {
+      const newWinObj = {
+        source: data.source,
+        action: data.action,
+        homeTeam: getHomeTeamName(elem) !== '' ? getHomeTeamName(elem) : elem,
+        prediction:
+          getHomeTeamName(data.prediction) !== ''
+            ? getHomeTeamName(data.prediction)
+            : data.prediction,
+        date: data.date,
+        isAcca: data.isAcca,
+      };
+
+      mongoose.connect(
+        'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+        {
+          useNewUrlParser: true,
+          // useCreateIndex: true,
+          useUnifiedTopology: true,
+        }
+      );
+      let newWin = await new WinData(newWinObj);
+      await newWin.save(function (err) {
+        if (err) return console.error(err);
+        console.log('new Win saved succussfully!');
+      });
+
+      await db.disconnect();
+    });
+    console.log('new preds saved succussfully!');
+  }
+
+  res.json('new preds inserted');
+});
+
+winRouter.get('/load', cors(corsOptions), async (req, res) => {
   console.log('win111');
   //SOCCERTIPZ
   // await axios(url_soccertipz)
@@ -278,19 +330,11 @@ winRouter.get('/save', cors(corsOptions), async (req, res) => {
           .find('span:first')
           .text()
           .split(' VS')[0];
-        // const awayTeam = $(this).find('tr').find('td:nth-child(3)').find('span:first').text().split(' "" ')[1].split(' VS')[1];
-        // const awayTeam = $(this).find('.mtl-index-page-matches__name').text().split(' vs ')[1];
-        // const predicDate = $(this).find('.mtl-index-page-matches__date').find('p:first').find('time:first').text();
-        // console.log('homeTeamPass', homeTeam);
         homeTeamsArr.push(homeTeam);
       });
-      // console.log('homeTeamsArr', homeTeamsArr);
       homeTeamsArr.splice(0, 1);
-      // console.log('homeTeamsArr111', homeTeamsArr);
       let indexOfEmpty = homeTeamsArr.indexOf('');
-      // console.log('indexOfEmpty', indexOfEmpty);
       let todayHomeTeamsArr = homeTeamsArr.slice(indexOfEmpty + 1);
-      // console.log('todayHomeTeamsArr', todayHomeTeamsArr);
       todayHomeTeamsArr.forEach((elem) => {
         elem !== '' &&
           winData.push({
@@ -389,13 +433,14 @@ winRouter.get('/save', cors(corsOptions), async (req, res) => {
   //   })
   //   .catch((err) => console.log(err));
 
-   // MINES;
+  // MINES;
   await axios(url_mines1)
     .then((response) => {
       const data = response.data;
 
       data.forEach((elem) => {
-        elem !== '' && elem.bestOddProbability > 74 &&
+        elem !== '' &&
+          elem.bestOddProbability > 74 &&
           winData.push({
             source: 'mines',
             action: `${elem.bestOdd} ${elem.bestOddProbability}%`,
@@ -412,13 +457,14 @@ winRouter.get('/save', cors(corsOptions), async (req, res) => {
       // res.json(btts);
     })
     .catch((err) => console.log(err));
-   // MINES;
+  // MINES;
   await axios(url_mines2)
     .then((response) => {
       const data = response.data;
 
       data.forEach((elem) => {
-        elem !== '' && elem.bestOddProbability > 74 &&
+        elem !== '' &&
+          elem.bestOddProbability > 74 &&
           winData.push({
             source: 'mines',
             action: `${elem.bestOdd} ${elem.bestOddProbability}%`,
@@ -784,8 +830,6 @@ winRouter.get('/save', cors(corsOptions), async (req, res) => {
       useUnifiedTopology: true,
     }
   );
-
-  console.log('winData',winData);
 
   await WinData.insertMany(winData)
     .then(function () {

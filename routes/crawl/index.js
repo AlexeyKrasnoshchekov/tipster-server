@@ -17,8 +17,6 @@ const { getHomeTeamName } = require('../../utils');
 
 const ORIGIN = process.env.ORIGIN;
 
-console.log('ORIGIN', ORIGIN);
-
 const crawlRouter = express.Router();
 
 crawlRouter.use(cors());
@@ -42,7 +40,7 @@ const crawlData = [];
 // Create POST route to create an todo
 // router.post('/todo/create', create);
 // Create GET route to read an todo
-crawlRouter.get('/save', cors(corsOptions), async (req, res) => {
+crawlRouter.get('/load', cors(corsOptions), async (req, res) => {
   console.log('crawl111');
   //Bettingtips
   await api1
