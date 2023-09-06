@@ -12,7 +12,7 @@ const fns = require('date-fns');
 const db = require('../../db');
 const { Btts } = require('../../mongo_schema/Btts');
 const { Over } = require('../../mongo_schema/Over');
-const { WinData } = require('../../mongo_schema/winDataModel');
+const { WinData } = require('../../mongo_schema/WinDataModel');
 const { getHomeTeamName } = require('../../utils');
 
 const ORIGIN = process.env.ORIGIN;
