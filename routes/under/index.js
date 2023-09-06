@@ -318,7 +318,7 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
       console.log('minesUnder', data);
 
       data.forEach((elem) => {
-        elem !== '' &&
+        elem !== '' && elem.bestOddProbability > 74 &&
           under25.push({
             source: 'mines',
             action: `${elem.bestOdd} ${elem.bestOddProbability}%`,
