@@ -38,6 +38,8 @@ let month = today.getMonth();
 month = month < 10 ? `0${month + 1}` : month + 1;
 
 const url_goalnow = 'https://www.goalsnow.com/over-under-predictions/';
+const url_vitibet =
+  'https://www.vitibet.com/index.php?clanek=quicktips&sekce=fotbal&lang=en';
 const url_venasbet = 'https://venasbet.com/under_3_5_goals';
 const url_nvtips = 'https://nvtips.com/ru/';
 const url_soccertipz = 'https://www.soccertipz.com/under-over-2-5-predictions/';
@@ -175,6 +177,42 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
       });
 
       // res.json(over25);
+    })
+    .catch((err) => console.log(err));
+
+  // //VITIBET
+  await axios(url_vitibet)
+    .then((response) => {
+      const html = response.data;
+
+      // console.log('000', html);
+      const $ = cheerio.load(html);
+
+      $('tr', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const date = $(this).find('td:nth-child(1)').text();
+        const homeTeam = $(this).find('td:nth-child(2)').text();
+        const awayTeam = $(this).find('td:nth-child(3)').text();
+        const score1 = $(this).find('td:nth-child(4)').text();
+        const score2 = $(this).find('td:nth-child(6)').text();
+
+        const scoreTotal = score1 * 1 + score2 * 1;
+
+        homeTeam !== '' &&
+          date.includes(`0${day}.${month}`) &&
+          scoreTotal <= 1 &&
+          under25.push({
+            source: 'vitibet',
+            action: 'under25',
+            isAcca: true,
+            homeTeam: homeTeam.trim(),
+            awayTeam: awayTeam.trim(),
+            date: todayString,
+          });
+      });
+
+      // res.json(btts);
     })
     .catch((err) => console.log(err));
 
@@ -363,7 +401,6 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
           homeTeamsArr.push({ homeTeam: homeTeam, pred: pred });
       });
 
-     
       homeTeamsArr.forEach((elem) => {
         elem.homeTeam !== '' &&
           elem.pred !== '' &&

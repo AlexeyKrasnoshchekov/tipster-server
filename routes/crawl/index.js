@@ -51,59 +51,85 @@ crawlRouter.get('/load', cors(corsOptions), async (req, res) => {
         const html = response.body;
         const $ = cheerio.load(html);
 
-        $('.diveachgame', html).each(function () {
-          const pred = $(this).find('.icontip').find('span:first').text();
+        $('section', html).each(function () {
+          const type = $(this).find('.leagueslinks').text();
 
-          const homeTeam = $(this)
-            .find('.dividehome')
-            .find('div:first')
-            .find('.teamtip')
-            .text();
-          const awayTeam = $(this)
-            .find('.divideaway')
-            .find('div:first')
-            .find('.teamtip')
-            .text();
+          console.log('000', type);
 
-          if (homeTeam !== '' && pred.includes('Over')) {
-            crawlData.push({
-              source: 'bettingtips',
-              action: 'over25',
-              isAcca: true,
-              homeTeam:
-                getHomeTeamName(homeTeam.trim()) !== ''
-                  ? getHomeTeamName(homeTeam.trim())
-                  : homeTeam.trim(),
-              awayTeam,
-              date: todayString,
+          if (type === 'Bankers') {
+            $('.diveachgame', this).each(function () {
+              const pred = $(this).find('.icontip').find('span:first').text();
+              console.log('000', pred);
+              const homeTeam = $(this)
+                .find('.dividehome')
+                .find('div:first')
+                .find('.teamtip')
+                .text();
+
+              const awayTeam = $(this)
+                .find('.divideaway')
+                .find('div:first')
+                .find('.teamtip')
+                .text();
+
+              if (
+                homeTeam !== '' &&
+                (pred.includes('1') || pred.includes('2'))
+              ) {
+                crawlData.push({
+                  source: 'bettingtips_b',
+                  action: 'win',
+                  isAcca: true,
+                  homeTeam:
+                    getHomeTeamName(homeTeam.trim()) !== ''
+                      ? getHomeTeamName(homeTeam.trim())
+                      : homeTeam.trim(),
+                  awayTeam,
+                  date: todayString,
+                  prediction: pred.includes('1') ? homeTeam : awayTeam,
+                });
+              }
             });
-          } else if (homeTeam !== '' && pred.includes('Yes')) {
-            crawlData.push({
-              source: 'bettingtips',
-              action: 'btts',
-              isAcca: true,
-              homeTeam:
-                getHomeTeamName(homeTeam.trim()) !== ''
-                  ? getHomeTeamName(homeTeam.trim())
-                  : homeTeam.trim(),
-              awayTeam,
-              date: todayString,
-            });
-          } else if (
-            homeTeam !== '' &&
-            (pred.includes('1') || pred.includes('2'))
-          ) {
-            crawlData.push({
-              source: 'bettingtips',
-              action: 'win',
-              isAcca: true,
-              homeTeam:
-                getHomeTeamName(homeTeam.trim()) !== ''
-                  ? getHomeTeamName(homeTeam.trim())
-                  : homeTeam.trim(),
-              awayTeam,
-              date: todayString,
-              prediction: pred.includes('1') ? homeTeam : awayTeam,
+          } else {
+            $('.diveachgame', this).each(function () {
+              const pred = $(this).find('.icontip').find('span:first').text();
+
+              const homeTeam = $(this)
+                .find('.dividehome')
+                .find('div:first')
+                .find('.teamtip')
+                .text();
+              const awayTeam = $(this)
+                .find('.divideaway')
+                .find('div:first')
+                .find('.teamtip')
+                .text();
+
+              if (homeTeam !== '' && pred.includes('Over')) {
+                crawlData.push({
+                  source: 'bettingtips',
+                  action: 'over25',
+                  isAcca: true,
+                  homeTeam:
+                    getHomeTeamName(homeTeam.trim()) !== ''
+                      ? getHomeTeamName(homeTeam.trim())
+                      : homeTeam.trim(),
+                  awayTeam,
+                  date: todayString,
+                });
+              } else if (homeTeam !== '' && pred.includes('Yes')) {
+                crawlData.push({
+                  source: 'bettingtips',
+                  action: 'btts',
+                  isAcca: true,
+                  homeTeam:
+                    getHomeTeamName(homeTeam.trim()) !== ''
+                      ? getHomeTeamName(homeTeam.trim())
+                      : homeTeam.trim(),
+                  awayTeam,
+                  date: todayString,
+                });
+              }
             });
           }
         });

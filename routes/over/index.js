@@ -22,38 +22,41 @@ const corsOptions = {
 };
 
 const today = new Date();
-  const yesterday = new Date(today);
-  const tomorrow = new Date(today);
+const yesterday = new Date(today);
+const tomorrow = new Date(today);
 
-  yesterday.setDate(yesterday.getDate() - 1);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const formattedYesterday = fns.format(yesterday, 'dd.MM.yyyy');
-  const formattedToday = fns.format(today, 'dd.MM.yyyy');
-  const todayString = formattedToday.toString();
-  const day = today.getDate();
-  const dayTom = tomorrow.getDate();
-  let month = today.getMonth();
-  month = month < 10 ? `0${month + 1}` : month + 1;
+yesterday.setDate(yesterday.getDate() - 1);
+tomorrow.setDate(tomorrow.getDate() + 1);
+const formattedYesterday = fns.format(yesterday, 'dd.MM.yyyy');
+const formattedToday = fns.format(today, 'dd.MM.yyyy');
+const todayString = formattedToday.toString();
+const day = today.getDate();
+const dayTom = tomorrow.getDate();
+let month = today.getMonth();
+month = month < 10 ? `0${month + 1}` : month + 1;
 
-  // const url_goalnow = 'https://www.goalsnow.com/over-under-predictions/';
-  const url_gnow_accum = 'https://www.goalsnow.com/accumulator-over-2.5-goals/';
+// const url_goalnow = 'https://www.goalsnow.com/over-under-predictions/';
+const url_gnow_accum = 'https://www.goalsnow.com/accumulator-over-2.5-goals/';
 
-  const url_soccertipz = 'https://www.soccertipz.com/under-over-2-5-predictions/';
-  const url_banker = 'https://bankerpredict.com/over-2-5-goals';
-  const url_prot = 'https://www.protipster.com/betting-tips/over-2.5-goals';
-  const url_fbp =
-    'https://footballpredictions.net/under-over-2-5-goals-betting-tips-predictions';
-  // const url_accum =
-  //   'https://footyaccumulators.com/football-tips/over-2-5-trebles';
-  const url_fst =
-    'https://www.freesupertips.com/over-2-5-goals-betting-tips-and-predictions/';
-  const url_r2bet = 'https://r2bet.com/2_5_goals';
-  const url_hello = 'https://hellopredict.com/2_5_goals';
-  // const url_nvtips = 'https://nvtips.com/ru/';
-  const url_footsuper =
-    'https://www.footballsuper.tips/todays-over-under-football-super-tips/';
-  const url_footsuper_o25 =
-    'https://www.footballsuper.tips/football-accumulators-tips/football-tips-match-goals-accumulator/';
+const url_vitibet =
+  'https://www.vitibet.com/index.php?clanek=quicktips&sekce=fotbal&lang=en';
+
+const url_soccertipz = 'https://www.soccertipz.com/under-over-2-5-predictions/';
+const url_banker = 'https://bankerpredict.com/over-2-5-goals';
+const url_prot = 'https://www.protipster.com/betting-tips/over-2.5-goals';
+const url_fbp =
+  'https://footballpredictions.net/under-over-2-5-goals-betting-tips-predictions';
+// const url_accum =
+//   'https://footyaccumulators.com/football-tips/over-2-5-trebles';
+const url_fst =
+  'https://www.freesupertips.com/over-2-5-goals-betting-tips-and-predictions/';
+const url_r2bet = 'https://r2bet.com/2_5_goals';
+const url_hello = 'https://hellopredict.com/2_5_goals';
+// const url_nvtips = 'https://nvtips.com/ru/';
+const url_footsuper =
+  'https://www.footballsuper.tips/todays-over-under-football-super-tips/';
+const url_footsuper_o25 =
+  'https://www.footballsuper.tips/football-accumulators-tips/football-tips-match-goals-accumulator/';
 
 // require the middlewares and callback functions from the controller directory
 // const { create, read, removeTodo } = require('../controller');
@@ -82,7 +85,7 @@ overRouter.get('/delete', cors(corsOptions), async (req, res) => {
 });
 
 overRouter.get('/load', cors(corsOptions), async (req, res) => {
-    console.log('over111')
+  console.log('over111');
   //GoalnowAccum
   await axios(url_gnow_accum)
     .then((response) => {
@@ -132,7 +135,7 @@ overRouter.get('/load', cors(corsOptions), async (req, res) => {
     })
     .catch((err) => console.log(err));
 
-    //BANKER
+  //BANKER
   // await axios(url_banker)
   // .then((response) => {
   //   const html = response.data;
@@ -206,138 +209,181 @@ overRouter.get('/load', cors(corsOptions), async (req, res) => {
     })
     .catch((err) => console.log(err));
 
-    //FOOTSUPER_O25
+  //FOOTSUPER_O25
   await axios(url_footsuper_o25)
-  .then((response) => {
-    const html = response.data;
+    .then((response) => {
+      const html = response.data;
 
-    // console.log('000', html);
-    const $ = cheerio.load(html);
+      // console.log('000', html);
+      const $ = cheerio.load(html);
 
-    $('.classfull', html).each(function () {
-      //<-- cannot be a function expression
-      // const title = $(this).text();
-      const homeTeam = $(this).find('.gamelink').text().split(' v ')[0];
-      const awayTeam = $(this).find('.gamelink').text().split(' v ')[1];
+      $('.classfull', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const homeTeam = $(this).find('.gamelink').text().split(' v ')[0];
+        const awayTeam = $(this).find('.gamelink').text().split(' v ')[1];
 
-      homeTeam !== '' &&
-        over25.push({
-          source: 'footsuper_o25',
-          action: 'over25',
-          isAcca: true,
-          homeTeam: homeTeam.trim(),
-          awayTeam: awayTeam.trim(),
-          date: todayString,
-        });
-    });
+        homeTeam !== '' &&
+          over25.push({
+            source: 'footsuper_o25',
+            action: 'over25',
+            isAcca: true,
+            homeTeam: homeTeam.trim(),
+            awayTeam: awayTeam.trim(),
+            date: todayString,
+          });
+      });
 
-    // res.send('footsuper_acc over loaded');
-  })
-  .catch((err) => console.log(err));
+      // res.send('footsuper_acc over loaded');
+    })
+    .catch((err) => console.log(err));
 
-//PROT
-await axios(url_prot)
-  .then((response) => {
-    const html = response.data;
+  //PROT
+  await axios(url_prot)
+    .then((response) => {
+      const html = response.data;
 
-    // console.log('000', html);
-    const $ = cheerio.load(html);
+      // console.log('000', html);
+      const $ = cheerio.load(html);
 
-    $('.details-pick', html).each(function () {
-      //<-- cannot be a function expression
-      // const title = $(this).text();
-      const teams = $(this).find('.details-pick__match-data__teams').text();
-      const homeTeam = teams.split(' VS ')[0];
-      const awayTeam = teams.split(' VS ')[1];
+      $('.details-pick', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const teams = $(this).find('.details-pick__match-data__teams').text();
+        const homeTeam = teams.split(' VS ')[0];
+        const awayTeam = teams.split(' VS ')[1];
 
-      homeTeam !== '' &&
-        over25.push({
-          source: 'prot',
-          action: 'over25',
-          isAcca: false,
-          homeTeam: homeTeam.trim(),
-          awayTeam: awayTeam.trim(),
-          date: todayString,
-        });
-    });
+        homeTeam !== '' &&
+          over25.push({
+            source: 'prot',
+            action: 'over25',
+            isAcca: false,
+            homeTeam: homeTeam.trim(),
+            awayTeam: awayTeam.trim(),
+            date: todayString,
+          });
+      });
 
-    // res.send('prot over loaded');
-  })
-  .catch((err) => console.log(err));
+      // res.send('prot over loaded');
+    })
+    .catch((err) => console.log(err));
 
-    //r2bet
+  //r2bet
   await axios(url_r2bet)
-  .then((response) => {
-    const html = response.data;
+    .then((response) => {
+      const html = response.data;
 
-    // console.log('000', html);
-    const $ = cheerio.load(html);
+      // console.log('000', html);
+      const $ = cheerio.load(html);
 
-    $('tr', html).each(function () {
-      //<-- cannot be a function expression
-      // const title = $(this).text();
-      const homeTeam = $(this).find('td:nth-child(3)').text().split('VS')[0];
+      $('tr', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const homeTeam = $(this).find('td:nth-child(3)').text().split('VS')[0];
 
-      const awayTeam = $(this).find('td:nth-child(3)').text().split('VS')[1];
-      const tip = $(this).find('td:nth-child(4)').text();
+        const awayTeam = $(this).find('td:nth-child(3)').text().split('VS')[1];
+        const tip = $(this).find('td:nth-child(4)').text();
 
-      homeTeam !== '' &&
-        tip.includes('Over 2.5') &&
-        over25.push({
-          source: 'r2bet',
-          action: 'over25',
-          checked: false,
-          homeTeam: homeTeam.trim(),
-          awayTeam: awayTeam.trim(),
-          date: todayString,
-        });
-    });
+        homeTeam !== '' &&
+          tip.includes('Over 2.5') &&
+          over25.push({
+            source: 'r2bet',
+            action: 'over25',
+            checked: false,
+            homeTeam: homeTeam.trim(),
+            awayTeam: awayTeam.trim(),
+            date: todayString,
+          });
+      });
 
-    // res.send('r2bet over loaded');
-  })
-  .catch((err) => console.log(err));
+      // res.send('r2bet over loaded');
+    })
+    .catch((err) => console.log(err));
 
-//hello
-await axios(url_hello)
-  .then((response) => {
-    const html = response.data;
+  // //VITIBET
+  await axios(url_vitibet)
+    .then((response) => {
+      const html = response.data;
 
-    // console.log('000', html);
-    const $ = cheerio.load(html);
+      // console.log('000', html);
+      const $ = cheerio.load(html);
 
-    $('tr', html).each(function () {
-      //<-- cannot be a function expression
-      // const title = $(this).text();
-      const homeTeam = $(this)
-        .find('.tab_b_match')
-        .find('span:first')
-        .text()
-        .split('VS')[0];
-      const awayTeam = $(this)
-        .find('.tab_b_match')
-        .find('span:first')
-        .text()
-        .split('VS')[1];
+      $('tr', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const date = $(this).find('td:nth-child(1)').text();
+        const homeTeam = $(this).find('td:nth-child(2)').text();
+        const awayTeam = $(this).find('td:nth-child(3)').text();
+        const score1 = $(this).find('td:nth-child(4)').text();
+        const score2 = $(this).find('td:nth-child(6)').text();
 
-      // const awayTeam = $(this).find('td:nth-child(3)').text().split('VS')[1];
-      // const tip = $(this).find('td:nth-child(4)').text();
+        const scoreTotal = score1 * 1 + score2 * 1;
 
-      homeTeam !== '' &&
-        over25.push({
-          source: 'hello',
-          action: 'over25',
-          checked: false,
-          homeTeam: homeTeam.trim(),
-          awayTeam: awayTeam.trim(),
-          date: todayString,
-        });
-    });
+        homeTeam !== '' && date.includes(`0${day}.${month}`) &&
+          scoreTotal >= 3 &&
+          over25.push({
+            source: 'vitibet',
+            action: 'over25',
+            checked: false,
+            homeTeam: homeTeam.trim(),
+            awayTeam: awayTeam.trim(),
+            date: todayString,
+          });
+      });
 
-    // res.send('hello over loaded');
-  })
-  .catch((err) => console.log(err));
+      // res.json(btts);
+    })
+    .catch((err) => console.log(err));
 
-    // ACCUM
+   //hello
+   await axios(url_hello)
+   .then((response) => {
+     const html = response.data;
+
+     // console.log('000', html);
+     const $ = cheerio.load(html);
+
+     $('.tab-pane', html).each(function () {
+       let date = $(this).find('.game_date').text();
+
+       if (date.split(' ')[1].includes(`${day}`)) {
+         console.log('000', date.split(' ')[1].includes(`${day}`));
+
+         $('tr', this).each(function () {
+           //<-- cannot be a function expression
+           // const title = $(this).text();
+           const homeTeam = $(this)
+             .find('.tab_b_match')
+             .find('span:first')
+             .text()
+             .split('VS')[0];
+           const awayTeam = $(this)
+             .find('.tab_b_match')
+             .find('span:first')
+             .text()
+             .split('VS')[1];
+
+           // const awayTeam = $(this).find('td:nth-child(3)').text().split('VS')[1];
+           // const tip = $(this).find('td:nth-child(4)').text();
+
+           homeTeam !== '' &&
+             over25.push({
+               source: 'hello',
+               action: 'over25',
+               checked: false,
+               homeTeam: homeTeam.trim(),
+               awayTeam: awayTeam.trim(),
+               date: todayString,
+             });
+         });
+       }
+     });
+
+     // res.send('hello over loaded');
+   })
+   .catch((err) => console.log(err));
+
+  // ACCUM
   // await axios(url_accum)
   // .then((response) => {
   //   const html = response.data;
@@ -413,7 +459,7 @@ await axios(url_hello)
     })
     .catch((err) => console.log(err));
 
-    // FBP
+  // FBP
   await axios(url_fbp)
     .then((response) => {
       const html = response.data;
@@ -458,6 +504,8 @@ await axios(url_hello)
 
   let start = 0;
   let next = 1;
+
+  // console.log('over25',over25);
   let sortedOver = over25.sort((a, b) => {
     if (a.homeTeam < b.homeTeam) {
       return -1;

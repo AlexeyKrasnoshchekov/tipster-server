@@ -44,6 +44,9 @@ const url_footsuper =
 // const url_bankerAway = 'https://bankerpredict.com/away-wins';
 // const url_soccertipz = 'https://www.soccertipz.com/sure-bets-predictions/';
 const url_betgenuine_acc = 'https://betgenuine.com/bet-of-the-day/';
+const url_o25tips = 'https://www.over25tips.com/soccer-stats/must-win-teams/';
+const url_vitibet =
+  'https://www.vitibet.com/index.php?clanek=tipoftheday&sekce=fotbal&lang=en';
 // const url_betgenuine = 'https://betgenuine.com/football-predictions/';
 const url_footy1 = 'https://footystats.org/predictions/home-wins';
 const url_footy2 = 'https://footystats.org/predictions/away-wins';
@@ -71,7 +74,7 @@ const winData = [];
 // router.post('/todo/create', create);
 // Create GET route to read an todo
 winRouter.get('/delete', cors(corsOptions), async (req, res) => {
-  // const today = new Date();
+  // const today = new Date()
   // const formattedToday = fns.format(today, 'dd.MM.yyyy');
   // const todayString = formattedToday.toString();
 
@@ -344,6 +347,84 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
             awayTeam: '',
             prediction: elem,
             date: todayString,
+          });
+      });
+
+      // res.json(btts);
+    })
+    .catch((err) => console.log(err));
+
+  // //O25TIPS
+  await axios(url_o25tips)
+    .then((response) => {
+      const html = response.data;
+
+      // console.log('000', html);
+      const $ = cheerio.load(html);
+
+      $('tr', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const homeTeam = $(this)
+          .find('td:nth-child(3)')
+          .find('div:first')
+          .find('span:first')
+          .text();
+        const awayTeam = $(this)
+          .find('td:nth-child(3)')
+          .find('div:first')
+          .find('span:nth-child(2)')
+          .text();
+
+        const tip = $(this)
+          .find('td:first')
+          .find('div:first')
+          .find('span:first')
+          .text();
+
+          // console.log('000', tip);
+
+        homeTeam !== '' && tip !== '' &&
+          winData.push({
+            source: 'o25tip',
+            action: 'win',
+            checked: false,
+            homeTeam: homeTeam.trim(),
+            awayTeam: awayTeam.trim(),
+            date: todayString,
+            prediction: tip,
+          });
+      });
+
+      // res.json(btts);
+    })
+    .catch((err) => console.log(err));
+
+  // //VITIBET
+  await axios(url_vitibet)
+    .then((response) => {
+      const html = response.data;
+
+      // console.log('000', html);
+      const $ = cheerio.load(html);
+
+      $('tr', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const homeTeam = $(this).find('td:nth-child(2)').text();
+        const awayTeam = $(this).find('td:nth-child(3)').text();
+        const tip = $(this).find('td:nth-child(5)').text();
+
+        homeTeam !== '' &&
+          tip !== '' &&
+          winData.push({
+            source: 'vitibet',
+            action: 'win',
+            checked: false,
+            homeTeam: homeTeam.trim(),
+            awayTeam: awayTeam.trim(),
+            date: todayString,
+            prediction: tip === '1' ? homeTeam.trim() : awayTeam.trim(),
           });
       });
 
@@ -815,13 +896,18 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
   //           prediction: elem.visitorTeamName.trim(),
   //           awayTeam: elem.visitorTeamName.trim(),
   //           date: todayString,
-  //           predictionDate: `morph hits ${elem.hits}`,
+  //           predictionDate: `morph hits ${000.hits}`,
   //         });
   //       });
   //   })
   //   .catch(function (error) {
   //     console.error(error);
   //   });
+
+  // console.log('winData',winData)
+
+  let filteredNoEmpty = winData.filter(elem => elem.homeTeam !== '');
+  let filteredNoEmpty2 = filteredNoEmpty.filter(elem => elem.prediction !== '');
 
   mongoose.connect(
     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
@@ -831,7 +917,7 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
     }
   );
 
-  await WinData.insertMany(winData)
+  await WinData.insertMany(filteredNoEmpty2)
     .then(function () {
       console.log('WinData inserted'); // Success
     })

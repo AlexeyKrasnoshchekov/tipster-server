@@ -11,6 +11,7 @@ const cheerio = require('cheerio');
 const fns = require('date-fns');
 const db = require('../../db');
 const { Result } = require('../../mongo_schema/Result');
+const { ZeroCounter } = require('../../mongo_schema/ZeroCounter');
 
 const ORIGIN = process.env.ORIGIN;
 
@@ -66,6 +67,79 @@ resultRouter.get('/get', async (req, res) => {
   await db.disconnect();
 
   res.json(resultsArr);
+});
+
+resultRouter.get('/getZeroCounter', async (req, res) => {
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  );
+  console.log('req.query.date', req.query.date);
+  const res111 = await ZeroCounter.find({ date: req.query.date });
+  await db.disconnect();
+
+  console.log('res111', res111);
+
+  res.json(res111);
+});
+
+resultRouter.post('/saveZeroCounter', async (req, res) => {
+  let data = req.body;
+
+  // console.log('data', data);
+
+  // data.homeTeam.forEach(async (elem) => {
+  //   const newBttsObj = {
+  //     source: data.source,
+  //     action: data.action,
+  //     homeTeam: getHomeTeamName(elem) !== '' ? getHomeTeamName(elem) : elem,
+  //     predTeam:
+  //       getHomeTeamName(data.predTeam) !== ''
+  //         ? getHomeTeamName(data.predTeam)
+  //         : data.predTeam,
+  //     date: data.date,
+  //     isAcca: data.isAcca,
+  //   };
+
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      // useCreateIndex: true,
+      useUnifiedTopology: true,
+    }
+  );
+
+  console.log('data.date', data.date);
+  const res111 = await ZeroCounter.find({ date: data.date });
+  // console.log('res111', res111);
+
+  if (res111 && res111.length !== 0) {
+    await ZeroCounter.replaceOne(res111[0], data);
+    console.log('zero counter updated succussfully!');
+  } else {
+    let newZeroCounter = await new ZeroCounter(data);
+    await newZeroCounter.save(function (err) {
+      if (err) return console.error(err);
+      console.log('new zero counter saved succussfully!');
+    });
+  }
+
+  // let newZeroCounter = await new ZeroCounter(data);
+  // await newZeroCounter.save(function (err) {
+  //   if (err) return console.error(err);
+  //   console.log('new zero counter saved succussfully!');
+  // });
+
+  // await ZeroCounter.deleteMany({});
+  await db.disconnect();
+  // });
+  // console.log('new Over saved succussfully!');
+
+  res.json('new zero counter inserted');
 });
 
 resultRouter.get('/load', cors(corsOptions), async (req, res) => {
