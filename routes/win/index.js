@@ -87,7 +87,7 @@ winRouter.get('/delete', cors(corsOptions), async (req, res) => {
     }
   );
 
-  await WinData.deleteMany({ date: todayString });
+  await WinData.deleteMany({ date: req.query.date });
   console.log('Win deleted'); // Success
   res.send('win deleted');
   await db.disconnect();

@@ -14,6 +14,7 @@ const { Btts } = require('../../mongo_schema/Btts');
 const { Over } = require('../../mongo_schema/Over');
 const { WinData } = require('../../mongo_schema/WinDataModel');
 const { getHomeTeamName } = require('../../utils');
+const { Under25 } = require('../../mongo_schema/Under25');
 
 const ORIGIN = process.env.ORIGIN;
 
@@ -180,6 +181,18 @@ crawlRouter.get('/load', cors(corsOptions), async (req, res) => {
                 awayTeam,
                 date: todayString,
               });
+            } else if (homeTeam !== '' && pred.includes('Under 2.5')) {
+              crawlData.push({
+                source: 'wincomparator',
+                action: 'under25',
+                isAcca: true,
+                homeTeam:
+                  getHomeTeamName(homeTeam.trim()) !== ''
+                    ? getHomeTeamName(homeTeam.trim())
+                    : homeTeam.trim(),
+                awayTeam,
+                date: todayString,
+              });
             } else if (
               homeTeam !== '' &&
               pred.includes('Both teams to score')
@@ -242,6 +255,16 @@ crawlRouter.get('/load', cors(corsOptions), async (req, res) => {
   await Over.insertMany(overDataCrawl)
     .then(function () {
       console.log('crawl Over inserted'); // Success
+    })
+    .catch(function (error) {
+      console.log(error); // Failure
+    });
+
+  const underDataCrawl = crawlData.filter((item) => item.action === 'under25');
+
+  await Under25.insertMany(underDataCrawl)
+    .then(function () {
+      console.log('crawl Under inserted'); // Success
     })
     .catch(function (error) {
       console.log(error); // Failure

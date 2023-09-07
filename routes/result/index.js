@@ -47,7 +47,7 @@ resultRouter.get('/delete', cors(corsOptions), async (req, res) => {
     }
   );
 
-  await Result.deleteMany({ date: yesterdayString });
+  await Result.deleteMany({ date: req.query.date });
   console.log('results deleted'); // Success
   await db.disconnect();
 
@@ -113,7 +113,7 @@ resultRouter.post('/saveZeroCounter', async (req, res) => {
     }
   );
 
-  console.log('data.date', data.date);
+  // console.log('data.date', data.date);
   const res111 = await ZeroCounter.find({ date: data.date });
   // console.log('res111', res111);
 

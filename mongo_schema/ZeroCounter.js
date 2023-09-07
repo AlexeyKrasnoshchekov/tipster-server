@@ -99,6 +99,10 @@ const ZeroCounterSchema = new Schema(
       total: Number,
       matches: [String],
     },
+    vitibet_o25: {
+      total: Number,
+      matches: [String],
+    },
     r2bet_win: {
       total: Number,
       matches: [String],

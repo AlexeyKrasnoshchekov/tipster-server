@@ -81,7 +81,7 @@ underRouter.get('/delete', cors(corsOptions), async (req, res) => {
     }
   );
 
-  await Under.deleteMany({ date: todayString });
+  await Under25.deleteMany({ date: req.query.date });
   console.log('Under deleted'); // Success
   res.send('under deleted');
   await db.disconnect();
@@ -205,7 +205,7 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
           under25.push({
             source: 'vitibet',
             action: 'under25',
-            isAcca: true,
+            isAcca: false,
             homeTeam: homeTeam.trim(),
             awayTeam: awayTeam.trim(),
             date: todayString,
@@ -356,7 +356,7 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
           under25.push({
             source: 'footsuper',
             action: 'under25',
-            isAcca: true,
+            isAcca: false,
             homeTeam:
               getHomeTeamName(homeTeam.trim()) !== ''
                 ? getHomeTeamName(homeTeam.trim())

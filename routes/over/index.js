@@ -78,7 +78,7 @@ overRouter.get('/delete', cors(corsOptions), async (req, res) => {
     }
   );
 
-  await Over.deleteMany({ date: todayString });
+  await Over.deleteMany({ date: req.query.date });
   console.log('Over deleted'); // Success
   res.send('over deleted');
   await db.disconnect();

@@ -89,7 +89,7 @@ bttsRouter.get('/delete', cors(corsOptions), async (req, res) => {
     }
   );
 
-  await Btts.deleteMany({ date: todayString });
+  await Btts.deleteMany({ date: req.query.date });
   console.log('btts deleted'); // Success
   res.send('btts deleted');
   await db.disconnect();
