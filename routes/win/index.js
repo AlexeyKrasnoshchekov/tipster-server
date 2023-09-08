@@ -362,38 +362,44 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
       // console.log('000', html);
       const $ = cheerio.load(html);
 
-      $('tr', html).each(function () {
+      $('table', html).each(function () {
+        const caption = $(this).find('caption').text();
         //<-- cannot be a function expression
         // const title = $(this).text();
-        const homeTeam = $(this)
-          .find('td:nth-child(3)')
-          .find('div:first')
-          .find('span:first')
-          .text();
-        const awayTeam = $(this)
-          .find('td:nth-child(3)')
-          .find('div:first')
-          .find('span:nth-child(2)')
-          .text();
+        if (caption.includes('Today')) {
+          $('tr', this).each(function () {
+            const homeTeam = $(this)
+              .find('td:nth-child(3)')
+              .find('div:first')
+              .find('span:first')
+              .text();
+            const awayTeam = $(this)
+              .find('td:nth-child(3)')
+              .find('div:first')
+              .find('span:nth-child(2)')
+              .text();
 
-        const tip = $(this)
-          .find('td:first')
-          .find('div:first')
-          .find('span:first')
-          .text();
+            const tip = $(this)
+              .find('td:first')
+              .find('div:first')
+              .find('span:first')
+              .text();
 
-          // console.log('000', tip);
+            // console.log('000', tip);
 
-        homeTeam !== '' && tip !== '' &&
-          winData.push({
-            source: 'o25tip',
-            action: 'win',
-            checked: false,
-            homeTeam: homeTeam.trim(),
-            awayTeam: awayTeam.trim(),
-            date: todayString,
-            prediction: tip,
+            homeTeam !== '' &&
+              tip !== '' &&
+              winData.push({
+                source: 'o25tip',
+                action: 'win',
+                checked: false,
+                homeTeam: homeTeam.trim(),
+                awayTeam: awayTeam.trim(),
+                date: todayString,
+                prediction: tip,
+              });
           });
+        }
       });
 
       // res.json(btts);
@@ -906,8 +912,10 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
 
   // console.log('winData',winData)
 
-  let filteredNoEmpty = winData.filter(elem => elem.homeTeam !== '');
-  let filteredNoEmpty2 = filteredNoEmpty.filter(elem => elem.prediction !== '');
+  let filteredNoEmpty = winData.filter((elem) => elem.homeTeam !== '');
+  let filteredNoEmpty2 = filteredNoEmpty.filter(
+    (elem) => elem.prediction !== ''
+  );
 
   mongoose.connect(
     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
