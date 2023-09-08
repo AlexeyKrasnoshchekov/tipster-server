@@ -35,7 +35,7 @@ const dayTom = tomorrow.getDate();
 let month = today.getMonth();
 month = month < 10 ? `0${month + 1}` : month + 1;
 
-const url_passion = 'https://passionpredict.com/home-wins';
+// const url_passion = 'https://passionpredict.com/home-wins';
 const url_footsuper =
   'https://www.footballsuper.tips/todays-free-football-super-tips/';
 // const url_wdw = 'https://www.windrawwin.com/best-bets-today/';
@@ -317,42 +317,42 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
     .catch((err) => console.log(err));
 
   // //PASSION
-  await axios(url_passion)
-    .then((response) => {
-      const html = response.data;
+  // await axios(url_passion)
+  //   .then((response) => {
+  //     const html = response.data;
 
-      // console.log('000', html);
-      const $ = cheerio.load(html);
-      let homeTeamsArr = [];
+  //     // console.log('000', html);
+  //     const $ = cheerio.load(html);
+  //     let homeTeamsArr = [];
 
-      $('tr', html).each(function () {
-        //<-- cannot be a function expression
-        // const title = $(this).text();
-        const homeTeam = $(this)
-          .find('td:nth-child(3)')
-          .find('span:first')
-          .text()
-          .split(' VS')[0];
-        homeTeamsArr.push(homeTeam);
-      });
-      homeTeamsArr.splice(0, 1);
-      let indexOfEmpty = homeTeamsArr.indexOf('');
-      let todayHomeTeamsArr = homeTeamsArr.slice(indexOfEmpty + 1);
-      todayHomeTeamsArr.forEach((elem) => {
-        elem !== '' &&
-          winData.push({
-            source: 'passion',
-            action: 'win',
-            homeTeam: elem,
-            awayTeam: '',
-            prediction: elem,
-            date: todayString,
-          });
-      });
+  //     $('tr', html).each(function () {
+  //       //<-- cannot be a function expression
+  //       // const title = $(this).text();
+  //       const homeTeam = $(this)
+  //         .find('td:nth-child(3)')
+  //         .find('span:first')
+  //         .text()
+  //         .split(' VS')[0];
+  //       homeTeamsArr.push(homeTeam);
+  //     });
+  //     homeTeamsArr.splice(0, 1);
+  //     let indexOfEmpty = homeTeamsArr.indexOf('');
+  //     let todayHomeTeamsArr = homeTeamsArr.slice(indexOfEmpty + 1);
+  //     todayHomeTeamsArr.forEach((elem) => {
+  //       elem !== '' &&
+  //         winData.push({
+  //           source: 'passion',
+  //           action: 'win',
+  //           homeTeam: elem,
+  //           awayTeam: '',
+  //           prediction: elem,
+  //           date: todayString,
+  //         });
+  //     });
 
-      // res.json(btts);
-    })
-    .catch((err) => console.log(err));
+  //     // res.json(btts);
+  //   })
+  //   .catch((err) => console.log(err));
 
   // //O25TIPS
   await axios(url_o25tips)
