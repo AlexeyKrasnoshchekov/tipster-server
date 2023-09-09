@@ -38,8 +38,8 @@ month = month < 10 ? `0${month + 1}` : month + 1;
 // const url_goalnow = 'https://www.goalsnow.com/over-under-predictions/';
 const url_gnow_accum = 'https://www.goalsnow.com/accumulator-over-2.5-goals/';
 
-const url_vitibet =
-  'https://www.vitibet.com/index.php?clanek=quicktips&sekce=fotbal&lang=en';
+// const url_vitibet =
+//   'https://www.vitibet.com/index.php?clanek=quicktips&sekce=fotbal&lang=en';
 
 const url_soccertipz = 'https://www.soccertipz.com/under-over-2-5-predictions/';
 const url_banker = 'https://bankerpredict.com/over-2-5-goals';
@@ -301,39 +301,39 @@ overRouter.get('/load', cors(corsOptions), async (req, res) => {
     .catch((err) => console.log(err));
 
   // //VITIBET
-  await axios(url_vitibet)
-    .then((response) => {
-      const html = response.data;
+  // await axios(url_vitibet)
+  //   .then((response) => {
+  //     const html = response.data;
 
-      // console.log('000', html);
-      const $ = cheerio.load(html);
+  //     // console.log('000', html);
+  //     const $ = cheerio.load(html);
 
-      $('tr', html).each(function () {
-        //<-- cannot be a function expression
-        // const title = $(this).text();
-        const date = $(this).find('td:nth-child(1)').text();
-        const homeTeam = $(this).find('td:nth-child(2)').text();
-        const awayTeam = $(this).find('td:nth-child(3)').text();
-        const score1 = $(this).find('td:nth-child(4)').text();
-        const score2 = $(this).find('td:nth-child(6)').text();
+  //     $('tr', html).each(function () {
+  //       //<-- cannot be a function expression
+  //       // const title = $(this).text();
+  //       const date = $(this).find('td:nth-child(1)').text();
+  //       const homeTeam = $(this).find('td:nth-child(2)').text();
+  //       const awayTeam = $(this).find('td:nth-child(3)').text();
+  //       const score1 = $(this).find('td:nth-child(4)').text();
+  //       const score2 = $(this).find('td:nth-child(6)').text();
 
-        const scoreTotal = score1 * 1 + score2 * 1;
+  //       const scoreTotal = score1 * 1 + score2 * 1;
 
-        homeTeam !== '' && date.includes(`0${day}.${month}`) &&
-          scoreTotal >= 3 &&
-          over25.push({
-            source: 'vitibet',
-            action: 'over25',
-            checked: false,
-            homeTeam: homeTeam.trim(),
-            awayTeam: awayTeam.trim(),
-            date: todayString,
-          });
-      });
+  //       homeTeam !== '' && date.includes(`0${day}.${month}`) &&
+  //         scoreTotal >= 3 &&
+  //         over25.push({
+  //           source: 'vitibet',
+  //           action: 'over25',
+  //           checked: false,
+  //           homeTeam: homeTeam.trim(),
+  //           awayTeam: awayTeam.trim(),
+  //           date: todayString,
+  //         });
+  //     });
 
-      // res.json(btts);
-    })
-    .catch((err) => console.log(err));
+  //     // res.json(btts);
+  //   })
+  //   .catch((err) => console.log(err));
 
    //hello
    await axios(url_hello)

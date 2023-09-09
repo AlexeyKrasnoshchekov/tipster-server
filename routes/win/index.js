@@ -59,7 +59,7 @@ const url_r2bet = 'https://r2bet.com/double_chance';
 // const url_wbo = 'https://www.winonbetonline.com/';
 // const url_suretips = 'https://suretipspredict.com/';
 
-const url_hello = 'https://hellopredict.com/Double_chance';
+// const url_hello = 'https://hellopredict.com/Double_chance';
 const url_mybets = 'https://www.mybets.today/recommended-soccer-predictions/';
 // const url_mines = `https://api.betmines.com/betmines/v1/fixtures/betmines-machine?dateFormat=extended&platform=website&from=2023-08-${day}T00:00:00Z&to=2023-08-${dayTom}T07:00:00Z&minOdd=1.3&maxOdd=1.6&limit=20&minProbability=1&maxProbability=100&odds=1X,X2&leagueIds=`;
 const url_mines1 = `https://api.betmines.com/betmines/v1/fixtures/betmines-machine?dateFormat=extended&platform=website&from=2023-${month}-${day}T21:00:00Z&to=2023-${month}-${dayTom}T21:00:00Z&minOdd=1.1&maxOdd=1.6&limit=20&minProbability=1&maxProbability=100&odds=1&leagueIds=`;
@@ -799,50 +799,50 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
     .catch((err) => console.log(err));
 
   //hello
-  await axios(url_hello)
-    .then((response) => {
-      const html = response.data;
+  // await axios(url_hello)
+  //   .then((response) => {
+  //     const html = response.data;
 
-      // console.log('000', html);
-      const $ = cheerio.load(html);
+  //     // console.log('000', html);
+  //     const $ = cheerio.load(html);
 
-      $('tr', html).each(function () {
-        //<-- cannot be a function expression
-        // const title = $(this).text();
-        const homeTeam = $(this)
-          .find('.tab_b_match')
-          .find('span:first')
-          .text()
-          .split('VS')[0];
-        const awayTeam = $(this)
-          .find('.tab_b_match')
-          .find('span:first')
-          .text()
-          .split('VS')[1];
+  //     $('tr', html).each(function () {
+  //       //<-- cannot be a function expression
+  //       // const title = $(this).text();
+  //       const homeTeam = $(this)
+  //         .find('.tab_b_match')
+  //         .find('span:first')
+  //         .text()
+  //         .split('VS')[0];
+  //       const awayTeam = $(this)
+  //         .find('.tab_b_match')
+  //         .find('span:first')
+  //         .text()
+  //         .split('VS')[1];
 
-        // const awayTeam = $(this).find('td:nth-child(3)').text().split('VS')[1];
-        const tip = $(this)
-          .find('.tab_b_tips')
-          .find('span:first')
-          .find('span:first')
-          .text();
+  //       // const awayTeam = $(this).find('td:nth-child(3)').text().split('VS')[1];
+  //       const tip = $(this)
+  //         .find('.tab_b_tips')
+  //         .find('span:first')
+  //         .find('span:first')
+  //         .text();
 
-        homeTeam !== '' &&
-          winData.push({
-            source: 'hello',
-            action: 'XWin',
-            checked: false,
-            homeTeam: homeTeam.trim(),
-            awayTeam: awayTeam.trim(),
-            date: todayString,
-            prediction:
-              tip.includes('1') || tip.includes('1X') ? homeTeam : awayTeam,
-          });
-      });
+  //       homeTeam !== '' &&
+  //         winData.push({
+  //           source: 'hello',
+  //           action: 'XWin',
+  //           checked: false,
+  //           homeTeam: homeTeam.trim(),
+  //           awayTeam: awayTeam.trim(),
+  //           date: todayString,
+  //           prediction:
+  //             tip.includes('1') || tip.includes('1X') ? homeTeam : awayTeam,
+  //         });
+  //     });
 
-      // res.json(over25);
-    })
-    .catch((err) => console.log(err));
+  //     // res.json(over25);
+  //   })
+  //   .catch((err) => console.log(err));
 
   // const optionsHomeWin = {
   //   method: 'GET',
