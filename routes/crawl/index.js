@@ -208,7 +208,7 @@ crawlRouter.get('/load', cors(corsOptions), async (req, res) => {
                 awayTeam,
                 date: todayString,
               });
-            } else if (homeTeam !== '' && pred.includes('Match Winner')) {
+            } else if (homeTeam !== '' && (pred.includes('Match Winner') || pred.includes('Win'))) {
               crawlData.push({
                 source: 'wincomparator',
                 action: 'win',
@@ -239,6 +239,8 @@ crawlRouter.get('/load', cors(corsOptions), async (req, res) => {
       useUnifiedTopology: true,
     }
   );
+
+  console.log('crawlData',crawlData);
 
   const bttsDataCrawl = crawlData.filter((item) => item.action === 'btts');
 
