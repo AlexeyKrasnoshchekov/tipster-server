@@ -38,6 +38,7 @@ let month = today.getMonth();
 month = month < 10 ? `0${month + 1}` : month + 1;
 
 const url_goalnow = 'https://www.goalsnow.com/over-under-predictions/';
+const url_predutd = 'https://predictionsunited.com/football-predictions-and-tips/today/under-2-5-goals';
 const url_vitibet =
   'https://www.vitibet.com/index.php?clanek=quicktips&sekce=fotbal&lang=en';
 const url_venasbet = 'https://venasbet.com/under_3_5_goals';
@@ -180,6 +181,46 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
     })
     .catch((err) => console.log(err));
 
+    //PREDUTD
+    await axios(url_predutd)
+    .then((response) => {
+      const html = response.data;
+
+      // console.log('000', html);
+      const $ = cheerio.load(html);
+
+      const body = $('#mainRow', html).find('div:nth-child(2)').find('div:nth-child(1)');
+
+      $('div', body).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const homeTeam = $(this)
+          .find('th')
+          .text()
+          .split(' - ')[0];
+
+          const awayTeam = $(this)
+          .find('th')
+          .text()
+          .split(' - ')[1];
+
+          console.log('predutdU25', homeTeam);
+
+        homeTeam !== '' &&
+        under25.push({
+            source: 'predutd',
+            action: 'under25',
+            checked: false,
+            homeTeam: homeTeam.trim(),
+            awayTeam: awayTeam.trim(),
+            date: todayString,
+          });
+      });
+
+      // res.send('banker over loaded');
+    })
+    .catch((err) => console.log(err));
+
   // //VITIBET
   await axios(url_vitibet)
     .then((response) => {
@@ -217,52 +258,52 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
     .catch((err) => console.log(err));
 
   //NVTIPS
-  await axios(url_nvtips)
-    .then((response) => {
-      const html = response.data;
+  // await axios(url_nvtips)
+  //   .then((response) => {
+  //     const html = response.data;
 
-      // console.log('000', html);
-      const $ = cheerio.load(html);
-      let homeTeamsArr = [];
+  //     // console.log('000', html);
+  //     const $ = cheerio.load(html);
+  //     let homeTeamsArr = [];
 
-      $('tr', html).each(function () {
-        //<-- cannot be a function expression
-        // const title = $(this).text();
-        const homeTeam = $(this).find('td:nth-child(6)').text();
-        const underYes = $(this)
-          .find('td:nth-child(13)')
-          .find('strong:first')
-          .text();
+  //     $('tr', html).each(function () {
+  //       //<-- cannot be a function expression
+  //       // const title = $(this).text();
+  //       const homeTeam = $(this).find('td:nth-child(6)').text();
+  //       const underYes = $(this)
+  //         .find('td:nth-child(13)')
+  //         .find('strong:first')
+  //         .text();
 
-        if (underYes.includes('Менее')) {
-          homeTeamsArr.push(homeTeam);
-        }
-      });
-      // console.log('homeTeamsArr', homeTeamsArr);
-      homeTeamsArr.splice(0, 1);
-      // console.log('homeTeamsArr111', homeTeamsArr);
-      let indexOfEmpty = homeTeamsArr.indexOf('');
-      // console.log('indexOfEmpty', indexOfEmpty);
-      let todayHomeTeamsArr = homeTeamsArr.slice(indexOfEmpty + 1);
-      // console.log('todayHomeTeamsArr', todayHomeTeamsArr);
-      todayHomeTeamsArr.forEach((elem) => {
-        elem !== '' &&
-          under25.push({
-            source: 'nvtips',
-            action: 'under25',
-            checked: false,
-            homeTeam:
-              getHomeTeamName(elem) !== ''
-                ? getHomeTeamName(elem)
-                : elem.replace('FC ', ''),
-            awayTeam: '',
-            date: todayString,
-          });
-      });
+  //       if (underYes.includes('Менее')) {
+  //         homeTeamsArr.push(homeTeam);
+  //       }
+  //     });
+  //     // console.log('homeTeamsArr', homeTeamsArr);
+  //     homeTeamsArr.splice(0, 1);
+  //     // console.log('homeTeamsArr111', homeTeamsArr);
+  //     let indexOfEmpty = homeTeamsArr.indexOf('');
+  //     // console.log('indexOfEmpty', indexOfEmpty);
+  //     let todayHomeTeamsArr = homeTeamsArr.slice(indexOfEmpty + 1);
+  //     // console.log('todayHomeTeamsArr', todayHomeTeamsArr);
+  //     todayHomeTeamsArr.forEach((elem) => {
+  //       elem !== '' &&
+  //         under25.push({
+  //           source: 'nvtips',
+  //           action: 'under25',
+  //           checked: false,
+  //           homeTeam:
+  //             getHomeTeamName(elem) !== ''
+  //               ? getHomeTeamName(elem)
+  //               : elem.replace('FC ', ''),
+  //           awayTeam: '',
+  //           date: todayString,
+  //         });
+  //     });
 
-      // res.json(btts);
-    })
-    .catch((err) => console.log(err));
+  //     // res.json(btts);
+  //   })
+  //   .catch((err) => console.log(err));
 
   //SOCCERTIPZ
   await axios(url_soccertipz)
@@ -315,7 +356,7 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
   await axios(url_mines)
     .then((response) => {
       const data = response.data;
-      console.log('minesUnder', data);
+      // console.log('minesUnder', data);
 
       data.forEach((elem) => {
         elem !== '' && elem.bestOddProbability > 74 &&

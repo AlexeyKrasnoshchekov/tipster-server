@@ -240,10 +240,10 @@ crawlRouter.get('/load', cors(corsOptions), async (req, res) => {
     }
   );
 
-  console.log('crawlData',crawlData);
+  
 
   const bttsDataCrawl = crawlData.filter((item) => item.action === 'btts');
-
+  console.log('bttsDataCrawl',bttsDataCrawl);
   await Btts.insertMany(bttsDataCrawl)
     .then(function () {
       console.log('crawl Btts inserted'); // Success
@@ -253,7 +253,7 @@ crawlRouter.get('/load', cors(corsOptions), async (req, res) => {
     });
 
   const overDataCrawl = crawlData.filter((item) => item.action === 'over25');
-
+  console.log('overDataCrawl',overDataCrawl);
   await Over.insertMany(overDataCrawl)
     .then(function () {
       console.log('crawl Over inserted'); // Success
@@ -263,7 +263,7 @@ crawlRouter.get('/load', cors(corsOptions), async (req, res) => {
     });
 
   const underDataCrawl = crawlData.filter((item) => item.action === 'under25');
-
+  console.log('underDataCrawl',underDataCrawl);
   await Under25.insertMany(underDataCrawl)
     .then(function () {
       console.log('crawl Under inserted'); // Success
@@ -273,6 +273,7 @@ crawlRouter.get('/load', cors(corsOptions), async (req, res) => {
     });
 
   const winDataCrawl = crawlData.filter((item) => item.action === 'win');
+  console.log('winDataCrawl',winDataCrawl);
   await WinData.insertMany(winDataCrawl)
     .then(function () {
       console.log('winDataCrawl inserted'); // Success

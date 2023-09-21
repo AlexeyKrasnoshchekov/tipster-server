@@ -925,6 +925,8 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
     }
   );
 
+  console.log('filteredNoEmpty2',filteredNoEmpty2);
+
   await WinData.insertMany(filteredNoEmpty2)
     .then(function () {
       console.log('WinData inserted'); // Success
