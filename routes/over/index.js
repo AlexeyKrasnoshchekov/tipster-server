@@ -54,7 +54,7 @@ const url_o25tip =
   'https://www.over25tips.com/soccer-stats/high-scoring-matches-today/';
 
 const url_footsuper_o25 =
-  'https://www.footballsuper.tips/football-accumulators-tips/football-tips-match-goals-accumulator/';
+  'https://www..tips/football-accumulators-tips/football-tips-match-goals-accumulator/';
 
 //OTHER
 const url_footsuper =

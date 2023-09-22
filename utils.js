@@ -23,18 +23,64 @@ function getHomeTeamName(name) {
       return 'Maidenhead Utd';
     case 'Bengaluru FC':
       return 'Bengaluru';
+    case 'D. Zagreb':
+      return 'Dinamo Zagreb';
     case 'Lech Poznań':
       return 'Lech Poznan';
     case 'Humaitá':
       return 'Humaita';
+    case 'Lask Linz':
+      return 'LASK Linz';
+    case 'LASK':
+      return 'LASK Linz';
+    case 'Olympiacos Piraeus':
+      return 'Olympiacos';
+    case 'Fenerbahçe':
+      return 'Fenerbahce';
+    case 'PEPO Lappeenranta':
+      return 'PEPO';
+    case 'FC Lugano':
+      return 'Lugano';
     case 'Ceilândia':
       return 'Ceilandia';
+    case 'Ceilândia':
+      return 'Ceilandia';
+    case 'FK Zorya Luhansk':
+      return 'Zorya';
+    case 'Zorya Luhansk':
+      return 'Zorya';
+    case 'West Ham United':
+      return 'West Ham';
+    case 'Royale Union SG':
+      return 'Union SG';
+    case 'Union Saint-Gilloise':
+      return 'Union SG';
+    case 'Sparta Praha':
+      return 'Sparta Prague';
+    case 'Sheriff Tiraspol':
+      return 'Sheriff';
+    case 'Servette FC':
+      return 'Servette';
+    case 'Qarabağ':
+      return 'Qarabag';
+    case 'Ferencvarosi TC':
+      return 'Ferencvaros';
     case 'Man Utd':
       return 'Manchester United';
     case 'NK Domzale':
       return 'Domzale';
     case 'Domžale':
       return 'Domzale';
+    case 'Zrinjski':
+      return 'Zrinjski Mostar';
+    case 'Bayer':
+      return 'Bayer Leverkusen';
+    case 'Legia':
+      return 'Legia Warsaw';
+    case 'Club Brugge KV':
+      return 'Club Brugge';
+    case 'HJK helsinki':
+      return 'HJK';
     case 'PSV Eindhoven':
       return 'PSV';
     case 'AS Roma':
