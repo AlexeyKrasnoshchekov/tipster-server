@@ -55,12 +55,12 @@ crawlRouter.get('/load', cors(corsOptions), async (req, res) => {
         $('section', html).each(function () {
           const type = $(this).find('.leagueslinks').text();
 
-          console.log('000', type);
+          // console.log('000', type);
 
           if (type === 'Bankers') {
             $('.diveachgame', this).each(function () {
               const pred = $(this).find('.icontip').find('span:first').text();
-              console.log('000', pred);
+              // console.log('000', pred);
               const homeTeam = $(this)
                 .find('.dividehome')
                 .find('div:first')

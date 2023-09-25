@@ -12,6 +12,7 @@ const winRouter = require('./routes/win');
 const resultRouter = require('./routes/result');
 const totalRouter = require('./routes/total');
 const underRouter = require('./routes/under');
+const testRouter = require('./routes/test');
 
 const mongoose = require('mongoose');
 
@@ -31,6 +32,7 @@ app.use('/win', winRouter);
 app.use('/result', resultRouter);
 app.use('/total', totalRouter);
 app.use('/under', underRouter);
+app.use('/test', testRouter);
 
 ///////APIS
 

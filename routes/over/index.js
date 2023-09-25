@@ -39,7 +39,8 @@ month = month < 10 ? `0${month + 1}` : month + 1;
 
 // const url_goalnow = 'https://www.goalsnow.com/over-under-predictions/';
 const url_gnow_accum = 'https://www.goalsnow.com/accumulator-over-2.5-goals/';
-const url_predutd = 'https://predictionsunited.com/football-predictions-and-tips/today/over-2-5-goals';
+const url_predutd =
+  'https://predictionsunited.com/football-predictions-and-tips/today/over-2-5-goals';
 
 const url_prot = 'https://www.protipster.com/betting-tips/over-2.5-goals';
 const url_fbp =
@@ -66,6 +67,11 @@ const url_vitibet =
 const url_venasbet = 'https://venasbet.com/over-2-5-goals-prediction';
 // const url_nvtips = 'https://nvtips.com/ru/';
 const url_footy = 'https://footystats.org/predictions/over-25-goals';
+const url_betprotips = 'https://betprotips.com/football-tips/over-under-tips/';
+const url_leaguelane = 'https://leaguelane.com/over-2-5-goals-accumulator/';
+const url_kcpredict = 'https://kcpredict.com/over-2-5-goals-tips';
+const url_trustpredict = 'https://trustpredict.com/over-2-5-goals';
+const url_betimate = `https://betimate.com/en/football-predictions/under-over-25-goals?date=2023-${month}-${day}`;
 // const url_mybets =
 //   'https://www.mybets.today/soccer-predictions/under-over-2-5-goals-predictions/';
 const url_mines = `https://api.betmines.com/betmines/v1/fixtures/betmines-machine?dateFormat=extended&platform=website&from=2023-${month}-${day}T00:00:00Z&to=2023-${month}-${dayTom}T07:00:00Z&minOdd=1.3&maxOdd=1.8&limit=20&minProbability=1&maxProbability=100&odds=OVER_25&leagueIds=`;
@@ -159,71 +165,114 @@ overRouter.get('/load', cors(corsOptions), async (req, res) => {
     })
     .catch((err) => console.log(err));
 
-     //BANKER
+  //BANKER
   await axios(url_banker)
-  .then((response) => {
-    const html = response.data;
+    .then((response) => {
+      const html = response.data;
 
-    // console.log('000', html);
-    const $ = cheerio.load(html);
+      // console.log('000', html);
+      const $ = cheerio.load(html);
 
-    const body = $('section:nth-child(2) tbody', html);
+      const body = $('section:nth-child(2) tbody', html);
 
-    $('tr', body).each(function () {
-      //<-- cannot be a function expression
-      // const title = $(this).text();
-      const homeTeam = $(this)
-        .find('td:nth-child(3)')
-        .find('span:first')
-        .text()
-        .split('VS')[0];
+      $('tr', body).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const homeTeam = $(this)
+          .find('td:nth-child(3)')
+          .find('span:first')
+          .text()
+          .split('VS')[0];
 
-      const awayTeam = $(this)
-        .find('td:nth-child(3)')
-        .find('span:first')
-        .text()
-        .split('VS')[1];
+        const awayTeam = $(this)
+          .find('td:nth-child(3)')
+          .find('span:first')
+          .text()
+          .split('VS')[1];
 
-      homeTeam !== '' &&
-      over25.push({
-          source: 'banker_o25',
-          action: 'over25',
-          checked: false,
-          homeTeam: homeTeam.trim(),
-          awayTeam: awayTeam.trim(),
-          date: todayString,
-        });
-    });
+        homeTeam !== '' &&
+          over25.push({
+            source: 'banker_o25',
+            action: 'over25',
+            checked: false,
+            homeTeam: homeTeam.trim(),
+            awayTeam: awayTeam.trim(),
+            date: todayString,
+          });
+      });
 
-  //   res.send('banker btts ok');
-  })
-  .catch((err) => console.log(err));
+      //   res.send('banker btts ok');
+    })
+    .catch((err) => console.log(err));
 
-    //FBP
+  //FBP
   // await axios(url_fbp)
   await axios(url_fbp)
+    .then((response) => {
+      const html = response.data;
+      // console.log(response.data);
+      // console.log('000', html);
+      const $ = cheerio.load(html);
+
+      $('.card-body', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const homeTeam = $(this).find('.home-team').find('.team-label').text();
+        const awayTeam = $(this).find('.away-team').find('.team-label').text();
+        const under25text = $(this).find('.prediction').text();
+        const under25Yes = under25text.includes('Over');
+        // console.log('over25Fbp', over25);
+        const predictionDate = $(this)
+          .find('.match-preview-date')
+          .find('.full-cloak')
+          .text();
+        homeTeam !== '' &&
+          under25Yes &&
+          over25.push({
+            source: 'fbp_o25',
+            action: 'over25',
+            checked: false,
+            homeTeam:
+              getHomeTeamName(homeTeam.trim()) !== ''
+                ? getHomeTeamName(homeTeam.trim())
+                : homeTeam.trim().replace('FC ', ''),
+            awayTeam,
+            date: todayString,
+            predictionDate: predictionDate,
+          });
+      });
+
+      // res.json(over25);
+    })
+    .catch((err) => console.log(err));
+
+   // betprotips
+  // await axios(url_fbp)
+  await axios(url_betprotips)
   .then((response) => {
     const html = response.data;
     // console.log(response.data);
     // console.log('000', html);
     const $ = cheerio.load(html);
 
-    $('.card-body', html).each(function () {
+    $('.prediction-card', html).each(function () {
       //<-- cannot be a function expression
       // const title = $(this).text();
-      const homeTeam = $(this).find('.home-team').find('.team-label').text();
-      const awayTeam = $(this).find('.away-team').find('.team-label').text();
-      const under25text = $(this).find('.prediction').text();
-      const under25Yes = under25text.includes('Over');
-      // console.log('over25Fbp', over25);
-      const predictionDate = $(this)
-        .find('.match-preview-date')
-        .find('.full-cloak')
-        .text();
+      // const homeTeam = $(this).find('.teams').find('.home-team').find('span:nth-child(1)').text();
+      const homeTeam = $(this).find('.teams').find('.home-team').text();
+      // console.log('homeTeam000', homeTeam);
+
+      const awayTeam = $(this).find('.teams').find('.away-team').text();
+      // console.log('awayTeam000', awayTeam);
+      const prediction = $(this).find('.advice-row').find('div:nth-child(1)').text();
+      // console.log('prediction000', prediction);
+      const underYes = prediction.includes('Over 2.5');
+      // console.log('over25Fbp', underYes);
+
       homeTeam !== '' &&
-        under25Yes &&
+      underYes &&
         over25.push({
-          source: 'fbp_o25',
+          source: 'betprotips',
           action: 'over25',
           checked: false,
           homeTeam:
@@ -232,7 +281,6 @@ overRouter.get('/load', cors(corsOptions), async (req, res) => {
               : homeTeam.trim().replace('FC ', ''),
           awayTeam,
           date: todayString,
-          predictionDate: predictionDate,
         });
     });
 
@@ -240,8 +288,98 @@ overRouter.get('/load', cors(corsOptions), async (req, res) => {
   })
   .catch((err) => console.log(err));
 
-    //MORPH
-    await axios
+  //leaguelane
+  await axios(url_leaguelane)
+    .then((response) => {
+      const html = response.data;
+      // console.log(response.data);
+      // console.log('000', html);
+      const $ = cheerio.load(html);
+
+      $('.tip-box', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const homeTeam = $(this)
+          .find('div:nth-child(2)')
+          .find('h2:nth-child(1)')
+          .text()
+          .split(' vs ')[0];
+        const awayTeam = $(this)
+          .find('div:nth-child(2)')
+          .find('h2:nth-child(1)')
+          .text()
+          .split(' vs ')[1];
+
+        homeTeam !== '' &&
+          over25.push({
+            source: 'leaguelane_o25',
+            action: 'over25',
+            isAcca: true,
+            homeTeam:
+              getHomeTeamName(homeTeam.trim()) !== ''
+                ? getHomeTeamName(homeTeam.trim())
+                : homeTeam.trim().replace('FC ', ''),
+            awayTeam,
+            date: todayString,
+          });
+      });
+
+      // res.json(over25);
+    })
+    .catch((err) => console.log(err));
+
+ //betimate
+ await axios(url_betimate)
+ .then((response) => {
+   const html = response.data;
+   // console.log(response.data);
+  //  console.log('000', html);
+   const $ = cheerio.load(html);
+
+   $('.prediction-body', html).each(function () {
+     //<-- cannot be a function expression
+     // const title = $(this).text();
+     const homeTeam = $(this).find('.homeTeam').text();
+    //  console.log('homeTeam000', homeTeam);
+
+     const awayTeam = $(this).find('.awayTeam').text();
+     const date = $(this).find('.date_bah').text();
+    //  console.log('date111', date);
+    //  console.log('date222', `${month}/${day}`);
+
+     let probabilityOver = '';
+
+     const prediction = $(this).find('.predict').find('small').text();
+    //  console.log('prediction000', prediction);
+
+     const overYes = prediction.includes('Over');
+
+     if (overYes) {
+       probabilityOver = $(this).find('.probability').find('div:nth-child(2)').text();
+     }
+    //  console.log('over25Fbp', probabilityUnder);
+
+     homeTeam !== '' && date.includes(`${month}/${day}`) &&
+     overYes &&
+     over25.push({
+         source: 'betimate',
+         action: `over25 ${probabilityOver}`,
+         checked: false,
+         homeTeam:
+           getHomeTeamName(homeTeam.trim()) !== ''
+             ? getHomeTeamName(homeTeam.trim())
+             : homeTeam.trim().replace('FC ', ''),
+         awayTeam,
+         date: todayString,
+       });
+   });
+
+   // res.json(over25);
+ })
+ .catch((err) => console.log(err));
+
+  //MORPH
+  await axios
     .request(optionsOver25)
     .then(function (response) {
       const data = response.data;
@@ -619,42 +757,38 @@ overRouter.get('/load', cors(corsOptions), async (req, res) => {
 
   //PREDUTD
   await axios(url_predutd)
-  .then((response) => {
-    const html = response.data;
+    .then((response) => {
+      const html = response.data;
 
-    // console.log('000', html);
-    const $ = cheerio.load(html);
+      // console.log('000', html);
+      const $ = cheerio.load(html);
 
-    const body = $('#mainRow', html).find('div:nth-child(2)').find('div:nth-child(1)');
+      const body = $('#mainRow', html)
+        .find('div:nth-child(2)')
+        .find('div:nth-child(1)');
 
-    $('div', body).each(function () {
-      //<-- cannot be a function expression
-      // const title = $(this).text();
-      const homeTeam = $(this)
-        .find('th')
-        .text()
-        .split(' - ')[0];
-      const awayTeam = $(this)
-        .find('th')
-        .text()
-        .split(' - ')[1];
+      $('div', body).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const homeTeam = $(this).find('th').text().split(' - ')[0];
+        const awayTeam = $(this).find('th').text().split(' - ')[1];
 
         console.log('predutdO25', homeTeam);
 
-      homeTeam !== '' &&
-        over25.push({
-          source: 'predutd_o25',
-          action: 'over25',
-          checked: false,
-          homeTeam: homeTeam.trim(),
-          awayTeam: awayTeam.trim(),
-          date: todayString,
-        });
-    });
+        homeTeam !== '' &&
+          over25.push({
+            source: 'predutd_o25',
+            action: 'over25',
+            checked: false,
+            homeTeam: homeTeam.trim(),
+            awayTeam: awayTeam.trim(),
+            date: todayString,
+          });
+      });
 
-    // res.send('banker over loaded');
-  })
-  .catch((err) => console.log(err));
+      // res.send('banker over loaded');
+    })
+    .catch((err) => console.log(err));
 
   //SOCCERTIPZ
   await axios(url_soccertipz)
@@ -870,7 +1004,7 @@ overRouter.get('/load', cors(corsOptions), async (req, res) => {
         const scoreTotal = score1 * 1 + score2 * 1;
 
         homeTeam !== '' &&
-          date.includes(`0${day}.${month}`) &&
+          date.includes(`${day}.${month}`) &&
           scoreTotal >= 3 &&
           over25.push({
             source: 'vitibet_o25',
@@ -921,7 +1055,7 @@ overRouter.get('/load', cors(corsOptions), async (req, res) => {
               over25.push({
                 source: 'hello_o25',
                 action: 'over25',
-                isAcca: true,
+                isAcca: false,
                 homeTeam: homeTeam.trim(),
                 awayTeam: awayTeam.trim(),
                 date: todayString,
@@ -933,6 +1067,90 @@ overRouter.get('/load', cors(corsOptions), async (req, res) => {
       // res.send('hello over loaded');
     })
     .catch((err) => console.log(err));
+
+  //kcpredict
+  await axios(url_kcpredict)
+    .then((response) => {
+      const html = response.data;
+
+      // console.log('000', html);
+      const $ = cheerio.load(html);
+
+      const body = $('section:nth-child(2) tbody', html);
+
+      $('tr', body).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const homeTeam = $(this)
+          .find('td:nth-child(2)')
+          .find('span:first')
+          .text()
+          .split('VS')[0];
+        const awayTeam = $(this)
+          .find('td:nth-child(2)')
+          .find('span:first')
+          .text()
+          .split('VS')[1];
+
+        // const awayTeam = $(this).find('td:nth-child(3)').text().split('VS')[1];
+        // const tip = $(this).find('td:nth-child(4)').text();
+
+        homeTeam !== '' &&
+          over25.push({
+            source: 'kcpredict_o25',
+            action: 'over25',
+            isAcca: false,
+            homeTeam: homeTeam.trim(),
+            awayTeam: awayTeam.trim(),
+            date: todayString,
+          });
+      });
+
+      // res.send('hello over loaded');
+    })
+    .catch((err) => console.log(err));
+
+  //trustpredict
+  await axios(url_trustpredict)
+  .then((response) => {
+    const html = response.data;
+
+    // console.log('000', html);
+    const $ = cheerio.load(html);
+
+    const body = $('section:nth-child(2) tbody', html);
+
+    $('tr', body).each(function () {
+      //<-- cannot be a function expression
+      // const title = $(this).text();
+      const homeTeam = $(this)
+        .find('td:nth-child(3)')
+        .find('span:first')
+        .text()
+        .split('VS')[0];
+      const awayTeam = $(this)
+        .find('td:nth-child(3)')
+        .find('span:first')
+        .text()
+        .split('VS')[1];
+
+      // const awayTeam = $(this).find('td:nth-child(3)').text().split('VS')[1];
+      // const tip = $(this).find('td:nth-child(4)').text();
+
+      homeTeam !== '' &&
+        over25.push({
+          source: 'trustpredict_o25',
+          action: 'over25',
+          isAcca: false,
+          homeTeam: homeTeam.trim(),
+          awayTeam: awayTeam.trim(),
+          date: todayString,
+        });
+    });
+
+    // res.send('hello over loaded');
+  })
+  .catch((err) => console.log(err));
 
   // ACCUM
   // await axios(url_accum)
@@ -1091,7 +1309,7 @@ overRouter.get('/load', cors(corsOptions), async (req, res) => {
       useUnifiedTopology: true,
     }
   );
-  console.log('sortedOver',sortedOver);
+  console.log('sortedOver', sortedOver);
   await Over.insertMany(sortedOver)
     .then(function () {
       console.log('Over inserted'); // Success

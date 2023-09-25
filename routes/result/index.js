@@ -77,11 +77,11 @@ resultRouter.get('/getZeroCounter', async (req, res) => {
       useUnifiedTopology: true,
     }
   );
-  console.log('req.query.date', req.query.date);
+  // console.log('req.query.date', req.query.date);
   const res111 = await ZeroCounter.find({ date: req.query.date });
   await db.disconnect();
 
-  console.log('res111', res111);
+  // console.log('res111', res111);
 
   res.json(res111);
 });

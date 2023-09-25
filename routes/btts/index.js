@@ -46,30 +46,35 @@ const url_fst = 'https://www.freesupertips.com/both-teams-to-score-tips/';
 
 const url_r2bet = 'https://r2bet.com/gg_btts';
 
-
 const url_footsuper_btts =
   'https://www.footballsuper.tips/football-accumulators-tips/football-tips-both-teams-to-score-accumulator/';
 
-
-  //OTHER
-  const url_footy = 'https://footystats.org/predictions/btts';
-  const url_predutd = 'https://predictionsunited.com/football-predictions-and-tips/today/both-teams-to-score';
-  const url_mighty = 'https://www.mightytips.com/football-predictions/btts/';
+//OTHER
+const url_footy = 'https://footystats.org/predictions/btts';
+const url_predutd =
+  'https://predictionsunited.com/football-predictions-and-tips/today/both-teams-to-score';
+const url_mighty = 'https://www.mightytips.com/football-predictions/btts/';
 //   const url_wdw = 'https://www.windrawwin.com/accumulator-tips/today/';
-  const url_hello = 'https://hellopredict.com/btts';
+const url_hello = 'https://hellopredict.com/btts';
+const url_betimate = `https://betimate.com/en/football-predictions/both-to-score?date=2023-${month}-${day}`;
+const url_leaguelane = 'https://leaguelane.com/both-teams-to-score-tips/';
+const url_betprotips = 'https://betprotips.com/football-tips/both-teams-to-score-tips-btts/';
+const url_kcpredict = 'https://kcpredict.com/both-team-to-score-tips';
+const url_trustpredict = 'https://trustpredict.com/both-team-to-score';
 //   const url_nvtips = 'https://nvtips.com/ru/';
-  const url_banker = 'https://bankerpredict.com/both-team-to-score';
-  const url_prot = 'https://www.protipster.com/betting-tips/btts';
-  const url_venasbet = 'https://venasbet.com/btts_gg';
+const url_banker = 'https://bankerpredict.com/both-team-to-score';
+const url_prot = 'https://www.protipster.com/betting-tips/btts';
+const url_venasbet = 'https://venasbet.com/btts_gg';
 //   const url_mybets =
 //     'https://www.mybets.today/soccer-predictions/both-teams-to-score-predictions/';
-  const url_fbpai =
-    'https://footballpredictions.ai/football-predictions/btts-predictions/';
-const url_gnow_accum = 'https://www.goalsnow.com/accumulator-btts-both-teams-to-score/';
+const url_fbpai =
+  'https://footballpredictions.ai/football-predictions/btts-predictions/';
+const url_gnow_accum =
+  'https://www.goalsnow.com/accumulator-btts-both-teams-to-score/';
 const url_footsuper =
   'https://www.footballsuper.tips/todays-both-teams-to-score-football-super-tips/';
 
-  const url_soccertipz = 'https://www.soccertipz.com/both-teams-to-score/';
+const url_soccertipz = 'https://www.soccertipz.com/both-teams-to-score/';
 const url_mines = `https://api.betmines.com/betmines/v1/fixtures/betmines-machine?dateFormat=extended&platform=website&from=2023-${month}-${day}T00:00:00Z&to=2023-0${month}-${dayTom}T07:00:00Z&minOdd=1.3&maxOdd=1.7&limit=20&minProbability=1&maxProbability=100&odds=GG&leagueIds=`;
 
 // require the middlewares and callback functions from the controller directory
@@ -119,10 +124,10 @@ bttsRouter.get('/delete', cors(corsOptions), async (req, res) => {
 });
 
 bttsRouter.post('/save', async (req, res) => {
-    // console.log('dataPred000');
+  // console.log('dataPred000');
   let data = req.body;
-  
-//   console.log('dataPred', data);
+
+  //   console.log('dataPred', data);
   if (data.homeTeam.length !== 0) {
     data.homeTeam.forEach(async (elem) => {
       const newBttsObj = {
@@ -162,43 +167,274 @@ bttsRouter.post('/save', async (req, res) => {
 bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
   console.log('btts111');
   // FBP
-    await axios(url_fbp)
-      .then((response) => {
-        const html = response.data;
-        // console.log(response.data);
-        // console.log('000', response);
-        const $ = cheerio.load(html);
+  await axios(url_fbp)
+    .then((response) => {
+      const html = response.data;
+      // console.log(response.data);
+      // console.log('000', response);
+      const $ = cheerio.load(html);
 
-        $('.accumulator-row', html).each(function () {
-          //<-- cannot be a function expression
-          // const title = $(this).text();
-          const teams = $(this).find('.accumulator-name').text();
+      $('.accumulator-row', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const teams = $(this).find('.accumulator-name').text();
 
-          // const prediction = $(this)
-          //   .find('.accumulator-name')
-          //   .find('strong')
-          //   .text();
+        // const prediction = $(this)
+        //   .find('.accumulator-name')
+        //   .find('strong')
+        //   .text();
 
-          const homeTeam = teams.includes('vs') && teams.split('vs')[0];
-          const awayTeam = teams.includes('vs') && teams.split('vs')[1];
+        const homeTeam = teams.includes('vs') && teams.split('vs')[0];
+        const awayTeam = teams.includes('vs') && teams.split('vs')[1];
 
-          homeTeam !== '' &&
-            btts.push({
-              source: 'fbp_acc_btts',
-              action: 'btts',
-              isAcca: true,
-              homeTeam: homeTeam.trim(),
-              awayTeam,
-              date: todayString,
-              // predictionDate: predictionDate,
-            });
-        });
+        homeTeam !== '' &&
+          btts.push({
+            source: 'fbp_acc_btts',
+            action: 'btts',
+            isAcca: true,
+            homeTeam: homeTeam.trim(),
+            awayTeam,
+            date: todayString,
+            // predictionDate: predictionDate,
+          });
+      });
 
       //   res.send('fbp btts ok');
-      })
-      .catch((err) => console.log(err));
+    })
+    .catch((err) => console.log(err));
 
-  
+    //betimate
+  // await axios(url_betimate)
+  // .then((response) => {
+  //   const html = response.data;
+  //   // console.log(response.data);
+  //   // console.log('000', html);
+  //   const $ = cheerio.load(html);
+
+  //   $('.prediction-table', html).each(function () {
+  //     //<-- cannot be a function expression
+  //     // const title = $(this).text();
+  //     const homeTeam = $(this).find('.homeTeam').text();
+  //     console.log('homeTeam000', homeTeam);
+  //     const awayTeam = $(this).find('.awayTeam').text();
+  //     const date = $(this).find('time').text();
+
+  //     console.log('homeTeam111', homeTeam);
+  //     console.log('date111', date);
+
+  //     let probabilityOver = '';
+
+  //     const prediction = $(this).find('predict').text();
+
+  //     const bttsYes = prediction.includes('Yes');
+
+  //     if (bttsYes) {
+  //       probabilityOver = $(this)
+  //         .find('probability')
+  //         .find('div:nth-child(2)')
+  //         .text();
+  //     }
+  //     // console.log('over25Fbp', over25);
+
+  //     homeTeam !== '' &&
+  //       date.includes(`${day}/${month}`) &&
+  //       bttsYes &&
+  //       btts.push({
+  //         source: 'betimate_btts',
+  //         action: `btts ${probabilityOver}`,
+  //         checked: false,
+  //         homeTeam:
+  //           getHomeTeamName(homeTeam.trim()) !== ''
+  //             ? getHomeTeamName(homeTeam.trim())
+  //             : homeTeam.trim().replace('FC ', ''),
+  //         awayTeam,
+  //         date: todayString,
+  //       });
+  //   });
+
+  //   // res.json(over25);
+  // })
+  // .catch((err) => console.log(err));
+
+  //leaguelane
+  await axios(url_leaguelane)
+    .then((response) => {
+      const html = response.data;
+      // console.log(response.data);
+      // console.log('000', html);
+      const $ = cheerio.load(html);
+
+      $('.tip-box', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const homeTeam = $(this)
+          .find('div:nth-child(2)')
+          .find('h2:nth-child(1)')
+          .text()
+          .split(' vs ')[0];
+        const awayTeam = $(this)
+          .find('div:nth-child(2)')
+          .find('h2:nth-child(1)')
+          .text()
+          .split(' vs ')[1];
+
+        homeTeam !== '' &&
+          btts.push({
+            source: 'leaguelane_btts',
+            action: 'btts',
+            isAcca: true,
+            homeTeam:
+              getHomeTeamName(homeTeam.trim()) !== ''
+                ? getHomeTeamName(homeTeam.trim())
+                : homeTeam.trim().replace('FC ', ''),
+            awayTeam,
+            date: todayString,
+          });
+      });
+
+      // res.json(over25);
+    })
+    .catch((err) => console.log(err));
+
+
+    //betprotips
+  // await axios(url_betprotips)
+  // .then((response) => {
+  //   const html = response.data;
+  //   // console.log(response.data);
+  //   // console.log('000', html);
+  //   const $ = cheerio.load(html);
+
+  //   $('.prediction-card', html).each(function () {
+  //     //<-- cannot be a function expression
+  //     // const title = $(this).text();
+  //     const homeTeam = $(this)
+  //       .find('.teams')
+  //       .find('.home-team')
+  //       .find('span:nth-child(1)');
+  //       // .text();
+  //       console.log('homeTeam000', homeTeam)
+  //     const awayTeam = $(this)
+  //       .find('.teams')
+  //       .find('.away-team')
+  //       .find('span:nth-child(1)')
+  //       .text();
+
+  //       // console.log('homeTeam222', homeTeam);
+  //     // console.log('date111', date);
+
+  //     const prediction = $(this)
+  //       .find('.advice-row')
+  //       .find('div:nth-child(1)')
+  //       .text();
+  //     const bttsYes = prediction.includes('Yes');
+  //     // console.log('over25Fbp', over25);
+
+  //     homeTeam !== '' &&
+  //     bttsYes &&
+  //     btts.push({
+  //         source: 'betprotips_o25',
+  //         action: 'btts',
+  //         checked: false,
+  //         homeTeam:
+  //           getHomeTeamName(homeTeam.trim()) !== ''
+  //             ? getHomeTeamName(homeTeam.trim())
+  //             : homeTeam.trim().replace('FC ', ''),
+  //         awayTeam,
+  //         date: todayString,
+  //       });
+  //   });
+
+  //   // res.json(over25);
+  // })
+  // .catch((err) => console.log(err));
+
+  //kcpredict
+  await axios(url_kcpredict)
+    .then((response) => {
+      const html = response.data;
+
+      // console.log('000', html);
+      const $ = cheerio.load(html);
+
+      const body = $('section:nth-child(2) tbody', html);
+
+      $('tr', body).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const homeTeam = $(this)
+          .find('td:nth-child(2)')
+          .find('span:first')
+          .text()
+          .split('VS')[0];
+        const awayTeam = $(this)
+          .find('td:nth-child(2)')
+          .find('span:first')
+          .text()
+          .split('VS')[1];
+
+        // const awayTeam = $(this).find('td:nth-child(3)').text().split('VS')[1];
+        // const tip = $(this).find('td:nth-child(4)').text();
+
+        homeTeam !== '' &&
+          btts.push({
+            source: 'kcpredict_btts',
+            action: 'btts',
+            isAcca: false,
+            homeTeam: homeTeam.trim(),
+            awayTeam: awayTeam.trim(),
+            date: todayString,
+          });
+      });
+
+      // res.send('hello over loaded');
+    })
+    .catch((err) => console.log(err));
+
+       //trustpredict
+       await axios(url_trustpredict)
+       .then((response) => {
+         const html = response.data;
+     
+         
+         const $ = cheerio.load(html);
+     
+         const body = $('section:nth-child(2) tbody', html);
+     
+         $('tr', body).each(function () {
+           //<-- cannot be a function expression
+           // const title = $(this).text();
+           const homeTeam = $(this)
+             .find('td:nth-child(3)')
+             .find('span:first')
+             .text()
+             .split('VS')[0];
+     
+             // console.log('2222', homeTeam);
+     
+           const awayTeam = $(this)
+             .find('td:nth-child(3)')
+             .find('span:first')
+             .text()
+             .split('VS')[1];
+     
+           // const awayTeam = $(this).find('td:nth-child(3)').text().split('VS')[1];
+           // const tip = $(this).find('td:nth-child(4)').text();
+     
+           homeTeam !== '' &&
+             btts.push({
+               source: 'trustpredict_btts',
+               action: 'btts',
+               isAcca: false,
+               homeTeam: homeTeam.trim(),
+               awayTeam: awayTeam.trim(),
+               date: todayString,
+             });
+         });
+     
+         // res.send('hello over loaded');
+       })
+       .catch((err) => console.log(err));
 
   //FOOTSUPER_BTTS
   await axios(url_footsuper_btts)
@@ -215,7 +451,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
         const awayTeam = $(this).find('.gamelink').text().split(' v ')[1];
 
         homeTeam !== '' &&
-        btts.push({
+          btts.push({
             source: 'footsuper_acc_btts',
             action: 'btts',
             isAcca: true,
@@ -229,125 +465,126 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
     })
     .catch((err) => console.log(err));
 
-        //FBP
+  //FBP
   // await axios(url_fbp)
   await axios(url_fbp)
-  .then((response) => {
-    const html = response.data;
-    // console.log(response.data);
-    // console.log('000', html);
-    const $ = cheerio.load(html);
+    .then((response) => {
+      const html = response.data;
+      // console.log(response.data);
+      // console.log('000', html);
+      const $ = cheerio.load(html);
 
-    $('.card-body', html).each(function () {
-      //<-- cannot be a function expression
-      // const title = $(this).text();
-      const homeTeam = $(this).find('.home-team').find('.team-label').text();
-      const awayTeam = $(this).find('.away-team').find('.team-label').text();
-    //   const over25text = $(this).find('.prediction').text();
-    //   const over25Yes = over25text.includes('Over');
-      // console.log('over25Fbp', over25);
-      const predictionDate = $(this)
-        .find('.match-preview-date')
-        .find('.full-cloak')
-        .text();
+      $('.card-body', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const homeTeam = $(this).find('.home-team').find('.team-label').text();
+        const awayTeam = $(this).find('.away-team').find('.team-label').text();
+        //   const over25text = $(this).find('.prediction').text();
+        //   const over25Yes = over25text.includes('Over');
+        // console.log('over25Fbp', over25);
+        const predictionDate = $(this)
+          .find('.match-preview-date')
+          .find('.full-cloak')
+          .text();
 
-    console.log('homeTeamFBP',homeTeam);
-    console.log('homeTeamFBP111',predictionDate);
-      homeTeam !== '' && predictionDate.includes(`${year}-${month}-${day}`) &&
-        btts.push({
-          source: 'fbp_btts',
-          action: 'btts',
-          checked: false,
-          homeTeam,
-          awayTeam,
-          date: todayString,
-        });
-    });
+        
+        homeTeam !== '' &&
+          predictionDate.includes(`${year}-${month}-${day}`) &&
+          btts.push({
+            source: 'fbp_btts',
+            action: 'btts',
+            checked: false,
+            homeTeam,
+            awayTeam,
+            date: todayString,
+          });
+      });
 
-    // res.json(over25);
-  })
-  .catch((err) => console.log(err));
+      // res.json(over25);
+    })
+    .catch((err) => console.log(err));
 
-    //Footy
+  //Footy
   await axios(url_footy)
-  .then((response) => {
-    const html = response.data;
+    .then((response) => {
+      const html = response.data;
 
-    // console.log('000', html);
-    const $ = cheerio.load(html);
+      // console.log('000', html);
+      const $ = cheerio.load(html);
 
-    $('.betHeader', html).each(function () {
-      //<-- cannot be a function expression
-      // const title = $(this).text();
-      const homeTeam = $(this)
-        .find('.betHeaderTitle')
-        .text()
-        .split(' vs ')[0];
-      let homeTeam1 = '';
-      if (homeTeam.includes('BTTS Yes')) {
-        homeTeam1 = homeTeam.split('BTTS Yes ')[1];
-      }
-      const awayTeam = $(this)
-        .find('.betHeaderTitle')
-        .text()
-        .split(' vs ')[1];
-      homeTeam1 !== '' &&
-        btts.push({
-          source: 'footy_btts',
-          action: 'btts',
-          checked: false,
-          homeTeam: getHomeTeamName(homeTeam1.trim()) !=='' ? getHomeTeamName(homeTeam1.trim()) : homeTeam1.trim(),
-          awayTeam,
-          date: todayString,
-        });
-    });
+      $('.betHeader', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const homeTeam = $(this)
+          .find('.betHeaderTitle')
+          .text()
+          .split(' vs ')[0];
+        let homeTeam1 = '';
+        if (homeTeam.includes('BTTS Yes')) {
+          homeTeam1 = homeTeam.split('BTTS Yes ')[1];
+        }
+        const awayTeam = $(this)
+          .find('.betHeaderTitle')
+          .text()
+          .split(' vs ')[1];
+        homeTeam1 !== '' &&
+          btts.push({
+            source: 'footy_btts',
+            action: 'btts',
+            checked: false,
+            homeTeam:
+              getHomeTeamName(homeTeam1.trim()) !== ''
+                ? getHomeTeamName(homeTeam1.trim())
+                : homeTeam1.trim(),
+            awayTeam,
+            date: todayString,
+          });
+      });
 
-    // res.json(over25);
-  })
-  .catch((err) => console.log(err));
+      // res.json(over25);
+    })
+    .catch((err) => console.log(err));
 
-    // MYBETS
-//   await axios(url_mybets)
-//   .then((response) => {
-//     const html = response.data;
+  // MYBETS
+  //   await axios(url_mybets)
+  //   .then((response) => {
+  //     const html = response.data;
 
-//     // console.log('000', html);
-//     const $ = cheerio.load(html);
+  //     // console.log('000', html);
+  //     const $ = cheerio.load(html);
 
-//     $('.linkgames', html).each(function () {
-//       //<-- cannot be a function expression
-//       // const title = $(this).text();
-//       // const homeTeam = $(this).find('.homeTeam').find('span:first').text();
-//       const homeTeam = $(this).find('.homespan').text();
-//       const awayTeam = $(this).find('.awayspan').text();
-//       const bttsText = $(this).find('.tipdiv').find('span:first').text();
-//       const bttsYes = bttsText === 'Yes';
-//       // console.log('over25Mybets', over25);
+  //     $('.linkgames', html).each(function () {
+  //       //<-- cannot be a function expression
+  //       // const title = $(this).text();
+  //       // const homeTeam = $(this).find('.homeTeam').find('span:first').text();
+  //       const homeTeam = $(this).find('.homespan').text();
+  //       const awayTeam = $(this).find('.awayspan').text();
+  //       const bttsText = $(this).find('.tipdiv').find('span:first').text();
+  //       const bttsYes = bttsText === 'Yes';
+  //       // console.log('over25Mybets', over25);
 
-//       // if (homeTeam.trim() === 'Accrington ST') {
-//       //   console.log('over25 HT', getHomeTeamName(homeTeam.trim()))
-//       // };
+  //       // if (homeTeam.trim() === 'Accrington ST') {
+  //       //   console.log('over25 HT', getHomeTeamName(homeTeam.trim()))
+  //       // };
 
-//       homeTeam !== '' &&
-//       bttsYes &&
-//         btts.push({
-//           source: 'mybets_btts',
-//           action: 'btts',
-//           checked: false,
-//           homeTeam:
-//             getHomeTeamName(homeTeam.trim()) !== ''
-//               ? getHomeTeamName(homeTeam.trim())
-//               : homeTeam.trim(),
-//           awayTeam,
-//           date: todayString,
-//         });
-//     });
+  //       homeTeam !== '' &&
+  //       bttsYes &&
+  //         btts.push({
+  //           source: 'mybets_btts',
+  //           action: 'btts',
+  //           checked: false,
+  //           homeTeam:
+  //             getHomeTeamName(homeTeam.trim()) !== ''
+  //               ? getHomeTeamName(homeTeam.trim())
+  //               : homeTeam.trim(),
+  //           awayTeam,
+  //           date: todayString,
+  //         });
+  //     });
 
-//     // res.json(over25);
-//   })
-//   .catch((err) => console.log(err));
-
-  
+  //     // res.json(over25);
+  //   })
+  //   .catch((err) => console.log(err));
 
   //r2bet
   await axios(url_r2bet)
@@ -369,7 +606,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
           btts.push({
             source: 'r2bet_btts',
             action: 'btts',
-            isAcca: true,
+            isAcca: false,
             homeTeam: homeTeam.trim(),
             awayTeam: awayTeam.trim(),
             date: todayString,
@@ -447,116 +684,115 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
     })
     .catch((err) => console.log(err));
 
-    //PROT
+  //PROT
   await axios(url_prot)
-  .then((response) => {
-    const html = response.data;
+    .then((response) => {
+      const html = response.data;
 
-    // console.log('000', html);
-    const $ = cheerio.load(html);
+      // console.log('000', html);
+      const $ = cheerio.load(html);
 
-    $('.details-pick', html).each(function () {
-      //<-- cannot be a function expression
-      // const title = $(this).text();
-      const teams = $(this).find('.details-pick__match-data__teams').text();
-      const homeTeam = teams.split(' VS ')[0];
-      const awayTeam = teams.split(' VS ')[1];
+      $('.details-pick', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const teams = $(this).find('.details-pick__match-data__teams').text();
+        const homeTeam = teams.split(' VS ')[0];
+        const awayTeam = teams.split(' VS ')[1];
 
-      homeTeam !== '' &&
-        btts.push({
-          source: 'prot_btts',
-          action: 'btts',
-          isAcca: false,
-          homeTeam: homeTeam.trim(),
-          awayTeam: awayTeam.trim(),
-          date: todayString,
-        });
-    });
+        homeTeam !== '' &&
+          btts.push({
+            source: 'prot_btts',
+            action: 'btts',
+            isAcca: false,
+            homeTeam: homeTeam.trim(),
+            awayTeam: awayTeam.trim(),
+            date: todayString,
+          });
+      });
 
-  //   res.send('prot btts ok');
-  })
-  .catch((err) => console.log(err));
+      //   res.send('prot btts ok');
+    })
+    .catch((err) => console.log(err));
 
   //BANKER
   await axios(url_banker)
-  .then((response) => {
-    const html = response.data;
+    .then((response) => {
+      const html = response.data;
 
-    // console.log('000', html);
-    const $ = cheerio.load(html);
+      // console.log('000', html);
+      const $ = cheerio.load(html);
 
-    const body = $('section:nth-child(2) tbody', html);
+      const body = $('section:nth-child(2) tbody', html);
 
-    $('tr', body).each(function () {
-      //<-- cannot be a function expression
-      // const title = $(this).text();
-      const homeTeam = $(this)
-        .find('td:nth-child(3)')
-        .find('span:first')
-        .text()
-        .split('VS')[0];
+      $('tr', body).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const homeTeam = $(this)
+          .find('td:nth-child(3)')
+          .find('span:first')
+          .text()
+          .split('VS')[0];
 
-      const awayTeam = $(this)
-        .find('td:nth-child(3)')
-        .find('span:first')
-        .text()
-        .split('VS')[1];
+        const awayTeam = $(this)
+          .find('td:nth-child(3)')
+          .find('span:first')
+          .text()
+          .split('VS')[1];
 
-      homeTeam !== '' &&
-        btts.push({
-          source: 'banker_btts',
-          action: 'btts',
-          checked: false,
-          homeTeam: homeTeam.trim(),
-          awayTeam: awayTeam.trim(),
-          date: todayString,
-        });
-    });
+        homeTeam !== '' &&
+          btts.push({
+            source: 'banker_btts',
+            action: 'btts',
+            checked: false,
+            homeTeam: homeTeam.trim(),
+            awayTeam: awayTeam.trim(),
+            date: todayString,
+          });
+      });
 
-  //   res.send('banker btts ok');
-  })
-  .catch((err) => console.log(err));
+      //   res.send('banker btts ok');
+    })
+    .catch((err) => console.log(err));
 
   //WDW
-//   await axios(url_wdw)
-//   .then((response) => {
-//     const html = response.data;
+  //   await axios(url_wdw)
+  //   .then((response) => {
+  //     const html = response.data;
 
-//     // console.log('000', html);
-//     const $ = cheerio.load(html);
+  //     // console.log('000', html);
+  //     const $ = cheerio.load(html);
 
-//     $('tr', html).each(function () {
-//       //<-- cannot be a function expression
-//       // const title = $(this).text();
-//       const homeTeam = $(this)
-//         .find('td:nth-child(2)')
-//         .find('a:first')
-//         .text()
-//         .split(' v ')[0];
-//       const awayTeam = $(this)
-//         .find('td:nth-child(2)')
-//         .find('a:first')
-//         .text()
-//         .split(' v ')[1];
-//       const bet = $(this)
-//         .find('td:nth-child(3)')
-//         .text();
+  //     $('tr', html).each(function () {
+  //       //<-- cannot be a function expression
+  //       // const title = $(this).text();
+  //       const homeTeam = $(this)
+  //         .find('td:nth-child(2)')
+  //         .find('a:first')
+  //         .text()
+  //         .split(' v ')[0];
+  //       const awayTeam = $(this)
+  //         .find('td:nth-child(2)')
+  //         .find('a:first')
+  //         .text()
+  //         .split(' v ')[1];
+  //       const bet = $(this)
+  //         .find('td:nth-child(3)')
+  //         .text();
 
+  //       homeTeam !== '' && bet.includes('BTTS Yes') &&
+  //         btts.push({
+  //           source: 'wdw',
+  //           action: 'btts',
+  //           checked: false,
+  //           homeTeam: homeTeam.trim(),
+  //           awayTeam: awayTeam.trim(),
+  //           date: todayString,
+  //         });
+  //     });
 
-//       homeTeam !== '' && bet.includes('BTTS Yes') && 
-//         btts.push({
-//           source: 'wdw',
-//           action: 'btts',
-//           checked: false,
-//           homeTeam: homeTeam.trim(),
-//           awayTeam: awayTeam.trim(),
-//           date: todayString,
-//         });
-//     });
-
-//   //   res.send('banker btts ok');
-//   })
-//   .catch((err) => console.log(err));
+  //   //   res.send('banker btts ok');
+  //   })
+  //   .catch((err) => console.log(err));
 
   //venasbet
   await axios(url_venasbet)
@@ -594,8 +830,8 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
     })
     .catch((err) => console.log(err));
 
-   //Goalnow
-    await axios(url_gnow_accum)
+  //Goalnow
+  await axios(url_gnow_accum)
     .then((response) => {
       const html = response.data;
 
@@ -605,10 +841,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
       $('.accasdisplay', html).each(function () {
         //<-- cannot be a function expression
         // const title = $(this).text();
-        const homeTeam = $(this)
-          .find('.row3:first')
-          .find('.whitespace')
-          .text();
+        const homeTeam = $(this).find('.row3:first').find('.whitespace').text();
         // let homeTeam1 = '';
         // if (homeTeam.includes('2.5 Goals')) {
         //   homeTeam1 = homeTeam.split('Over 2.5 Goals ')[1];
@@ -616,17 +849,18 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
         // const awayTeam = $(this)
         //   .find('.goalsaway')
         //   .text();
-        const pred = $(this)
-          .find('.row4')
-          .find('span:first')
-          .text();
-        homeTeam !== '' && pred.includes('Yes') &&
-        btts.push({
+        const pred = $(this).find('.row4').find('span:first').text();
+        homeTeam !== '' &&
+          pred.includes('Yes') &&
+          btts.push({
             source: 'goalsnow_btts',
             action: 'btts',
             checked: false,
-            homeTeam: getHomeTeamName(homeTeam.trim()) !=='' ? getHomeTeamName(homeTeam.trim()) : homeTeam.trim(),
-            awayTeam:'',
+            homeTeam:
+              getHomeTeamName(homeTeam.trim()) !== ''
+                ? getHomeTeamName(homeTeam.trim())
+                : homeTeam.trim(),
+            awayTeam: '',
             date: todayString,
           });
       });
@@ -635,7 +869,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
     })
     .catch((err) => console.log(err));
 
-    //Fbpai
+  //Fbpai
   await axios(url_fbpai)
     .then((response) => {
       const html = response.data;
@@ -681,7 +915,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
     })
     .catch((err) => console.log(err));
 
-    // MIGHTY
+  // MIGHTY
   await axios(url_mighty)
     .then((response) => {
       const html = response.data;
@@ -706,9 +940,9 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
           .find('time:first')
           .text();
 
-          if (homeTeam.trim() === 'Accrington ST') {
-            console.log('btts HT', getHomeTeamName(homeTeam.trim()))
-          };
+        if (homeTeam.trim() === 'Accrington ST') {
+          console.log('btts HT', getHomeTeamName(homeTeam.trim()));
+        }
 
         todayString.includes(predicDate) &&
           homeTeam !== '' &&
@@ -716,7 +950,10 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
             source: 'mighty_btts',
             action: 'btts',
             checked: false,
-            homeTeam: getHomeTeamName(homeTeam.trim()) !=='' ? getHomeTeamName(homeTeam.trim()) : homeTeam.trim(),
+            homeTeam:
+              getHomeTeamName(homeTeam.trim()) !== ''
+                ? getHomeTeamName(homeTeam.trim())
+                : homeTeam.trim(),
             awayTeam,
             date: todayString,
           });
@@ -732,8 +969,9 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
       const data = response.data;
 
       data.forEach((elem) => {
-        elem !== '' && elem.bestOddProbability > 79 &&
-        btts.push({
+        elem !== '' &&
+          elem.bestOddProbability > 79 &&
+          btts.push({
             source: 'mines_btts',
             action: `${elem.bestOdd} ${elem.bestOddProbability}%`,
             homeTeam: elem.localTeam.name,
@@ -747,235 +985,251 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
     })
     .catch((err) => console.log(err));
 
-    //NVTIPS
-//   await axios(
-//     url_nvtips
-//   )
-//     .then((response) => {
-//       const html = response.data;
+  //NVTIPS
+  //   await axios(
+  //     url_nvtips
+  //   )
+  //     .then((response) => {
+  //       const html = response.data;
 
-//       // console.log('000', html);
-//       const $ = cheerio.load(html);
-//       let homeTeamsArr = [];
+  //       // console.log('000', html);
+  //       const $ = cheerio.load(html);
+  //       let homeTeamsArr = [];
 
-//       $('tr', html).each(function () {
-//         //<-- cannot be a function expression
-//         // const title = $(this).text();
-//         const homeTeam = $(this)
-//           .find('td:nth-child(6)')
-//           .text();
-//         const bttsYes = $(this)
-//           .find('td:nth-child(14)')
-//           .find('strong:first')
-//           .text();
+  //       $('tr', html).each(function () {
+  //         //<-- cannot be a function expression
+  //         // const title = $(this).text();
+  //         const homeTeam = $(this)
+  //           .find('td:nth-child(6)')
+  //           .text();
+  //         const bttsYes = $(this)
+  //           .find('td:nth-child(14)')
+  //           .find('strong:first')
+  //           .text();
 
-//         // const awayTeam = $(this).find('tr').find('td:nth-child(3)').find('span:first').text().split(' "" ')[1].split(' VS')[1];
-//         // const awayTeam = $(this).find('.mtl-index-page-matches__name').text().split(' vs ')[1];
-//         // const predicDate = $(this).find('.mtl-index-page-matches__date').find('p:first').find('time:first').text();
-//         // console.log('homeTeamPass', homeTeam);
-//         if (bttsYes === 'Да') {
-//           homeTeamsArr.push(homeTeam);
-//         }
-//       });
-//       // console.log('homeTeamsArr', homeTeamsArr);
-//       homeTeamsArr.splice(0, 1);
-//       console.log('homeTeamsArr111', homeTeamsArr);
-//       let indexOfEmpty = homeTeamsArr.indexOf('');
-//       // console.log('indexOfEmpty', indexOfEmpty);
-//       let todayHomeTeamsArr = homeTeamsArr.slice(indexOfEmpty + 1);
-//       // console.log('todayHomeTeamsArr', todayHomeTeamsArr);
-//       todayHomeTeamsArr.forEach((elem) => {
-//         elem !== '' &&
-//           btts.push({
-//             source: 'nvtips',
-//             action: 'btts',
-//             checked: false,
-//             homeTeam:
-//               getHomeTeamName(elem) !== '' ? getHomeTeamName(elem) : elem,
-//             awayTeam: '',
-//             date: todayString,
-//           });
-//       });
+  //         // const awayTeam = $(this).find('tr').find('td:nth-child(3)').find('span:first').text().split(' "" ')[1].split(' VS')[1];
+  //         // const awayTeam = $(this).find('.mtl-index-page-matches__name').text().split(' vs ')[1];
+  //         // const predicDate = $(this).find('.mtl-index-page-matches__date').find('p:first').find('time:first').text();
+  //         // console.log('homeTeamPass', homeTeam);
+  //         if (bttsYes === 'Да') {
+  //           homeTeamsArr.push(homeTeam);
+  //         }
+  //       });
+  //       // console.log('homeTeamsArr', homeTeamsArr);
+  //       homeTeamsArr.splice(0, 1);
+  //       console.log('homeTeamsArr111', homeTeamsArr);
+  //       let indexOfEmpty = homeTeamsArr.indexOf('');
+  //       // console.log('indexOfEmpty', indexOfEmpty);
+  //       let todayHomeTeamsArr = homeTeamsArr.slice(indexOfEmpty + 1);
+  //       // console.log('todayHomeTeamsArr', todayHomeTeamsArr);
+  //       todayHomeTeamsArr.forEach((elem) => {
+  //         elem !== '' &&
+  //           btts.push({
+  //             source: 'nvtips',
+  //             action: 'btts',
+  //             checked: false,
+  //             homeTeam:
+  //               getHomeTeamName(elem) !== '' ? getHomeTeamName(elem) : elem,
+  //             awayTeam: '',
+  //             date: todayString,
+  //           });
+  //       });
 
-//       // res.json(btts);
-//     })
-//     .catch((err) => console.log(err));
+  //       // res.json(btts);
+  //     })
+  //     .catch((err) => console.log(err));
 
-     //FOOTSUPER
+  //FOOTSUPER
   await axios(url_footsuper)
-  .then((response) => {
-    const html = response.data;
+    .then((response) => {
+      const html = response.data;
 
-    // console.log('000', html);
-    const $ = cheerio.load(html);
+      // console.log('000', html);
+      const $ = cheerio.load(html);
 
-    $('.pool_list_item', html).each(function () {
-      //<-- cannot be a function expression
-      // const title = $(this).text();
-      const homeTeam = $(this).find('.homedisp').text();
-      const awayTeam = $(this).find('.awaydisp').text();
+      $('.pool_list_item', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const homeTeam = $(this).find('.homedisp').text();
+        const awayTeam = $(this).find('.awaydisp').text();
 
-      const pred = $(this).find('.prediresults').text();
-      const percent = $(this).find('.biggestpercen').text();
+        const pred = $(this).find('.prediresults').text();
+        const percent = $(this).find('.biggestpercen').text();
 
-      homeTeam !== '' && pred.includes('YES') && parseInt(percent) > 74 &&
-      btts.push({
-          source: 'footsuper_btts',
-          action: 'btts',
-          isAcca: false,
-          homeTeam:
-            getHomeTeamName(homeTeam.trim()) !== ''
-              ? getHomeTeamName(homeTeam.trim())
-              : homeTeam.trim(),
-          awayTeam: getHomeTeamName(awayTeam.trim()) !== ''
-          ? getHomeTeamName(awayTeam.trim())
-          : awayTeam.trim(),
-          date: todayString,
-        });
-    });
+        homeTeam !== '' &&
+          pred.includes('YES') &&
+          parseInt(percent) > 74 &&
+          btts.push({
+            source: 'footsuper_btts',
+            action: 'btts',
+            isAcca: false,
+            homeTeam:
+              getHomeTeamName(homeTeam.trim()) !== ''
+                ? getHomeTeamName(homeTeam.trim())
+                : homeTeam.trim(),
+            awayTeam:
+              getHomeTeamName(awayTeam.trim()) !== ''
+                ? getHomeTeamName(awayTeam.trim())
+                : awayTeam.trim(),
+            date: todayString,
+          });
+      });
 
-    // res.json(over25);
-  })
-  .catch((err) => console.log(err));
+      // res.json(over25);
+    })
+    .catch((err) => console.log(err));
 
-    //hello
+  //hello
   await axios(url_hello)
-  .then((response) => {
-    const html = response.data;
+    .then((response) => {
+      const html = response.data;
 
-    // console.log('000', html);
-    const $ = cheerio.load(html);
+      // console.log('000', html);
+      const $ = cheerio.load(html);
 
-    $('tr', html).each(function () {
-      //<-- cannot be a function expression
-      // const title = $(this).text();
-      const homeTeam = $(this).find('.tab_b_match').find('span:first').text().split('VS')[0];
-      const awayTeam = $(this).find('.tab_b_match').find('span:first').text().split('VS')[1];
+      $('tr', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const homeTeam = $(this)
+          .find('.tab_b_match')
+          .find('span:first')
+          .text()
+          .split('VS')[0];
+        const awayTeam = $(this)
+          .find('.tab_b_match')
+          .find('span:first')
+          .text()
+          .split('VS')[1];
 
-      // const awayTeam = $(this).find('td:nth-child(3)').text().split('VS')[1];
-      // const tip = $(this).find('td:nth-child(4)').text();
+        // const awayTeam = $(this).find('td:nth-child(3)').text().split('VS')[1];
+        // const tip = $(this).find('td:nth-child(4)').text();
 
-      homeTeam !== '' &&
-      btts.push({
-          source: 'hello_btts',
-          action: 'btts',
-          checked: false,
-          homeTeam:
-            getHomeTeamName(homeTeam.trim()) !== ''
-              ? getHomeTeamName(homeTeam.trim())
-              : homeTeam.trim(),
-          awayTeam: getHomeTeamName(awayTeam.trim()) !== ''
-          ? getHomeTeamName(awayTeam.trim())
-          : awayTeam.trim(),
-          date: todayString,
-        });
-    });
+        homeTeam !== '' &&
+          btts.push({
+            source: 'hello_btts',
+            action: 'btts',
+            checked: false,
+            homeTeam:
+              getHomeTeamName(homeTeam.trim()) !== ''
+                ? getHomeTeamName(homeTeam.trim())
+                : homeTeam.trim(),
+            awayTeam:
+              getHomeTeamName(awayTeam.trim()) !== ''
+                ? getHomeTeamName(awayTeam.trim())
+                : awayTeam.trim(),
+            date: todayString,
+          });
+      });
 
-    // res.json(over25);
-  })
-  .catch((err) => console.log(err));
+      // res.json(over25);
+    })
+    .catch((err) => console.log(err));
 
   //PREDUTD
-//   await axios(url_predutd)
-//     .then((response) => {
-//       const html = response.data;
+  //   await axios(url_predutd)
+  //     .then((response) => {
+  //       const html = response.data;
 
-//       // console.log('000', html);
-//       const $ = cheerio.load(html);
+  //       // console.log('000', html);
+  //       const $ = cheerio.load(html);
 
-//       const body = $('#mainRow', html).find('div:nth-child(2)').find('div:nth-child(1)');
+  //       const body = $('#mainRow', html).find('div:nth-child(2)').find('div:nth-child(1)');
 
-//       $('div', body).each(function () {
-//         //<-- cannot be a function expression
-//         // const title = $(this).text();
-//         const homeTeam = $(this)
-//           .find('a:nth-child(1)')
-//           .find('table:nth-child(1)')
-//           .find('thead:nth-child(1)')
-//           .find('th')
-//           .text()
-//           .split(' - ')[0];
-//         const awayTeam = $(this)
-//           .find('a:nth-child(1)')
-//           .find('table:nth-child(1)')
-//           .find('thead:nth-child(1)')
-//           .find('th')
-//           .text()
-//           .split(' - ')[1];
-//         const pred = $(this)
-//           .find('a:nth-child(1)')
-//           .find('table:nth-child(1)')
-//           .find('thead:nth-child(2)')
-//           .find('tr:nth-child(1)')
-//           .find('th:nth-child(1)')
-//           .text();
+  //       $('div', body).each(function () {
+  //         //<-- cannot be a function expression
+  //         // const title = $(this).text();
+  //         const homeTeam = $(this)
+  //           .find('a:nth-child(1)')
+  //           .find('table:nth-child(1)')
+  //           .find('thead:nth-child(1)')
+  //           .find('th')
+  //           .text()
+  //           .split(' - ')[0];
+  //         const awayTeam = $(this)
+  //           .find('a:nth-child(1)')
+  //           .find('table:nth-child(1)')
+  //           .find('thead:nth-child(1)')
+  //           .find('th')
+  //           .text()
+  //           .split(' - ')[1];
+  //         const pred = $(this)
+  //           .find('a:nth-child(1)')
+  //           .find('table:nth-child(1)')
+  //           .find('thead:nth-child(2)')
+  //           .find('tr:nth-child(1)')
+  //           .find('th:nth-child(1)')
+  //           .text();
 
-//         // const awayTeam = $(this)
-//         //   .find('td:nth-child(3)')
-//         //   .find('span:first')
-//         //   .text()
-//         //   .split('VS')[1];
+  //         // const awayTeam = $(this)
+  //         //   .find('td:nth-child(3)')
+  //         //   .find('span:first')
+  //         //   .text()
+  //         //   .split('VS')[1];
 
-//           console.log('predutdBTTS', pred);
-//           console.log('predutdB', pred.includes('No'));
+  //           console.log('predutdBTTS', pred);
+  //           console.log('predutdB', pred.includes('No'));
 
-//         homeTeam !== '' && !pred.includes('No') &&
-//           btts.push({
-//             source: 'predutd_btts',
-//             action: 'btts',
-//             checked: false,
-//             homeTeam: homeTeam.trim(),
-//             awayTeam: awayTeam.trim(),
-//             date: todayString,
-//           });
-//       });
+  //         homeTeam !== '' && !pred.includes('No') &&
+  //           btts.push({
+  //             source: 'predutd_btts',
+  //             action: 'btts',
+  //             checked: false,
+  //             homeTeam: homeTeam.trim(),
+  //             awayTeam: awayTeam.trim(),
+  //             date: todayString,
+  //           });
+  //       });
 
-//       // res.send('banker over loaded');
-//     })
-//     .catch((err) => console.log(err));
-  
+  //       // res.send('banker over loaded');
+  //     })
+  //     .catch((err) => console.log(err));
 
   //SOCCERTIPZ
   await axios(url_soccertipz)
-  .then((response) => {
-    const html = response.data;
+    .then((response) => {
+      const html = response.data;
 
-    // console.log('000', html);
-    const $ = cheerio.load(html);
+      // console.log('000', html);
+      const $ = cheerio.load(html);
 
-    $('tr', html).each(function () {
-      //<-- cannot be a function expression
-      // const title = $(this).text();
-      const homeTeam = $(this).find('td:nth-child(2)').text().split(/\r?\n/)[0];
-      const awayTeam = $(this).find('td:nth-child(2)').text().split(/\r?\n/)[1];
+      $('tr', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const homeTeam = $(this)
+          .find('td:nth-child(2)')
+          .text()
+          .split(/\r?\n/)[0];
+        const awayTeam = $(this)
+          .find('td:nth-child(2)')
+          .text()
+          .split(/\r?\n/)[1];
 
-      const tip = $(this).find('td:nth-child(3)').text();
+        const tip = $(this).find('td:nth-child(3)').text();
 
-      homeTeam &&
-      homeTeam !== '' &&
-      awayTeam &&
-      awayTeam !== '' &&
-      tip.includes('YES') &&
-      btts.push({
-          source: 'soccertipz_btts',
-          action: 'btts',
-          checked: false,
-          homeTeam:
-            getHomeTeamName(homeTeam.trim()) !== ''
-              ? getHomeTeamName(homeTeam.trim())
-              : homeTeam.trim(),
-          awayTeam: getHomeTeamName(awayTeam.trim()) !== ''
-          ? getHomeTeamName(awayTeam.trim())
-          : awayTeam.trim(),
-          date: todayString,
-        });
-    });
+        homeTeam &&
+          homeTeam !== '' &&
+          awayTeam &&
+          awayTeam !== '' &&
+          tip.includes('YES') &&
+          btts.push({
+            source: 'soccertipz_btts',
+            action: 'btts',
+            checked: false,
+            homeTeam:
+              getHomeTeamName(homeTeam.trim()) !== ''
+                ? getHomeTeamName(homeTeam.trim())
+                : homeTeam.trim(),
+            awayTeam:
+              getHomeTeamName(awayTeam.trim()) !== ''
+                ? getHomeTeamName(awayTeam.trim())
+                : awayTeam.trim(),
+            date: todayString,
+          });
+      });
 
-    // res.json(over25);
-  })
-  .catch((err) => console.log(err));
-
-  
+      // res.json(over25);
+    })
+    .catch((err) => console.log(err));
 
   let start = 0;
   let next = 1;
@@ -1013,7 +1267,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
       useUnifiedTopology: true,
     }
   );
-  console.log('sortedBtts',sortedBtts);
+  // console.log('sortedBtts', sortedBtts);
   await Btts.insertMany(sortedBtts)
     .then(function () {
       console.log('Btts inserted'); // Success
@@ -1026,10 +1280,8 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
   res.send('btts loaded');
 });
 
-
 // bttsRouter.get('/loadOther', cors(corsOptions), async (req, res) => {
 //   console.log('btts111');
-  
 
 //   let start = 0;
 //   let next = 1;

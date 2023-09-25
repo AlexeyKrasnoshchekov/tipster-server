@@ -45,6 +45,8 @@ const url_venasbet = 'https://venasbet.com/under_3_5_goals';
 const url_nvtips = 'https://nvtips.com/ru/';
 const url_soccertipz = 'https://www.soccertipz.com/under-over-2-5-predictions/';
 const url_r2bet = 'https://r2bet.com/under_3_5_goals';
+const url_betprotips = 'https://betprotips.com/football-tips/over-under-tips/';
+const url_betimate = `https://betimate.com/en/football-predictions/under-over-25-goals?date=2023-${month}-${day}`;
 // const url_gnow_accum = 'https://www.goalsnow.com/accumulator-over-2.5-goals/';
 const url_fbp =
   'https://footballpredictions.net/under-over-2-5-goals-betting-tips-predictions';
@@ -181,6 +183,98 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
     })
     .catch((err) => console.log(err));
 
+     // betprotips
+  // await axios(url_fbp)
+  await axios(url_betprotips)
+  .then((response) => {
+    const html = response.data;
+    // console.log(response.data);
+    // console.log('000', html);
+    const $ = cheerio.load(html);
+
+    $('.prediction-card', html).each(function () {
+      //<-- cannot be a function expression
+      // const title = $(this).text();
+      // const homeTeam = $(this).find('.teams').find('.home-team').find('span:nth-child(1)').text();
+      const homeTeam = $(this).find('.teams').find('.home-team').text();
+      // console.log('homeTeam000', homeTeam);
+
+      const awayTeam = $(this).find('.teams').find('.away-team').text();
+      // console.log('awayTeam000', awayTeam);
+      const prediction = $(this).find('.advice-row').find('div:nth-child(1)').text();
+      // console.log('prediction000', prediction);
+      const underYes = prediction.includes('Under 2.5');
+      // console.log('over25Fbp', underYes);
+
+      homeTeam !== '' &&
+      underYes &&
+        under25.push({
+          source: 'betprotips',
+          action: 'under25',
+          checked: false,
+          homeTeam:
+            getHomeTeamName(homeTeam.trim()) !== ''
+              ? getHomeTeamName(homeTeam.trim())
+              : homeTeam.trim().replace('FC ', ''),
+          awayTeam,
+          date: todayString,
+        });
+    });
+
+    // res.json(over25);
+  })
+  .catch((err) => console.log(err));
+
+    //betimate
+    await axios(url_betimate)
+    .then((response) => {
+      const html = response.data;
+      // console.log(response.data);
+     //  console.log('000', html);
+      const $ = cheerio.load(html);
+  
+      $('.prediction-body', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const homeTeam = $(this).find('.homeTeam').text();
+       //  console.log('homeTeam000', homeTeam);
+
+        const awayTeam = $(this).find('.awayTeam').text();
+        const date = $(this).find('.date_bah').text();
+       //  console.log('date111', date);
+       //  console.log('date222', `${month}/${day}`);
+  
+        let probabilityUnder = '';
+  
+        const prediction = $(this).find('.predict').find('small').text();
+       //  console.log('prediction000', prediction);
+  
+        const underYes = prediction.includes('Under');
+  
+        if (underYes) {
+          probabilityUnder = $(this).find('.probability').find('div:nth-child(1)').text();
+        }
+       //  console.log('over25Fbp', probabilityUnder);
+  
+        homeTeam !== '' && date.includes(`${month}/${day}`) &&
+        underYes &&
+          under25.push({
+            source: 'betimate',
+            action: `under25 ${probabilityUnder}`,
+            checked: false,
+            homeTeam:
+              getHomeTeamName(homeTeam.trim()) !== ''
+                ? getHomeTeamName(homeTeam.trim())
+                : homeTeam.trim().replace('FC ', ''),
+            awayTeam,
+            date: todayString,
+          });
+      });
+  
+      // res.json(over25);
+    })
+    .catch((err) => console.log(err));
+
     //PREDUTD
     await axios(url_predutd)
     .then((response) => {
@@ -204,7 +298,7 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
           .text()
           .split(' - ')[1];
 
-          console.log('predutdU25', homeTeam);
+          // console.log('predutdU25', homeTeam);
 
         homeTeam !== '' &&
         under25.push({
@@ -241,7 +335,7 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
         const scoreTotal = score1 * 1 + score2 * 1;
 
         homeTeam !== '' &&
-          date.includes(`0${day}.${month}`) &&
+          date.includes(`${day}.${month}`) &&
           scoreTotal <= 1 &&
           under25.push({
             source: 'vitibet',
