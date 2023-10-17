@@ -24,12 +24,23 @@ const corsOptions = {
 
 const today = new Date();
 const yesterday = new Date(today);
+const tomorrow = new Date(today);
+const year = today.getFullYear();
 
 yesterday.setDate(yesterday.getDate() - 1);
+tomorrow.setDate(tomorrow.getDate() + 1);
 const formattedYesterday = fns.format(yesterday, 'dd.MM.yyyy');
+const formattedToday = fns.format(today, 'dd.MM.yyyy');
+const todayString = formattedToday.toString();
 const yesterdayString = formattedYesterday.toString();
+const day = today.getDate();
+const dayTom = tomorrow.getDate();
+
+let month = today.getMonth();
+month = month < 10 ? `${month + 1}` : month + 1;
 
 const url_result2 = 'https://www.livescore.bz/en/yesterday/';
+const url_result3 = `https://www.footlive.com/yesterday/`;
 
 // require the middlewares and callback functions from the controller directory
 // const { create, read, removeTodo } = require('../controller');
@@ -77,19 +88,23 @@ resultRouter.get('/getZeroCounter', async (req, res) => {
       useUnifiedTopology: true,
     }
   );
-  // console.log('req.query.date', req.query.date);
-  const res111 = await ZeroCounter.find({ date: req.query.date });
+  // console.log('req.query.date', req.query.date);git
+  // await ZeroCounter.deleteMany({ });
+
+  const res111 = await ZeroCounter.find({});
+  // console.log('getZeroCounterRes111',res111);
   await db.disconnect();
 
   // console.log('res111', res111);
 
   res.json(res111);
+  // res.json('zerCounter deleted');
 });
 
 resultRouter.post('/saveZeroCounter', async (req, res) => {
   let data = req.body;
 
-  // console.log('data', data);
+  console.log('data333', data);
 
   // data.homeTeam.forEach(async (elem) => {
   //   const newBttsObj = {
@@ -113,20 +128,26 @@ resultRouter.post('/saveZeroCounter', async (req, res) => {
     }
   );
 
-  // console.log('data.date', data.date);
-  const res111 = await ZeroCounter.find({ date: data.date });
-  // console.log('res111', res111);
+  let newZeroCounter = await new ZeroCounter(data);
+  await newZeroCounter.save(function (err) {
+    if (err) return console.error(err);
+    console.log('zero counter saved succussfully!');
+  });
 
-  if (res111 && res111.length !== 0) {
-    await ZeroCounter.replaceOne(res111[0], data);
-    console.log('zero counter updated succussfully!');
-  } else {
-    let newZeroCounter = await new ZeroCounter(data);
-    await newZeroCounter.save(function (err) {
-      if (err) return console.error(err);
-      console.log('new zero counter saved succussfully!');
-    });
-  }
+  // // console.log('data.date', data.date);
+  // const res111 = await ZeroCounter.find({ date: data.date });
+  // // console.log('res111', res111);
+
+  // if (res111 && res111.length !== 0) {
+  //   await ZeroCounter.replaceOne(res111[0], data);
+  //   console.log('zero counter updated succussfully!');
+  // } else {
+  //   let newZeroCounter = await new ZeroCounter(data);
+  //   await newZeroCounter.save(function (err) {
+  //     if (err) return console.error(err);
+  //     console.log('new zero counter saved succussfully!');
+  //   });
+  // }
 
   // let newZeroCounter = await new ZeroCounter(data);
   // await newZeroCounter.save(function (err) {
@@ -139,23 +160,56 @@ resultRouter.post('/saveZeroCounter', async (req, res) => {
   // });
   // console.log('new Over saved succussfully!');
 
-  res.json('new zero counter inserted');
+  res.json('zero counter inserted');
 });
 
 resultRouter.get('/load', cors(corsOptions), async (req, res) => {
   console.log('result111');
-  //result2
-  await axios(url_result2)
+  // //result2
+  // await axios(url_result2)
+  //   .then((response) => {
+  //     const html = response.data;
+
+  //     const $ = cheerio.load(html);
+
+  //     $('.m', html).each(function () {
+  //       const homeTeam = $(this).find('t1:first').find('t:first').text();
+  //       const awayTeam = $(this).find('t2:first').find('t:first').text();
+
+  //       const score = $(this).find('sc:first').text();
+
+  //       if (
+  //         score !== '' &&
+  //         awayTeam !== '' &&
+  //         homeTeam !== '' &&
+  //         yesterdayString !== ''
+  //       ) {
+  //         results.push({
+  //           score,
+  //           homeTeam:
+  //             getHomeTeamName(homeTeam.trim()) !== ''
+  //               ? getHomeTeamName(homeTeam.trim())
+  //               : homeTeam.trim(),
+  //           awayTeam,
+  //           date: yesterdayString,
+  //         });
+  //       }
+  //     });
+  //   })
+  //   .catch((err) => console.log(err));
+
+  //result3
+  await axios(url_result3)
     .then((response) => {
       const html = response.data;
 
       const $ = cheerio.load(html);
 
-      $('.m', html).each(function () {
-        const homeTeam = $(this).find('t1:first').find('t:first').text();
-        const awayTeam = $(this).find('t2:first').find('t:first').text();
-
-        const score = $(this).find('sc:first').text();
+      $('.feedGame', html).each(function () {
+        const homeTeam = $(this).find('.match_event').find('.team_a').text();
+        const awayTeam = $(this).find('.match_event').find('.team_b').text();
+        let score = $(this).find('.match_event').find('.score').text();
+        score = score.replace(':', '-');
 
         if (
           score !== '' &&
@@ -194,7 +248,7 @@ resultRouter.get('/load', cors(corsOptions), async (req, res) => {
 
     return result;
   });
-
+  console.log('results111', results);
   await Result.insertMany(results)
     .then(function () {
       console.log('Results inserted'); // Success

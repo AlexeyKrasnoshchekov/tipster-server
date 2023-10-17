@@ -35,9 +35,10 @@ const year = today.getFullYear();
 const day = today.getDate();
 const dayTom = tomorrow.getDate();
 let month = today.getMonth();
-month = month < 10 ? `0${month + 1}` : month + 1;
+month = month < 10 ? `${month + 1}` : month + 1;
 
 const url_goalnow = 'https://www.goalsnow.com/over-under-predictions/';
+const url_passion = `https://passionpredict.com/over-2-5-goals?dt=${year}-${month}-${day}`;
 const url_predutd = 'https://predictionsunited.com/football-predictions-and-tips/today/under-2-5-goals';
 const url_vitibet =
   'https://www.vitibet.com/index.php?clanek=quicktips&sekce=fotbal&lang=en';
@@ -67,6 +68,7 @@ const url_mines = `https://api.betmines.com/betmines/v1/fixtures/betmines-machin
 // require the middlewares and callback functions from the controller directory
 // const { create, read, removeTodo } = require('../controller');
 const under25 = [];
+const under25Vpn = [];
 // Create POST route to create an todo
 // router.post('/todo/create', create);
 // Create GET route to read an todo
@@ -74,6 +76,8 @@ underRouter.get('/delete', cors(corsOptions), async (req, res) => {
   // const today = new Date();
   // const formattedToday = fns.format(today, 'dd.MM.yyyy');
   // const todayString = formattedToday.toString();
+
+  console.log('req.query.date',req.query.date);
 
   mongoose.connect(
     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
@@ -145,8 +149,227 @@ underRouter.post('/save', async (req, res) => {
   res.json('new preds inserted');
 });
 
+underRouter.get('/loadWithVpn', cors(corsOptions), async (req, res) => {
+  console.log('underWithVpn111');
+
+  // // FBP
+  await axios(url_fbp)
+    .then((response) => {
+      const html = response.data;
+      // console.log(response.data);
+      // console.log('000', response);
+      const $ = cheerio.load(html);
+
+      $('.accumulator-row', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+
+        const teams = $(this).find('.accumulator-name').text();
+
+        const prediction = $(this)
+          .find('.accumulator-name')
+          .find('strong')
+          .text();
+
+        const homeTeam = teams.includes('vs') && teams.split('vs')[0];
+        let awayTeam = teams.includes('vs') && teams.split('vs')[1];
+        awayTeam =
+          awayTeam.includes(prediction) && awayTeam.replace(prediction, '');
+
+        homeTeam !== '' &&
+          prediction.includes('Under') &&
+          under25Vpn.push({
+            source: 'fbp_acc_u25',
+            action: 'under25',
+            isAcca: true,
+            homeTeam:
+              getHomeTeamName(homeTeam.trim()) !== ''
+                ? getHomeTeamName(homeTeam.trim())
+                : homeTeam.trim(),
+            awayTeam: awayTeam.replace(prediction, ''),
+            date: todayString,
+          });
+      });
+
+      // res.send('fbp over loaded');
+    })
+    .catch((err) => console.log(err));
+
+   //FBP
+   await axios(url_fbp)
+    .then((response) => {
+      const html = response.data;
+      // console.log(response.data);
+      // console.log('000', html);
+      const $ = cheerio.load(html);
+
+      $('.card-body', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const homeTeam = $(this).find('.home-team').find('.team-label').text();
+        const awayTeam = $(this).find('.away-team').find('.team-label').text();
+        const under25text = $(this).find('.prediction').text();
+        const under25Yes = under25text.includes('Under');
+        // console.log('over25Fbp', over25);
+        const predictionDate = $(this)
+          .find('.match-preview-date')
+          .find('.full-cloak')
+          .text();
+        homeTeam !== '' &&
+          under25Yes &&
+          under25Vpn.push({
+            source: 'fbp_u25',
+            action: 'under25',
+            checked: false,
+            homeTeam:
+              getHomeTeamName(homeTeam.trim()) !== ''
+                ? getHomeTeamName(homeTeam.trim())
+                : homeTeam.trim().replace('FC ', ''),
+            awayTeam,
+            date: todayString,
+            predictionDate: predictionDate,
+          });
+      });
+
+      // res.json(over25);
+    })
+    .catch((err) => console.log(err));
+
+  let start = 0;
+  let next = 1;
+  let sortedUnder25 = under25Vpn.sort((a, b) => {
+    if (a.homeTeam < b.homeTeam) {
+      return -1;
+    }
+    if (a.homeTeam > b.homeTeam) {
+      return 1;
+    }
+    return 0;
+  });
+
+  //удаление дублей
+  while (next < sortedUnder25.length) {
+    if (
+      sortedUnder25[start].homeTeam.trim() === sortedUnder25[next].homeTeam.trim()
+    ) {
+      if (
+        sortedUnder25[start].action === sortedUnder25[next].action &&
+        sortedUnder25[start].source === sortedUnder25[next].source
+      ) {
+        sortedUnder25.splice(next, 1);
+      }
+    }
+
+    start++;
+    next++;
+  }
+
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  );
+  // console.log('sortedBtts', sortedBtts);
+  await Under25.insertMany(sortedUnder25)
+    .then(function () {
+      console.log('under VPN inserted'); // Success
+    })
+    .catch(function (error) {
+      console.log(error); // Failure
+    });
+
+  await db.disconnect();
+  res.send('under VPN loaded');
+});
+
 underRouter.get('/load', cors(corsOptions), async (req, res) => {
   console.log('under111');
+
+  // FBP
+  // await axios(url_fbp)
+  //   .then((response) => {
+  //     const html = response.data;
+  //     // console.log(response.data);
+  //     // console.log('000', response);
+  //     const $ = cheerio.load(html);
+
+  //     $('.accumulator-row', html).each(function () {
+  //       //<-- cannot be a function expression
+  //       // const title = $(this).text();
+
+  //       const teams = $(this).find('.accumulator-name').text();
+
+  //       const prediction = $(this)
+  //         .find('.accumulator-name')
+  //         .find('strong')
+  //         .text();
+
+  //       const homeTeam = teams.includes('vs') && teams.split('vs')[0];
+  //       let awayTeam = teams.includes('vs') && teams.split('vs')[1];
+  //       awayTeam =
+  //         awayTeam.includes(prediction) && awayTeam.replace(prediction, '');
+
+  //       homeTeam !== '' &&
+  //         prediction.includes('Under') &&
+  //         under25.push({
+  //           source: 'fbp_acc_u25',
+  //           action: 'under25',
+  //           isAcca: true,
+  //           homeTeam:
+  //             getHomeTeamName(homeTeam.trim()) !== ''
+  //               ? getHomeTeamName(homeTeam.trim())
+  //               : homeTeam.trim(),
+  //           awayTeam: awayTeam.replace(prediction, ''),
+  //           date: todayString,
+  //         });
+  //     });
+
+  //     // res.send('fbp over loaded');
+  //   })
+  //   .catch((err) => console.log(err));
+
+  //  //FBP
+  //  await axios(url_fbp)
+  //   .then((response) => {
+  //     const html = response.data;
+  //     // console.log(response.data);
+  //     // console.log('000', html);
+  //     const $ = cheerio.load(html);
+
+  //     $('.card-body', html).each(function () {
+  //       //<-- cannot be a function expression
+  //       // const title = $(this).text();
+  //       const homeTeam = $(this).find('.home-team').find('.team-label').text();
+  //       const awayTeam = $(this).find('.away-team').find('.team-label').text();
+  //       const under25text = $(this).find('.prediction').text();
+  //       const under25Yes = under25text.includes('Under');
+  //       // console.log('over25Fbp', over25);
+  //       const predictionDate = $(this)
+  //         .find('.match-preview-date')
+  //         .find('.full-cloak')
+  //         .text();
+  //       homeTeam !== '' &&
+  //         under25Yes &&
+  //         under25.push({
+  //           source: 'fbp_u25',
+  //           action: 'under25',
+  //           checked: false,
+  //           homeTeam:
+  //             getHomeTeamName(homeTeam.trim()) !== ''
+  //               ? getHomeTeamName(homeTeam.trim())
+  //               : homeTeam.trim().replace('FC ', ''),
+  //           awayTeam,
+  //           date: todayString,
+  //           predictionDate: predictionDate,
+  //         });
+  //     });
+
+  //     // res.json(over25);
+  //   })
+  //   .catch((err) => console.log(err));
+
   //VENAS
   await axios(url_venasbet)
     .then((response) => {
@@ -164,7 +387,7 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
 
         homeTeam !== '' &&
           under25.push({
-            source: 'venas',
+            source: 'venas_u25',
             action: 'under25',
             checked: false,
             homeTeam:
@@ -209,9 +432,9 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
       homeTeam !== '' &&
       underYes &&
         under25.push({
-          source: 'betprotips',
+          source: 'betprotips_u25',
           action: 'under25',
-          checked: false,
+          isAcca: true,
           homeTeam:
             getHomeTeamName(homeTeam.trim()) !== ''
               ? getHomeTeamName(homeTeam.trim())
@@ -256,10 +479,10 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
         }
        //  console.log('over25Fbp', probabilityUnder);
   
-        homeTeam !== '' && date.includes(`${month}/${day}`) &&
+        homeTeam !== '' && date.includes(`${month}/0${day}`) &&
         underYes &&
           under25.push({
-            source: 'betimate',
+            source: 'betimate_u25',
             action: `under25 ${probabilityUnder}`,
             checked: false,
             homeTeam:
@@ -293,16 +516,16 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
           .text()
           .split(' - ')[0];
 
-          const awayTeam = $(this)
-          .find('th')
-          .text()
-          .split(' - ')[1];
+
+          let awayTeam = $(this).find('thead:nth-child(1)').find('th').text().split(' - ')[1];
+     let part = $(this).find('thead:nth-child(1)').find('th').find('.text-muted').text();
+      awayTeam = awayTeam.replace(`${part}`, '');
 
           // console.log('predutdU25', homeTeam);
 
         homeTeam !== '' &&
         under25.push({
-            source: 'predutd',
+            source: 'predutd_u25',
             action: 'under25',
             checked: false,
             homeTeam: homeTeam.trim(),
@@ -316,40 +539,40 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
     .catch((err) => console.log(err));
 
   // //VITIBET
-  await axios(url_vitibet)
-    .then((response) => {
-      const html = response.data;
+  // await axios(url_vitibet)
+  //   .then((response) => {
+  //     const html = response.data;
 
-      // console.log('000', html);
-      const $ = cheerio.load(html);
+  //     // console.log('000', html);
+  //     const $ = cheerio.load(html);
 
-      $('tr', html).each(function () {
-        //<-- cannot be a function expression
-        // const title = $(this).text();
-        const date = $(this).find('td:nth-child(1)').text();
-        const homeTeam = $(this).find('td:nth-child(2)').text();
-        const awayTeam = $(this).find('td:nth-child(3)').text();
-        const score1 = $(this).find('td:nth-child(4)').text();
-        const score2 = $(this).find('td:nth-child(6)').text();
+  //     $('tr', html).each(function () {
+  //       //<-- cannot be a function expression
+  //       // const title = $(this).text();
+  //       const date = $(this).find('td:nth-child(1)').text();
+  //       const homeTeam = $(this).find('td:nth-child(2)').text();
+  //       const awayTeam = $(this).find('td:nth-child(3)').text();
+  //       const score1 = $(this).find('td:nth-child(4)').text();
+  //       const score2 = $(this).find('td:nth-child(6)').text();
 
-        const scoreTotal = score1 * 1 + score2 * 1;
+  //       const scoreTotal = score1 * 1 + score2 * 1;
 
-        homeTeam !== '' &&
-          date.includes(`${day}.${month}`) &&
-          scoreTotal <= 1 &&
-          under25.push({
-            source: 'vitibet',
-            action: 'under25',
-            isAcca: false,
-            homeTeam: homeTeam.trim(),
-            awayTeam: awayTeam.trim(),
-            date: todayString,
-          });
-      });
+  //       homeTeam !== '' &&
+  //         date.includes(`${day}.${month}`) &&
+  //         scoreTotal <= 1 &&
+  //         under25.push({
+  //           source: 'vitibet_u25',
+  //           action: 'under25',
+  //           isAcca: false,
+  //           homeTeam: homeTeam.trim(),
+  //           awayTeam: awayTeam.trim(),
+  //           date: todayString,
+  //         });
+  //     });
 
-      // res.json(btts);
-    })
-    .catch((err) => console.log(err));
+  //     // res.json(btts);
+  //   })
+  //   .catch((err) => console.log(err));
 
   //NVTIPS
   // await axios(url_nvtips)
@@ -427,7 +650,7 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
           awayTeam !== '' &&
           tip.includes('Under') &&
           under25.push({
-            source: 'soccertipz',
+            source: 'soccertipz_u25',
             action: 'under25',
             checked: false,
             homeTeam:
@@ -455,8 +678,8 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
       data.forEach((elem) => {
         elem !== '' && elem.bestOddProbability > 74 &&
           under25.push({
-            source: 'mines',
-            action: `${elem.bestOdd} ${elem.bestOddProbability}%`,
+            source: 'mines_u25',
+            action: `under25 ${elem.bestOddProbability}%`,
             homeTeam: elem.localTeam.name,
             awayTeam: elem.visitorTeam.name,
             date: todayString,
@@ -489,7 +712,7 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
           pred.includes('UNDER') &&
           parseInt(percent) > 68 &&
           under25.push({
-            source: 'footsuper',
+            source: 'footsuper_u25',
             action: 'under25',
             isAcca: false,
             homeTeam:
@@ -510,7 +733,7 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
 
   //PASSION
   await axios(
-    `https://passionpredict.com/over-2-5-goals?dt=${year}-${month}-${day}`
+    url_passion
   )
     .then((response) => {
       const html = response.data;
@@ -541,7 +764,7 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
           elem.pred !== '' &&
           elem.pred.includes('Under') &&
           under25.push({
-            source: 'passion',
+            source: 'passion_u25',
             action: 'under25',
             checked: false,
             homeTeam:
@@ -611,7 +834,7 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
 
         homeTeam !== '' &&
           under25.push({
-            source: 'r2bet',
+            source: 'r2bet_u25',
             action: 'under35',
             checked: false,
             homeTeam:
@@ -779,9 +1002,9 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
         homeTeam !== '' &&
           pred.includes('Under') &&
           under25.push({
-            source: 'goalsnow',
+            source: 'goalsnow_u25',
             action: 'under25',
-            checked: false,
+            isAcca: true,
             homeTeam:
               getHomeTeamName(homeTeam.trim()) !== ''
                 ? getHomeTeamName(homeTeam.trim())
@@ -899,7 +1122,7 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
             .split(' - ')[1];
           homeTeam !== '' &&
             under25.push({
-              source: 'fbpai',
+              source: 'fbpai_u25',
               action: 'under25',
               checked: false,
               homeTeam:
@@ -981,46 +1204,7 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
   //   })
   //   .catch((err) => console.log(err));
 
-  //FBP
-  // await axios(url_fbp)
-  await axios(url_fbp)
-    .then((response) => {
-      const html = response.data;
-      // console.log(response.data);
-      // console.log('000', html);
-      const $ = cheerio.load(html);
 
-      $('.card-body', html).each(function () {
-        //<-- cannot be a function expression
-        // const title = $(this).text();
-        const homeTeam = $(this).find('.home-team').find('.team-label').text();
-        const awayTeam = $(this).find('.away-team').find('.team-label').text();
-        const under25text = $(this).find('.prediction').text();
-        const under25Yes = under25text.includes('Under');
-        // console.log('over25Fbp', over25);
-        const predictionDate = $(this)
-          .find('.match-preview-date')
-          .find('.full-cloak')
-          .text();
-        homeTeam !== '' &&
-          under25Yes &&
-          under25.push({
-            source: 'fbp',
-            action: 'under25',
-            checked: false,
-            homeTeam:
-              getHomeTeamName(homeTeam.trim()) !== ''
-                ? getHomeTeamName(homeTeam.trim())
-                : homeTeam.trim().replace('FC ', ''),
-            awayTeam,
-            date: todayString,
-            predictionDate: predictionDate,
-          });
-      });
-
-      // res.json(over25);
-    })
-    .catch((err) => console.log(err));
   // MYBETS
   await axios(url_mybets)
     .then((response) => {
@@ -1046,7 +1230,7 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
         homeTeam !== '' &&
           under25Yes &&
           under25.push({
-            source: 'mybets',
+            source: 'mybets_u25',
             action: 'under25',
             checked: false,
             homeTeam:

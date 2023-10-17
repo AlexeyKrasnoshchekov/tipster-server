@@ -131,7 +131,6 @@ const ZeroCounterSchema = new Schema(
       total: Number,
       matches: [String],
     },
-    date: { type: String, required: true },
   },
   {
     timestamps: true,

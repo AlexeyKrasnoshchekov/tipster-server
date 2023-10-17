@@ -13,6 +13,8 @@ const resultRouter = require('./routes/result');
 const totalRouter = require('./routes/total');
 const underRouter = require('./routes/under');
 const testRouter = require('./routes/test');
+const drawRouter = require('./routes/draw');
+const prodRouter = require('./routes/prod');
 
 const mongoose = require('mongoose');
 
@@ -27,12 +29,14 @@ app.use(cors());
 // route middlewares
 app.use('/btts', bttsRouter);
 app.use('/over', overRouter);
+app.use('/draw', drawRouter);
 app.use('/crawl', crawlRouter);
 app.use('/win', winRouter);
 app.use('/result', resultRouter);
 app.use('/total', totalRouter);
 app.use('/under', underRouter);
 app.use('/test', testRouter);
+app.use('/prod', prodRouter);
 
 ///////APIS
 
