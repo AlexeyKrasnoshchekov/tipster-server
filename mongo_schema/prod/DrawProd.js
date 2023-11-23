@@ -14,6 +14,9 @@ const drawProdSchema = new Schema(
     date: { type: String, required: true },
     totalSources: { type: Number, required: false },
     totalItems: { type: Number, required: false },
+    highDrawYesEff: { type: Number, required: false },
+    everageDrawYesEffD: { type: Number, required: false },
+    lowDrawYesEff: { type: Number, required: false },
   },
   {
     timestamps: true,

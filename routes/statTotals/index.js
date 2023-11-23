@@ -10,13 +10,12 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const fns = require('date-fns');
 const db = require('../../db');
-const { Draw } = require('../../mongo_schema/Draw');
-const { BttsProd } = require('../../mongo_schema/prod/BttsProd');
-const { UnderProd } = require('../../mongo_schema/prod/UnderProd');
-const { OverProd } = require('../../mongo_schema/prod/OverProd');
-const { WinProd } = require('../../mongo_schema/prod/WinProd');
-const { DrawProd } = require('../../mongo_schema/prod/DrawProd');
-const { FullTable } = require('../../mongo_schema/prod/FullTable');
+
+const { BttsStatTotal  } = require('../../mongo_schema/statTotals/BttsStatTotal');
+const { UnderStatTotal } = require('../../mongo_schema/statTotals/UnderStatTotal');
+const { OverStatTotal  } = require('../../mongo_schema/statTotals/OverStatTotal');
+const { WinStatTotal } = require('../../mongo_schema/statTotals/WinStatTotal');
+const { DrawStatTotal  } = require('../../mongo_schema/statTotals/DrawStatTotal');
 
 const ORIGIN = process.env.ORIGIN;
 
@@ -48,129 +47,9 @@ prodRouter.get('/delete', cors(corsOptions), async (req, res) => {
   await db.disconnect();
 });
 
-//FullTable
-
-prodRouter.get('/getFullTable', async (req, res) => {
-  console.log('req.query.date', req.query.date);
-  mongoose.connect(
-    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
-    {
-      useNewUrlParser: true,
-      // useCreateIndex: true,
-      useUnifiedTopology: true,
-    }
-  );
-
-  const FullTableArr = await FullTable.find({ date: req.query.date });
-  await db.disconnect();
-  // console.log('UnderProdArr',UnderProdArr)
-  res.json(FullTableArr);
-});
-prodRouter.get('/getFullTableZeros', async (req, res) => {
-  console.log('req.query.date', req.query.dates);
-  mongoose.connect(
-    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
-    {
-      useNewUrlParser: true,
-      // useCreateIndex: true,
-      useUnifiedTopology: true,
-    }
-  );
-
-  const FullTableZerosArr = await FullTable.find({ isZero: true });
-  await db.disconnect();
-  // console.log('UnderProdArr',UnderProdArr)
-  res.json(FullTableZerosArr);
-});
-
-
-prodRouter.post('/updateFullTable', async (req, res) => {
-  let data = req.body;
-  console.log('dataBttsProd', data);
-
-  mongoose.connect(
-    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
-  );
-
-  // await BttsProd.deleteMany({});
-
-  if (data.length !== 0) {
-    await FullTable.deleteMany({ date: data[0].date });
-
-    await FullTable.insertMany(data)
-      .then(function () {
-        console.log('FullTable inserted'); // Success
-      })
-      .catch(function (error) {
-        console.log(error); // Failure
-      });
-  }
-
-  // if (data.length !== 0) {
-  //   for (let i = 0; i < data.length; i++) {
-  //     const filter = { homeTeam: data[i].homeTeam };
-  //     const update = {
-  //       resultScore: data[i].resultScore,
-  //       underYes: data[i].underYes,
-  //     };
-  //     UnderProd.updateOne(filter, update, function (err, underProd) {
-  //       if (err) {
-  //         console.log(err);
-  //       } else {
-  //         console.log('under prod updated');
-  //       }
-  //     });
-  //   }
-  // }
-
-  await db.disconnect();
-
-  res.send('FullTable updated');
-});
-prodRouter.post('/saveFullTable', async (req, res) => {
-  let data = req.body;
-  console.log('dataFullTable', data);
-
-  // mongoose.connect(
-  //   'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
-  //   {
-  //     useNewUrlParser: true,
-  //     useUnifiedTopology: true,
-  //   }
-  // );
-
-  // await FullTable.deleteMany({ });
-
-  // await db.disconnect();
-
-  if (data.length !== 0) {
-    mongoose.connect(
-      'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
-      {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      }
-    );
-    // console.log('sortedBtts', sortedBtts);
-    await FullTable.insertMany(data)
-      .then(function () {
-        console.log('FullTable inserted'); // Success
-      })
-      .catch(function (error) {
-        console.log(error); // Failure
-      });
-
-    await db.disconnect();
-    res.send('full table saved');
-  }
-});
 //UNDER
 
-prodRouter.get('/getUnderProd', async (req, res) => {
+prodRouter.get('/getUnderStatTotal', async (req, res) => {
   console.log('req.query.date', req.query.date);
   mongoose.connect(
     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
@@ -181,26 +60,12 @@ prodRouter.get('/getUnderProd', async (req, res) => {
     }
   );
 
-  const UnderProdArr = await UnderProd.find({ date: req.query.date });
-  await db.disconnect();
-  // console.log('UnderProdArr',UnderProdArr)
-  res.json(UnderProdArr);
-});
+  // await UnderStatTotal.deleteMany({});
 
-prodRouter.get('/getUnder45Prods', async (req, res) => {
-  console.log('req.query.date', req.query.date);
-  mongoose.connect(
-    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
-    {
-      useNewUrlParser: true,
-      // useCreateIndex: true,
-      useUnifiedTopology: true,
-    }
-  );
-
-  const UnderProdArr = await UnderProd.find({ under45: 'false' });
+  const UnderProdArr = await UnderStatTotal.find({ date: req.query.date });
+  
   await db.disconnect();
-  console.log('UnderProdArr', UnderProdArr);
+  console.log('UnderProdArr',UnderProdArr)
   res.json(UnderProdArr);
 });
 
@@ -223,7 +88,7 @@ prodRouter.post('/updateUnderProd', async (req, res) => {
 
     await UnderProd.insertMany(data)
       .then(function () {
-        console.log('Under Prod inserted'); // Success
+        console.log('Under Stat Total updated'); // Success
       })
       .catch(function (error) {
         console.log(error); // Failure
@@ -251,9 +116,25 @@ prodRouter.post('/updateUnderProd', async (req, res) => {
 
   res.send('under prod updated');
 });
-prodRouter.post('/saveUnderProd', async (req, res) => {
+prodRouter.post('/saveUnderStatTotal', async (req, res) => {
   let data = req.body;
   console.log('dataUnderProd', data);
+
+  // mongoose.connect(
+  //   'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+  //   {
+  //     useNewUrlParser: true,
+  //     useUnifiedTopology: true,
+  //   }
+  // );
+
+    // await UnderStatTotal.deleteMany({});
+    // await OverStatTotal.deleteMany({});
+    // await BttsStatTotal.deleteMany({});
+    // await WinStatTotal.deleteMany({});
+    // await DrawStatTotal.deleteMany({});
+
+    
 
   if (data.length !== 0) {
     mongoose.connect(
@@ -264,22 +145,28 @@ prodRouter.post('/saveUnderProd', async (req, res) => {
       }
     );
     // console.log('sortedBtts', sortedBtts);
-    await UnderProd.insertMany(data)
+
+    // await UnderStatTotal.deleteMany({ date: data[0].date });
+    await UnderStatTotal.insertMany(data)
       .then(function () {
-        console.log('Under Prod inserted'); // Success
+        console.log('Under Stat Total inserted'); // Success
       })
       .catch(function (error) {
         console.log(error); // Failure
       });
 
     await db.disconnect();
-    res.send('under prod saved');
+    res.send('under stat saved');
   }
+
+  // await db.disconnect();
+  // console.log('22333')
+  // res.send('under stat saved');
 });
 
 //BTTS
 
-prodRouter.get('/getBttsProd', async (req, res) => {
+prodRouter.get('/getBttsStatTotal', async (req, res) => {
   console.log('req.query.date', req.query.date);
   mongoose.connect(
     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
@@ -290,58 +177,55 @@ prodRouter.get('/getBttsProd', async (req, res) => {
     }
   );
 
-  const BttsProdArr = await BttsProd.find({ date: req.query.date });
+  
+
+  const BttsProdArr = await BttsStatTotal.find({ date: req.query.date });
+
+  // BttsProdArr.forEach(elem => {
+  //   elem.over05Count = 0;
+  //   elem.over05Eff = 0;
+  //   elem.over15Count = 0;
+  //   elem.over15Eff = 0;
+  //   elem.bttsYesCount = 0;
+  //   elem.bttsYesEff = 0;
+  //   elem.totalPreds = 0;
+  //   elem.totalPredsYes = 0;
+  // })
+
+  // await BttsStatTotal.deleteMany({date: req.query.date});
+
+  // await BttsStatTotal.insertMany(BttsProdArr)
+  //     .then(function () {
+  //       console.log('Btts Stat Total inserted'); // Success
+  //     })
+  //     .catch(function (error) {
+  //       console.log(error); // Failure
+  //     });
+  
+
+  // BttsProdArr.forEach(elem => {
+  //   elem.date = "06.11.2023";
+  // });
+
+  // console.log('BttsProdArr',BttsProdArr);
+
+  // await BttsStatTotal.deleteMany({});
+
+  // await BttsStatTotal.insertMany(BttsProdArr)
+  //     .then(function () {
+  //       console.log('Btts Stat Total inserted'); // Success
+  //     })
+  //     .catch(function (error) {
+  //       console.log(error); // Failure
+  //     });
   await db.disconnect();
-  // console.log('UnderProdArr',UnderProdArr)
+  console.log('BttsProdArr',BttsProdArr)
   res.json(BttsProdArr);
 });
 
-prodRouter.get('/getBttsProdZeros', async (req, res) => {
-  console.log('req.query.date', req.query.date);
-  mongoose.connect(
-    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
-    {
-      useNewUrlParser: true,
-      // useCreateIndex: true,
-      useUnifiedTopology: true,
-    }
-  );
-
-  const BttsProdArr = await BttsProd.find({ over05: 'false' });
-  await db.disconnect();
-  console.log('BttsProdArr', BttsProdArr);
-  res.json(BttsProdArr);
-});
-
-prodRouter.get('/getBttsProdZeros', async (req, res) => {
-  console.log('req.query.date', req.query.dates);
-  let datesArr = req.query.dates.split(',');
-  let BttsZerosArr = [];
-  mongoose.connect(
-    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
-    {
-      useNewUrlParser: true,
-      // useCreateIndex: true,
-      useUnifiedTopology: true,
-    }
-  );
-
-
-
-  datesArr.forEach(item => {
-    let zeros = BttsProd.find({ date: item, resultScore: '0 - 0' });
-    BttsZerosArr.concat(zeros);
-  })
-
-   
-  await db.disconnect();
-  // console.log('UnderProdArr',UnderProdArr)
-  res.json(BttsZerosArr);
-});
-
-prodRouter.post('/updateBttsProd', async (req, res) => {
+prodRouter.post('/updateBttsStatTotal', async (req, res) => {
   let data = req.body;
-  console.log('dataBttsProd');
+  // console.log('dataBttsProd');
 
   mongoose.connect(
     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
@@ -354,11 +238,11 @@ prodRouter.post('/updateBttsProd', async (req, res) => {
   // await BttsProd.deleteMany({});
 
   if (data.length !== 0) {
-    await BttsProd.deleteMany({ date: data[0].date });
+    await DrawStatTotal.deleteMany({ date: data[0].date });
 
-    await BttsProd.insertMany(data)
+    await DrawStatTotal.insertMany(data)
       .then(function () {
-        console.log('btts Prod inserted'); // Success
+        console.log('btts Stat Total updated'); // Success
       })
       .catch(function (error) {
         console.log(error); // Failure
@@ -386,9 +270,21 @@ prodRouter.post('/updateBttsProd', async (req, res) => {
 
   res.send('btts prod updated');
 });
-prodRouter.post('/saveBttsProd', async (req, res) => {
+prodRouter.post('/saveBttsStatTotal', async (req, res) => {
   let data = req.body;
-  console.log('dataBttsProd', data);
+  // console.log('dataBttsProd', data);
+
+  // mongoose.connect(
+  //   'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+  //   {
+  //     useNewUrlParser: true,
+  //     useUnifiedTopology: true,
+  //   }
+  // );
+
+  // await BttsStatTotal.deleteMany({ });
+
+  // await db.disconnect();
 
   if (data.length !== 0) {
     mongoose.connect(
@@ -399,80 +295,23 @@ prodRouter.post('/saveBttsProd', async (req, res) => {
       }
     );
     // console.log('sortedBtts', sortedBtts);
-    await BttsProd.insertMany(data)
+    await BttsStatTotal.deleteMany({ date: data[0].date });
+    await BttsStatTotal.insertMany(data)
       .then(function () {
-        console.log('Btts Prod inserted'); // Success
+        console.log('Btts Stat Total inserted'); // Success
       })
       .catch(function (error) {
         console.log(error); // Failure
       });
 
     await db.disconnect();
-    res.send('btts prod saved');
+    res.send('btts stat saved');
   }
 });
 
 //OVER
 
-prodRouter.get('/getOverProd', async (req, res) => {
-  console.log('req.query.date', req.query.date);
-  console.log('req.query.dates111', req.query.dates);
-  let OverProdArr = [];
-  mongoose.connect(
-    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
-    {
-      useNewUrlParser: true,
-      // useCreateIndex: true,
-      useUnifiedTopology: true,
-    }
-  );
-  
-  if (req.query.date !== undefined) {
-    OverProdArr = await OverProd.find({ date: req.query.date });
-  }
-  if (req.query.dates !== undefined) {
-    let datesArr = req.query.dates.split(',');
-    let datesArr2 = [];
-    datesArr.forEach(async (item) => {
-      datesArr2.push({date: item})
-    })
-    console.log('datesArr2', datesArr2);
-
-    // let overs = await OverProd.find({ date: '12.11.2023' });
-    //     console.log('overs', overs);
-
-    if (datesArr2.length !==0) {
-      OverProd.find({
-        $or: datesArr2,
-      })
-      .then((ret) => {
-        console.log('ret', ret);
-        res.json(ret);
-      })
-      .catch((err) => {
-        // Deal with the error
-        console.log('err', err);
-      });
-
-      
-    }
-  }
-
-  
-
-  // let OverProdArr = await OverProd.find({ date: req.query.date });
-  // if (req.query.date !== undefined) {
-  //   OverProdArr = await OverProd.find({ date: req.query.date });
-  // } else {
-  //   // OverProdArr = await OverProd.find({});
-  //   OverProdArr = await OverProd.find({});
-  // }
-  await db.disconnect();
-  // console.log('OverProdArr',OverProdArr)
-  res.json(OverProdArr);
-});
-
-prodRouter.get('/getOverProdZeros', async (req, res) => {
+prodRouter.get('/getOverStatTotal', async (req, res) => {
   console.log('req.query.date', req.query.date);
   mongoose.connect(
     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
@@ -483,27 +322,11 @@ prodRouter.get('/getOverProdZeros', async (req, res) => {
     }
   );
 
-  const OverProdArr = await OverProd.find({ over05: 'false' });
+  const OverProdArr = await OverStatTotal.find({ date: req.query.date });
   await db.disconnect();
-  console.log('OverProdArr', OverProdArr);
+  console.log('OverProdArr',OverProdArr)
   res.json(OverProdArr);
 });
-// prodRouter.get('/getAllOverProd', async () => {
-//   // console.log('req.query.date', req.query.date);
-//   mongoose.connect(
-//     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
-//     {
-//       useNewUrlParser: true,
-//       // useCreateIndex: true,
-//       useUnifiedTopology: true,
-//     }
-//   );
-
-//   const OverProdArr = await OverProd.find({});
-//   await db.disconnect();
-//   // console.log('UnderProdArr',UnderProdArr)
-//   res.json(OverProdArr);
-// });
 
 prodRouter.post('/updateOverProd', async (req, res) => {
   let data = req.body;
@@ -520,11 +343,11 @@ prodRouter.post('/updateOverProd', async (req, res) => {
   // await BttsProd.deleteMany({});
 
   if (data.length !== 0) {
-    await OverProd.deleteMany({ date: data[0].date });
+    await OverStatTotal.deleteMany({ date: data[0].date });
 
-    await OverProd.insertMany(data)
+    await OverStatTotal.insertMany(data)
       .then(function () {
-        console.log('over Prod inserted'); // Success
+        console.log('over Stat Total updated'); // Success
       })
       .catch(function (error) {
         console.log(error); // Failure
@@ -552,7 +375,7 @@ prodRouter.post('/updateOverProd', async (req, res) => {
 
   res.send('over prod updated');
 });
-prodRouter.post('/saveOverProd', async (req, res) => {
+prodRouter.post('/saveOverStatTotal', async (req, res) => {
   let data = req.body;
   console.log('dataOverProd', data);
 
@@ -565,22 +388,23 @@ prodRouter.post('/saveOverProd', async (req, res) => {
       }
     );
     // console.log('sortedBtts', sortedBtts);
-    await OverProd.insertMany(data)
+    // await OverStatTotal.deleteMany({ date: data[0].date });
+    await OverStatTotal.insertMany(data)
       .then(function () {
-        console.log('Over Prod inserted'); // Success
+        console.log('Over Stat Total inserted'); // Success
       })
       .catch(function (error) {
         console.log(error); // Failure
       });
 
     await db.disconnect();
-    res.send('over prod saved');
+    res.send('over stat saved');
   }
 });
 
 //WIN
 
-prodRouter.get('/getWinProd', async (req, res) => {
+prodRouter.get('/getWinStatTotal', async (req, res) => {
   console.log('req.query.date', req.query.date);
   mongoose.connect(
     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
@@ -591,24 +415,7 @@ prodRouter.get('/getWinProd', async (req, res) => {
     }
   );
 
-  const WinProdArr = await WinProd.find({ date: req.query.date });
-  await db.disconnect();
-  console.log('WinProdArr', WinProdArr);
-  res.json(WinProdArr);
-});
-
-prodRouter.get('/getWinProdZeros', async (req, res) => {
-  console.log('req.query.date', req.query.date);
-  mongoose.connect(
-    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
-    {
-      useNewUrlParser: true,
-      // useCreateIndex: true,
-      useUnifiedTopology: true,
-    }
-  );
-
-  const WinProdArr = await WinProd.find({ over05: 'false' });
+  const WinProdArr = await WinStatTotal.find({ date: req.query.date });
   await db.disconnect();
   console.log('WinProdArr', WinProdArr);
   res.json(WinProdArr);
@@ -629,11 +436,11 @@ prodRouter.post('/updateWinProd', async (req, res) => {
   // await BttsProd.deleteMany({});
 
   if (data.length !== 0) {
-    await WinProd.deleteMany({ date: data[0].date });
+    await WinStatTotal.deleteMany({ date: data[0].date });
 
-    await WinProd.insertMany(data)
+    await WinStatTotal.insertMany(data)
       .then(function () {
-        console.log('win Prod inserted'); // Success
+        console.log('win Stat Total updated'); // Success
       })
       .catch(function (error) {
         console.log(error); // Failure
@@ -659,9 +466,9 @@ prodRouter.post('/updateWinProd', async (req, res) => {
 
   await db.disconnect();
 
-  res.send('win prod updated');
+  res.send('win Stat Total updated');
 });
-prodRouter.post('/saveWinProd', async (req, res) => {
+prodRouter.post('/saveWinStatTotal', async (req, res) => {
   let data = req.body;
   console.log('dataWinProd', data);
 
@@ -674,22 +481,23 @@ prodRouter.post('/saveWinProd', async (req, res) => {
       }
     );
     // console.log('sortedBtts', sortedBtts);
-    await WinProd.insertMany(data)
+    // await WinStatTotal.deleteMany({ date: data[0].date });
+    await WinStatTotal.insertMany(data)
       .then(function () {
-        console.log('Win Prod inserted'); // Success
+        console.log('Win Daily Stat inserted'); // Success
       })
       .catch(function (error) {
         console.log(error); // Failure
       });
 
     await db.disconnect();
-    res.send('win prod saved');
+    res.send('win stat saved');
   }
 });
 
 //DRAW
 
-prodRouter.get('/getDrawProd', async (req, res) => {
+prodRouter.get('/getDrawStatTotal', async (req, res) => {
   console.log('req.query.date', req.query.date);
   mongoose.connect(
     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
@@ -700,7 +508,9 @@ prodRouter.get('/getDrawProd', async (req, res) => {
     }
   );
 
-  const DrawProdArr = await DrawProd.find({ date: req.query.date });
+  // await DrawDailyTotal.deleteMany({});
+
+  const DrawProdArr = await DrawStatTotal.find({ date: req.query.date });
   await db.disconnect();
   // console.log('UnderProdArr',UnderProdArr)
   res.json(DrawProdArr);
@@ -721,11 +531,11 @@ prodRouter.post('/updateDrawProd', async (req, res) => {
   // await BttsProd.deleteMany({});
 
   if (data.length !== 0) {
-    await DrawProd.deleteMany({ date: data[0].date });
+    await DrawStatTotal.deleteMany({ date: data[0].date });
 
-    await DrawProd.insertMany(data)
+    await DrawStatTotal.insertMany(data)
       .then(function () {
-        console.log('draw Prod inserted'); // Success
+        console.log('draw Stat Total updated'); // Success
       })
       .catch(function (error) {
         console.log(error); // Failure
@@ -753,7 +563,7 @@ prodRouter.post('/updateDrawProd', async (req, res) => {
 
   res.send('draw prod updated');
 });
-prodRouter.post('/saveDrawProd', async (req, res) => {
+prodRouter.post('/saveDrawStatTotal', async (req, res) => {
   let data = req.body;
   console.log('dataDrawProd', data);
 
@@ -766,16 +576,17 @@ prodRouter.post('/saveDrawProd', async (req, res) => {
       }
     );
     // console.log('sortedBtts', sortedBtts);
-    await DrawProd.insertMany(data)
+    // await DrawStatTotal.deleteMany({ date: data[0].date });
+    await DrawStatTotal.insertMany(data)
       .then(function () {
-        console.log('Draw Prod inserted'); // Success
+        console.log('Draw Stat Total inserted'); // Success
       })
       .catch(function (error) {
         console.log(error); // Failure
       });
 
     await db.disconnect();
-    res.send('draw prod saved');
+    res.send('draw stat saved');
   }
 });
 

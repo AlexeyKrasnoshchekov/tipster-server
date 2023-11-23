@@ -29,22 +29,35 @@ const year = today.getFullYear();
 yesterday.setDate(yesterday.getDate() - 1);
 tomorrow.setDate(tomorrow.getDate() + 1);
 const formattedYesterday = fns.format(yesterday, 'dd.MM.yyyy');
+const formattedTomorrow = fns.format(tomorrow, 'dd.MM.yyyy');
 const formattedToday = fns.format(today, 'dd.MM.yyyy');
 const todayString = formattedToday.toString();
+const tomorrowString = formattedTomorrow.toString();
 const day = today.getDate();
 const dayTom = tomorrow.getDate();
 
 let month = today.getMonth();
 month = month < 10 ? `${month + 1}` : month + 1;
+let month1 = '';
+if (parseInt(month) < 10) {
+  month1 = `0${month}`;
+} else {
+  month1 = month;
+}
 
 // const url_goalnow = 'https://www.goalsnow.com/over-under-predictions/';
 const url_gnow_accum = 'https://www.goalsnow.com/accumulator-over-2.5-goals/';
 const url_fbp365 = 'https://footballprediction365.com/over-2-5-predictions';
+const url_wininbets = 'https://wininbets.com/under-over-predictions';
 const url_passion = `https://passionpredict.com/over-2-5-goals?dt=${year}-${month}-${day}`;
 const url_predutd =
   'https://predictionsunited.com/football-predictions-and-tips/today/over-2-5-goals';
 
 const url_prot = 'https://www.protipster.com/betting-tips/over-2.5-goals';
+const url_kingspredict =
+  'https://kingspredict.com/2_5_goals';
+const url_kingspredict_acc =
+  'https://kingspredict.com/over_3_5_goals';
 const url_fbp =
   'https://footballpredictions.net/under-over-2-5-goals-betting-tips-predictions';
 // const url_accum =
@@ -313,6 +326,51 @@ overRouter.get('/load', cors(corsOptions), async (req, res) => {
     })
     .catch((err) => console.log(err));
 
+   //wininbets
+   await axios(url_wininbets)
+   .then((response) => {
+     const html = response.data;
+ 
+     // console.log('000', html);
+     const $ = cheerio.load(html);
+ 
+     // const body = $('section:nth-child(2) tbody', html);
+ 
+     $('.tips-grid__item', html).each(function () {
+       //<-- cannot be a function expression
+       // const title = $(this).text();
+       const homeTeam = $(this).find('.tips-card__name-first').text().split(' vs ')[0];
+       const awayTeam = $(this).find('.tips-card__name-first').text().split(' vs ')[1];
+ 
+       const tip = $(this).find('.tips-card__badge').find('span').text().split(' ➤ ')[0];
+       const odds = $(this).find('.tips-card__badge').find('span').text().split(' ➤ ')[1];
+       const date = $(this).find('.tips-card__time').find('span').text();
+       
+       let day1 = '';
+       if (parseInt(dayTom) < 10) {
+         day1 = `0${dayTom}`;
+       } else {
+         day1 = dayTom;
+       }
+ 
+       if (tip.includes('Over 2.5')) {
+         homeTeam !== '' && parseInt(odds) < 2 && date.includes(`${dayTom}/${month1}`) &&
+         over25.push({
+           source: 'wininbets_o25',
+           action: 'over25',
+           isAcca: false,
+           homeTeam: homeTeam.trim(),
+           awayTeam: awayTeam.trim(),
+           date: tomorrowString,
+         });
+       }
+    
+     });
+ 
+     // res.send('hello over loaded');
+   })
+   .catch((err) => console.log(err));
+
   //BANKER
   await axios(url_banker)
     .then((response) => {
@@ -472,8 +530,15 @@ overRouter.get('/load', cors(corsOptions), async (req, res) => {
         }
         //  console.log('over25Fbp', probabilityUnder);
 
+        let day1 = '';
+        if (parseInt(day) < 10) {
+          day1 = `0${day}`;
+        } else {
+          day1 = day;
+        }
+
         homeTeam !== '' &&
-          date.includes(`${month}/0${day}`) &&
+          date.includes(`${month}/${day1}`) &&
           overYes &&
           parseInt(probabilityOver) > 58 &&
           over25.push({
@@ -1092,7 +1157,7 @@ overRouter.get('/load', cors(corsOptions), async (req, res) => {
           over25.push({
             source: 'r2bet_o25',
             action: 'over25',
-            isAcca: true,
+            isAcca: false,
             homeTeam: homeTeam.trim(),
             awayTeam: awayTeam.trim(),
             date: todayString,
@@ -1304,6 +1369,82 @@ overRouter.get('/load', cors(corsOptions), async (req, res) => {
       });
 
       // res.send('hello over loaded');
+    })
+    .catch((err) => console.log(err));
+
+    // kingspredict
+  await axios(url_kingspredict)
+  .then((response) => {
+    const html = response.data;      
+    const $ = cheerio.load(html);
+
+    const body = $('.content', html);
+
+    $('tr', body).each(function () {
+
+      const homeTeam = $(this).find('td:nth-child(3)').find('span:nth-child(1)').text().split('VS')[0];
+      const awayTeam = $(this).find('td:nth-child(3)').find('span:nth-child(1)').text().split('VS')[1];
+
+      const tip = $(this).find('td:nth-child(4)').find('span:nth-child(1)').text();
+
+      // console.log('homeTeam2222', homeTeam);
+      // console.log('awayTeam2222', awayTeam);
+      // console.log('tip2222', tip);
+
+      if (tip.includes('+2.5')) {
+        homeTeam !== '' &&
+        over25.push({
+          source: 'kingspredict_o25',
+          action: 'over25',
+          checked: false,
+          homeTeam: homeTeam.trim(),
+          awayTeam: awayTeam.trim(),
+          date: todayString,
+        });
+      } 
+
+    });
+
+    // res.json(btts);
+  })
+  .catch((err) => console.log(err));
+
+  // kingspredict_acc
+  await axios(url_kingspredict_acc)
+    .then((response) => {
+      const html = response.data;      
+      const $ = cheerio.load(html);
+
+      const body = $('.content', html);
+
+      // console.log('body2222', body);
+
+      $('tr', body).each(function () {
+
+        const homeTeam = $(this).find('td:nth-child(3)').find('span:nth-child(1)').text().split('VS')[0];
+        const awayTeam = $(this).find('td:nth-child(3)').find('span:nth-child(1)').text().split('VS')[1];
+
+        const tip = $(this).find('td:nth-child(4)').text();
+
+        // console.log('homeTeam2222', homeTeam);
+        // console.log('awayTeam2222', awayTeam);
+        // console.log('tip2222', tip);
+
+        if (tip.includes('+3.5')) {
+          homeTeam !== '' &&
+          over25.push({
+            source: 'kingspredict_acc_o25',
+            action: 'over25',
+            isAcca: true,
+            homeTeam: homeTeam.trim(),
+            awayTeam: awayTeam.trim(),
+            date: todayString,
+          });
+        } 
+
+      });
+
+      // res.json(btts);
     })
     .catch((err) => console.log(err));
 

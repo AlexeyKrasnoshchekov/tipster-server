@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 mongoose.set('strictQuery', true);
 
 const { ProxyCrawlAPI } = require('proxycrawl');
-const api1 = new ProxyCrawlAPI({ token: 'IpErJSu5VcdhkKqgLRJiwQ' });
+const api1 = new ProxyCrawlAPI({ token: 'FOQoQUkg7W7211oV5Pt1yA' });
 const cheerio = require('cheerio');
 const fns = require('date-fns');
 const db = require('../../db');
@@ -31,6 +31,7 @@ const formattedToday = fns.format(today, 'dd.MM.yyyy');
 const todayString = formattedToday.toString();
 
 const day = today.getDate();
+const url_predictz = 'https://www.predictz.com/predictions/today/correct-score/';
 
 const url_bettingtips_acc =
   'https://www.bettingtips.today/football-accumulators-tips/';
@@ -41,11 +42,15 @@ const url_bettingtips_win =
 const url_bettingtips_btts =
   'https://www.bettingtips.today/both-teams-to-score-predictions-tips/';
 const url_wincomparator = 'https://www.wincomparator.com/predictions/';
+const url_victorspredict_o25 = 'https://victorspredict.com/store/over-2-5-goals';
+const url_victorspredict_btts = 'https://victorspredict.com/store/both-team-to-score';
+const url_victorspredict_win = 'https://victorspredict.com/store/double-chance';
+const url_victorspredict_draw = 'https://victorspredict.com/store/draws';
 const url_betclan = 'https://www.betclan.com/accumulator-tips-for-today/';
-const url_betshoot_o25 =
-  'https://www.betshoot.com/football/over-25-goals-tips/';
-const url_betshoot_btts =
-  'https://www.betshoot.com/football/both-teams-to-score-tips/';
+// const url_betshoot_o25 =
+//   'https://www.betshoot.com/football/over-25-goals-tips/';
+// const url_betshoot_btts =
+//   'https://www.betshoot.com/football/both-teams-to-score-tips/';
 
 // require the middlewares and callback functions from the controller directory
 // const { create, read, removeTodo } = require('../controller');
@@ -151,6 +156,171 @@ crawlRouter.get('/load', cors(corsOptions), async (req, res) => {
       }
 
       // res.send('bettingtips crawl loaded');
+    })
+    .catch((err) => console.log(err));
+
+    // victorspredict
+  await api1
+  .get(url_victorspredict_o25)
+  .then((response) => {
+    if (response.statusCode === 200 && response.originalStatus === 200) {
+      // console.log('000', response.body);
+      const html = response.body;
+      const $ = cheerio.load(html);
+      // console.log(response.data);
+      // console.log('000', html);
+
+      const body = $('.custom-card-body-tip', html);
+
+      $('.row', body).each(function () {
+        const homeTeam = $(this).find('strong:nth-child(1)').text().split(' vs ')[0];
+        const awayTeam = $(this).find('strong:nth-child(1)').text().split(' vs ')[1];
+
+        // console.log('homeTeam2222', homeTeam);
+        // console.log('awayTeam2222', awayTeam);
+
+        homeTeam !== '' &&
+        crawlData.push({
+            source: 'victorspredict_o25',
+            action: 'over25',
+            checked: false,
+            homeTeam: homeTeam.trim(),
+            awayTeam: awayTeam.trim(),
+            date: todayString,
+          });
+      });
+    }
+
+
+    // res.json(btts);
+  })
+  .catch((err) => console.log(err));
+
+  // victorspredict_btts
+  await api1
+    .get(url_victorspredict_btts)
+    .then((response) => {
+      if (response.statusCode === 200 && response.originalStatus === 200) {
+        // console.log('000', response.body);
+        const html = response.body;
+        const $ = cheerio.load(html);
+        // console.log(response.data);
+        // console.log('000', html);
+
+        const body = $('.custom-card-body-tip', html);
+
+        $('.row', body).each(function () {
+          const homeTeam = $(this).find('strong:nth-child(1)').text().split(' vs ')[0];
+          const awayTeam = $(this).find('strong:nth-child(1)').text().split(' vs ')[1];
+
+          console.log('homeTeam2222', homeTeam);
+          console.log('awayTeam2222', awayTeam);
+
+          homeTeam !== '' &&
+          crawlData.push({
+              source: 'victorspredict_btts',
+              action: 'btts',
+              checked: false,
+              homeTeam: homeTeam.trim(),
+              awayTeam: awayTeam.trim(),
+              date: todayString,
+            });
+        });
+      }
+
+
+      // res.json(btts);
+    })
+    .catch((err) => console.log(err));
+
+    // victorspredict_win
+  await api1
+  .get(url_victorspredict_win)
+  .then((response) => {
+    if (response.statusCode === 200 && response.originalStatus === 200) {
+      // console.log('000', response.body);
+      const html = response.body;
+      const $ = cheerio.load(html);
+      // console.log(response.data);
+      // console.log('000', html);
+
+      const body = $('.custom-card-body-tip', html);
+
+      $('.row', body).each(function () {
+        const homeTeam = $(this)
+          .find('strong:nth-child(1)')
+          .text()
+          .split(' vs ')[0];
+        const awayTeam = $(this)
+          .find('strong:nth-child(1)')
+          .text()
+          .split(' vs ')[1];
+        const tip = $(this)
+          .find('div:nth-child(2)')
+          .find('strong:nth-child(1)')
+          .text();
+        // console.log('homeTeam2222', homeTeam);
+        // console.log('awayTeam2222', awayTeam);
+        // console.log('tip2222', tip);
+
+        if (tip.includes('1X') || tip.includes('X2')) {
+          homeTeam !== '' &&
+          crawlData.push({
+              source: 'victorspredict_win',
+              action: 'xwin',
+              checked: false,
+              homeTeam: homeTeam.trim(),
+              awayTeam: awayTeam.trim(),
+              date: todayString,
+              prediction: tip.includes('1X') ? homeTeam : awayTeam,
+            });
+        }
+      });
+    }
+
+    // res.json(btts);
+  })
+  .catch((err) => console.log(err));
+
+  // victorspredict_draw
+  await api1
+    .get(url_victorspredict_draw)
+    .then((response) => {
+      if (response.statusCode === 200 && response.originalStatus === 200) {
+        // console.log('000', response.body);
+        const html = response.body;
+        const $ = cheerio.load(html);
+        // console.log(response.data);
+        // console.log('000', html);
+
+        const body = $('.custom-card-body-tip', html);
+
+        $('.row', body).each(function () {
+          const homeTeam = $(this)
+            .find('strong:nth-child(1)')
+            .text()
+            .split(' vs ')[0];
+          const awayTeam = $(this)
+            .find('strong:nth-child(1)')
+            .text()
+            .split(' vs ')[1];
+
+          // console.log('homeTeam2222', homeTeam);
+          // console.log('awayTeam2222', awayTeam);
+
+            homeTeam !== '' &&
+            crawlData.push({
+                source: 'victorspredict_draw',
+                action: 'draws',
+                checked: false,
+                homeTeam: homeTeam.trim(),
+                awayTeam: awayTeam.trim(),
+                date: todayString,
+              });
+        });
+      }
+
+      // res.json(btts);
     })
     .catch((err) => console.log(err));
 
@@ -521,95 +691,197 @@ crawlRouter.get('/load', cors(corsOptions), async (req, res) => {
       // res.send('wincomparator crawl loaded');
     })
     .catch((err) => console.log(err));
+
+    await api1
+    .get(url_predictz)
+    .then((response) => {
+  if (response.statusCode === 200 && response.originalStatus === 200) {
+    // console.log('000', response.body);
+    const html = response.body;
+    // console.log(response.data);
+    console.log('000', html);
+        const $ = cheerio.load(html);
+
+        $('.pttr', html).each(function () {
+          //<-- cannot be a function expression
+          // const title = $(this).text();
+          const homeTeam = $(this).find('.ptmobh').text();
+          const awayTeam = $(this).find('.ptmoba').text();
+          // const awayTeam = $(this).find('.teadms').find('.teamd').text().replace(/\r?\n/, '').replace(/\r?\n/, '').replace(/\r?\n/, '').split('                            ')[1];
+    
+          const score = $(this).find('.ptpredboxsml').text();
+          let score1 = score.split('-')[0];
+          score1 = score1.split(' ')[1];
+          const score2 = score.split('-')[1];
+    
+          // console.log('homeTeam', homeTeam);
+          // console.log('awayTeam', awayTeam);
+          // console.log('score', score);
+          
+          
+          const isDraw = score1 * 1 === score2 * 1;
+          const homeScore = score1 > 0;
+          const awayScore = score2 > 0;
+    
+          const bttsYes = homeScore && awayScore;
+          const scoreTotal = score1 * 1 + score2 * 1;
+          const win1 = score1 * 1 > score2 * 1;
+          const win2 = score1 * 1 < score2 * 1;
+    
+          
+          
+          homeTeam !== '' &&
+          crawlData.push({
+                source: 'predictz_btts',
+                action: bttsYes ? 'btts' : 'btts no',
+                isAcca: false,
+                homeTeam: homeTeam.trim(),
+                awayTeam: awayTeam.trim(),
+                date: todayString,
+              });
+            homeTeam !== '' &&
+              isDraw &&
+              crawlData.push({
+                source: 'predictz_draw',
+                action: 'draws',
+                isAcca: false,
+                homeTeam: homeTeam.trim(),
+                awayTeam: awayTeam.trim(),
+                date: todayString,
+              });
+              if (scoreTotal >= 3) {
+                homeTeam !== '' &&
+                crawlData.push({
+                    source: 'predictz_o25',
+                    action: 'over25',
+                    checked: false,
+                    homeTeam: homeTeam.trim(),
+                    awayTeam: awayTeam.trim(),
+                    date: todayString,
+                  });
+              }
+              if (scoreTotal <= 2) {
+                homeTeam !== '' &&
+                crawlData.push({
+                    source: 'predictz_u25',
+                    action: 'under25',
+                    isAcca: false,
+                    homeTeam: homeTeam.trim(),
+                    awayTeam: awayTeam.trim(),
+                    date: todayString,
+                  });
+              }
+              if (win1 || win2) {
+                homeTeam !== '' &&
+                crawlData.push({
+                    source: 'predictz_win',
+                    action: 'win',
+                    checked: false,
+                    homeTeam: homeTeam.trim(),
+                    awayTeam: awayTeam.trim(),
+                    date: todayString,
+                    prediction: win1 ? homeTeam.trim() : awayTeam.trim(),
+                  });
+              }
+       
+        });
+      } else {
+        console.log('Failed: ', response.statusCode, response.originalStatus);
+      }
+
+      // res.send('bettingtips crawl loaded');
+    })
+    .catch((err) => console.log(err));
+
   //betshoot_o25
-  await api1
-    .get(url_betshoot_o25)
-    .then((response) => {
-      if (response.statusCode === 200 && response.originalStatus === 200) {
-        //  console.log('000', response.body);
-        const html = response.body;
-        const $ = cheerio.load(html);
+  // await api1
+  //   .get(url_betshoot_o25)
+  //   .then((response) => {
+  //     if (response.statusCode === 200 && response.originalStatus === 200) {
+  //       //  console.log('000', response.body);
+  //       const html = response.body;
+  //       const $ = cheerio.load(html);
 
-        const body = $('section:nth-child(1)', html);
+  //       const body = $('section:nth-child(1)', html);
 
-        $('.mth', body).each(function () {
-          const homeTeam = $(this)
-            .find('.teams')
-            .find('a')
-            .text()
-            .split(' vs ')[0];
+  //       $('.mth', body).each(function () {
+  //         const homeTeam = $(this)
+  //           .find('.teams')
+  //           .find('a')
+  //           .text()
+  //           .split(' vs ')[0];
 
-          const awayTeam = $(this)
-            .find('.teams')
-            .find('a')
-            .text()
-            .split(' vs ')[1];
+  //         const awayTeam = $(this)
+  //           .find('.teams')
+  //           .find('a')
+  //           .text()
+  //           .split(' vs ')[1];
 
-          if (homeTeam !== '') {
-            crawlData.push({
-              source: 'betshoot_o25',
-              action: 'over25',
-              isAcca: true,
-              homeTeam:
-                getHomeTeamName(homeTeam.trim()) !== ''
-                  ? getHomeTeamName(homeTeam.trim())
-                  : homeTeam.trim(),
-              awayTeam,
-              date: todayString,
-            });
-          }
-        });
-      } else {
-        console.log('Failed: ', response.statusCode, response.originalStatus);
-      }
+  //         if (homeTeam !== '') {
+  //           crawlData.push({
+  //             source: 'betshoot_o25',
+  //             action: 'over25',
+  //             isAcca: true,
+  //             homeTeam:
+  //               getHomeTeamName(homeTeam.trim()) !== ''
+  //                 ? getHomeTeamName(homeTeam.trim())
+  //                 : homeTeam.trim(),
+  //             awayTeam,
+  //             date: todayString,
+  //           });
+  //         }
+  //       });
+  //     } else {
+  //       console.log('Failed: ', response.statusCode, response.originalStatus);
+  //     }
 
-      // res.send('wincomparator crawl loaded');
-    })
-    .catch((err) => console.log(err));
-  //betshoot_btts
-  await api1
-    .get(url_betshoot_btts)
-    .then((response) => {
-      if (response.statusCode === 200 && response.originalStatus === 200) {
-        // console.log('000', response.body);
-        const html = response.body;
-        const $ = cheerio.load(html);
+  //     // res.send('wincomparator crawl loaded');
+  //   })
+  //   .catch((err) => console.log(err));
+  // //betshoot_btts
+  // await api1
+  //   .get(url_betshoot_btts)
+  //   .then((response) => {
+  //     if (response.statusCode === 200 && response.originalStatus === 200) {
+  //       // console.log('000', response.body);
+  //       const html = response.body;
+  //       const $ = cheerio.load(html);
 
-        const body = $('section:nth-child(1)', html);
+  //       const body = $('section:nth-child(1)', html);
 
-        $('.mth', body).each(function () {
-          const homeTeam = $(this)
-            .find('.teams')
-            .find('a')
-            .text()
-            .split(' vs ')[0];
-          const awayTeam = $(this)
-            .find('.teams')
-            .find('a')
-            .text()
-            .split(' vs ')[1];
+  //       $('.mth', body).each(function () {
+  //         const homeTeam = $(this)
+  //           .find('.teams')
+  //           .find('a')
+  //           .text()
+  //           .split(' vs ')[0];
+  //         const awayTeam = $(this)
+  //           .find('.teams')
+  //           .find('a')
+  //           .text()
+  //           .split(' vs ')[1];
 
-          if (homeTeam !== '') {
-            crawlData.push({
-              source: 'betshoot_btts',
-              action: 'btts',
-              isAcca: true,
-              homeTeam:
-                getHomeTeamName(homeTeam.trim()) !== ''
-                  ? getHomeTeamName(homeTeam.trim())
-                  : homeTeam.trim(),
-              awayTeam,
-              date: todayString,
-            });
-          }
-        });
-      } else {
-        console.log('Failed: ', response.statusCode, response.originalStatus);
-      }
+  //         if (homeTeam !== '') {
+  //           crawlData.push({
+  //             source: 'betshoot_btts',
+  //             action: 'btts',
+  //             isAcca: true,
+  //             homeTeam:
+  //               getHomeTeamName(homeTeam.trim()) !== ''
+  //                 ? getHomeTeamName(homeTeam.trim())
+  //                 : homeTeam.trim(),
+  //             awayTeam,
+  //             date: todayString,
+  //           });
+  //         }
+  //       });
+  //     } else {
+  //       console.log('Failed: ', response.statusCode, response.originalStatus);
+  //     }
 
-      // res.send('wincomparator crawl loaded');
-    })
-    .catch((err) => console.log(err));
+  //     // res.send('wincomparator crawl loaded');
+  //   })
+  //   .catch((err) => console.log(err));
 
   mongoose.connect(
     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',

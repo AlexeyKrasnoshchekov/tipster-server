@@ -45,6 +45,7 @@ const url_result3 = `https://www.footlive.com/yesterday/`;
 // require the middlewares and callback functions from the controller directory
 // const { create, read, removeTodo } = require('../controller');
 let results = [];
+let results2 = [];
 // Create POST route to create an todo
 // router.post('/todo/create', create);
 // Create GET route to read an todo
@@ -166,37 +167,39 @@ resultRouter.post('/saveZeroCounter', async (req, res) => {
 resultRouter.get('/load', cors(corsOptions), async (req, res) => {
   console.log('result111');
   // //result2
-  // await axios(url_result2)
-  //   .then((response) => {
-  //     const html = response.data;
+  await axios(url_result2)
+    .then((response) => {
+      const html = response.data;
 
-  //     const $ = cheerio.load(html);
+      const $ = cheerio.load(html);
 
-  //     $('.m', html).each(function () {
-  //       const homeTeam = $(this).find('t1:first').find('t:first').text();
-  //       const awayTeam = $(this).find('t2:first').find('t:first').text();
+      $('.m', html).each(function () {
+        const homeTeam = $(this).find('t1:first').find('t:first').text();
+        const awayTeam = $(this).find('t2:first').find('t:first').text();
 
-  //       const score = $(this).find('sc:first').text();
+        const score = $(this).find('sc:first').text();
 
-  //       if (
-  //         score !== '' &&
-  //         awayTeam !== '' &&
-  //         homeTeam !== '' &&
-  //         yesterdayString !== ''
-  //       ) {
-  //         results.push({
-  //           score,
-  //           homeTeam:
-  //             getHomeTeamName(homeTeam.trim()) !== ''
-  //               ? getHomeTeamName(homeTeam.trim())
-  //               : homeTeam.trim(),
-  //           awayTeam,
-  //           date: yesterdayString,
-  //         });
-  //       }
-  //     });
-  //   })
-  //   .catch((err) => console.log(err));
+        if (
+          score !== '' &&
+          awayTeam !== '' &&
+          homeTeam !== '' &&
+          yesterdayString !== ''
+        ) {
+          results2.push({
+            score,
+            homeTeam:
+              getHomeTeamName(homeTeam.trim()) !== ''
+                ? getHomeTeamName(homeTeam.trim())
+                : homeTeam.trim(),
+            awayTeam,
+            date: yesterdayString,
+          });
+        }
+      });
+    })
+    .catch((err) => console.log(err));
+    console.log('results000', results2);
+    
 
   //result3
   await axios(url_result3)
@@ -208,11 +211,32 @@ resultRouter.get('/load', cors(corsOptions), async (req, res) => {
       $('.feedGame', html).each(function () {
         const homeTeam = $(this).find('.match_event').find('.team_a').text();
         const awayTeam = $(this).find('.match_event').find('.team_b').text();
+        const status = $(this).find('.status').text();
         let score = $(this).find('.match_event').find('.score').text();
         score = score.replace(':', '-');
 
+        if ( 
+        status === 'Pen' &&
+        homeTeam !== '' &&
+        yesterdayString !== '') {
+          // console.log('homeTeam222', homeTeam);
+
+          let penElem = results2.filter(elem => elem.homeTeam === homeTeam || elem.homeTeam.includes(homeTeam) || homeTeam.includes(elem.homeTeam) || elem.homeTeam === getHomeTeamName(homeTeam))[0];
+          // console.log('penElem222', penElem);
+          if (penElem) {
+            results.push({
+              score: penElem.score,
+              homeTeam: penElem.homeTeam,
+              awayTeam: penElem.awayTeam,
+              date: yesterdayString,
+            });
+          }
+        }
+        
+
         if (
           score !== '' &&
+          status !== 'Pen' &&
           awayTeam !== '' &&
           homeTeam !== '' &&
           yesterdayString !== ''
@@ -230,6 +254,7 @@ resultRouter.get('/load', cors(corsOptions), async (req, res) => {
       });
     })
     .catch((err) => console.log(err));
+    console.log('results333', results);
 
   mongoose.connect(
     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',

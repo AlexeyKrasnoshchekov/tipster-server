@@ -28,22 +28,28 @@ const tomorrow = new Date(today);
 yesterday.setDate(yesterday.getDate() - 1);
 tomorrow.setDate(tomorrow.getDate() + 1);
 const formattedYesterday = fns.format(yesterday, 'dd.MM.yyyy');
+const formattedTomorrow = fns.format(tomorrow, 'dd.MM.yyyy');
 const formattedToday = fns.format(today, 'dd.MM.yyyy');
 const yesterdayString = formattedYesterday.toString();
 const todayString = formattedToday.toString();
+const tomorrowString = formattedTomorrow.toString();
 const year = today.getFullYear();
 const day = today.getDate();
 const dayTom = tomorrow.getDate();
 let month = today.getMonth();
 month = month < 10 ? `${month + 1}` : month + 1;
+let month1 = '';
+if (parseInt(month) < 10) {
+  month1 = `0${month}`;
+} else {
+  month1 = month;
+}
 
 const url_goalnow = 'https://www.goalsnow.com/over-under-predictions/';
 const url_passion = `https://passionpredict.com/over-2-5-goals?dt=${year}-${month}-${day}`;
 const url_predutd = 'https://predictionsunited.com/football-predictions-and-tips/today/under-2-5-goals';
-const url_vitibet =
-  'https://www.vitibet.com/index.php?clanek=quicktips&sekce=fotbal&lang=en';
 const url_venasbet = 'https://venasbet.com/under_3_5_goals';
-const url_nvtips = 'https://nvtips.com/ru/';
+const url_wininbets = 'https://wininbets.com/under-over-predictions';
 const url_soccertipz = 'https://www.soccertipz.com/under-over-2-5-predictions/';
 const url_r2bet = 'https://r2bet.com/under_3_5_goals';
 const url_betprotips = 'https://betprotips.com/football-tips/over-under-tips/';
@@ -478,8 +484,15 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
           probabilityUnder = $(this).find('.probability').find('div:nth-child(1)').text();
         }
        //  console.log('over25Fbp', probabilityUnder);
+
+       let day1 = '';
+        if (parseInt(day) < 10) {
+          day1 = `0${day}`;
+        } else {
+          day1 = day;
+        }
   
-        homeTeam !== '' && date.includes(`${month}/0${day}`) &&
+        homeTeam !== '' && date.includes(`${month}/${day1}`) &&
         underYes &&
           under25.push({
             source: 'betimate_u25',
@@ -497,6 +510,98 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
       // res.json(over25);
     })
     .catch((err) => console.log(err));
+
+    //wininbets
+  // await axios(url_wininbets)
+  // .then((response) => {
+  //   const html = response.data;
+
+  //   // console.log('000', html);
+  //   const $ = cheerio.load(html);
+
+  //   // const body = $('section:nth-child(2) tbody', html);
+
+  //   $('.tips-grid__item', html).each(function () {
+  //     //<-- cannot be a function expression
+  //     // const title = $(this).text();
+  //     const homeTeam = $(this).find('.tips-card__name-first').text().split(' vs ')[0];
+  //     const awayTeam = $(this).find('.tips-card__name-first').text().split(' vs ')[1];
+
+  //     const tip = $(this).find('.tips-card__badge').find('span').text().split(' ➤ ')[0];
+  //     const odds = $(this).find('.tips-card__badge').find('span').text().split(' ➤ ')[1];
+  //     const date = $(this).find('.tips-card__time').find('span').text();
+
+  //     let day1 = '';
+  //     if (parseInt(day) < 10) {
+  //       day1 = `0${day}`;
+  //     } else {
+  //       day1 = day;
+  //     }
+
+  //     // console.log('tip444', tip);
+
+  //     if (tip.includes('Under 2.5')) {
+  //       homeTeam !== '' && parseInt(odds) < 2 && date.includes(`${day1}/${month1}`) &&
+  //       under25.push({
+  //         source: 'wininbets_u25',
+  //         action: 'under25',
+  //         isAcca: false,
+  //         homeTeam: homeTeam.trim(),
+  //         awayTeam: awayTeam.trim(),
+  //         date: todayString,
+  //       });
+  //     }
+   
+  //   });
+
+  //   // res.send('hello over loaded');
+  // })
+  // .catch((err) => console.log(err));
+
+  //wininbets
+  await axios(url_wininbets)
+  .then((response) => {
+    const html = response.data;
+
+    // console.log('000', html);
+    const $ = cheerio.load(html);
+
+    // const body = $('section:nth-child(2) tbody', html);
+
+    $('.tips-grid__item', html).each(function () {
+      //<-- cannot be a function expression
+      // const title = $(this).text();
+      const homeTeam = $(this).find('.tips-card__name-first').text().split(' vs ')[0];
+      const awayTeam = $(this).find('.tips-card__name-first').text().split(' vs ')[1];
+
+      const tip = $(this).find('.tips-card__badge').find('span').text().split(' ➤ ')[0];
+      const odds = $(this).find('.tips-card__badge').find('span').text().split(' ➤ ')[1];
+      const date = $(this).find('.tips-card__time').find('span').text();
+      
+      let day1 = '';
+      if (parseInt(dayTom) < 10) {
+        day1 = `0${dayTom}`;
+      } else {
+        day1 = dayTom;
+      }
+
+      if (tip.includes('Under 2.5')) {
+        homeTeam !== '' && parseInt(odds) < 2 && date.includes(`${dayTom}/${month1}`) &&
+        under25.push({
+          source: 'wininbets_u25',
+          action: 'under25',
+          isAcca: false,
+          homeTeam: homeTeam.trim(),
+          awayTeam: awayTeam.trim(),
+          date: tomorrowString,
+        });
+      }
+   
+    });
+
+    // res.send('hello over loaded');
+  })
+  .catch((err) => console.log(err));
 
     //PREDUTD
     await axios(url_predutd)

@@ -19,6 +19,7 @@
     "mongoose": "^6.9.0",
     "nodemon": "^2.0.20",
     "proxycrawl": "^2.5.0",
-    "puppeteer": "^21.3.6"
+    "puppeteer": "^21.3.6",
+    "uuid": "^9.0.1"
   }
 }

@@ -15,6 +15,8 @@ const underRouter = require('./routes/under');
 const testRouter = require('./routes/test');
 const drawRouter = require('./routes/draw');
 const prodRouter = require('./routes/prod');
+const dailyTotalsRouter = require('./routes/dailyTotals');
+const statTotalsRouter = require('./routes/statTotals');
 
 const mongoose = require('mongoose');
 
@@ -37,6 +39,8 @@ app.use('/total', totalRouter);
 app.use('/under', underRouter);
 app.use('/test', testRouter);
 app.use('/prod', prodRouter);
+app.use('/dailyTotals', dailyTotalsRouter);
+app.use('/statTotals', statTotalsRouter);
 
 ///////APIS
 
