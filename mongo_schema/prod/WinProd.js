@@ -29,6 +29,8 @@ const winProdSchema = new Schema(
     under25Count: { type: Number, required: false },
     countTopO05W: { type: Number, required: false },
     countTopO15W: { type: Number, required: false },
+    countTopXwin: { type: Number, required: false },
+    isTop: { type: Boolean, required: false },
   },
   {
     timestamps: true,

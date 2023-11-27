@@ -1544,99 +1544,99 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
     })
     .catch((err) => console.log(err));
 
-  // //VITIBET
-  // await axios(url_vitibet)
-  //   .then((response) => {
-  //     const html = response.data;
+  //VITIBET
+  await axios(url_vitibet)
+    .then((response) => {
+      const html = response.data;
 
-  //     // console.log('000', html);
-  //     const $ = cheerio.load(html);
+      // console.log('000', html);
+      const $ = cheerio.load(html);
 
-  //     $('tr', html).each(function () {
-  //       //<-- cannot be a function expression
-  //       // const title = $(this).text();
-  //       const date = $(this).find('td:nth-child(1)').text();
-  //       const homeTeam = $(this).find('td:nth-child(2)').text();
-  //       const awayTeam = $(this).find('td:nth-child(3)').text();
-  //       const score1 = $(this).find('td:nth-child(4)').text();
-  //       const score2 = $(this).find('td:nth-child(6)').text();
-  //       const tip = $(this).find('td:nth-child(10)').text();
+      $('tr', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const date = $(this).find('td:nth-child(1)').text();
+        const homeTeam = $(this).find('td:nth-child(3)').text();
+        const awayTeam = $(this).find('td:nth-child(4)').text();
+        const score1 = $(this).find('td:nth-child(6)').text();
+        const score2 = $(this).find('td:nth-child(8)').text();
+        const tip = $(this).find('td:nth-child(12)').text();
 
-  //       const homeScore = score1 > 0;
-  //       const awayScore = score2 > 0;
+        const homeScore = score1 > 0;
+        const awayScore = score2 > 0;
 
-  //       const bttsYes = homeScore && awayScore;
-  //       const scoreTotal = score1 * 1 + score2 * 1;
-  //       const isDraw = score1 * 1 === score2 * 1;
-  //       console.log('bttsYes', bttsYes);
-  //       console.log('homeTeam', homeTeam);
-  //       console.log('tip222', tip);
+        const bttsYes = homeScore && awayScore;
+        const scoreTotal = score1 * 1 + score2 * 1;
+        const isDraw = score1 * 1 === score2 * 1;
+        console.log('bttsYes', bttsYes);
+        console.log('homeTeam', homeTeam);
+        console.log('tip222', tip);
 
-  //       if (isDraw) {
-  //         homeTeam !== '' &&
-  //           date.includes(`${day}.${month}`) &&
-  //           draws.push({
-  //             source: 'vitibet_draw',
-  //             action: 'draws',
-  //             isAcca: false,
-  //             homeTeam: homeTeam.trim(),
-  //             awayTeam: awayTeam.trim(),
-  //             date: todayString,
-  //           });
-  //       }
-  //       if (scoreTotal >= 3) {
-  //         homeTeam !== '' &&
-  //           date.includes(`${day}.${month}`) &&
-  //           over25.push({
-  //             source: 'vitibet_o25',
-  //             action: 'over25',
-  //             checked: false,
-  //             homeTeam: homeTeam.trim(),
-  //             awayTeam: awayTeam.trim(),
-  //             date: todayString,
-  //           });
-  //       }
-  //       if (scoreTotal <= 1) {
-  //         homeTeam !== '' &&
-  //           date.includes(`${day}.${month}`) &&
-  //           under25.push({
-  //             source: 'vitibet_u25',
-  //             action: 'under25',
-  //             isAcca: false,
-  //             homeTeam: homeTeam.trim(),
-  //             awayTeam: awayTeam.trim(),
-  //             date: todayString,
-  //           });
-  //       }
-  //       if (tip === '1' || tip === '2') {
-  //         homeTeam !== '' &&
-  //           date.includes(`${day}.${month}`) &&
-  //           winData.push({
-  //             source: 'vitibet_win',
-  //             action: 'win',
-  //             checked: false,
-  //             homeTeam: homeTeam.trim(),
-  //             awayTeam: awayTeam.trim(),
-  //             date: todayString,
-  //             prediction: tip === '1' ? homeTeam.trim() : awayTeam.trim(),
-  //           });
-  //       }
+        if (isDraw) {
+          homeTeam !== '' &&
+            date.includes(`${day}.${month}`) &&
+            draws.push({
+              source: 'vitibet_draw',
+              action: 'draws',
+              isAcca: false,
+              homeTeam: homeTeam.trim(),
+              awayTeam: awayTeam.trim(),
+              date: todayString,
+            });
+        }
+        if (scoreTotal >= 3) {
+          homeTeam !== '' &&
+            date.includes(`${day}.${month}`) &&
+            over25.push({
+              source: 'vitibet_o25',
+              action: 'over25',
+              checked: false,
+              homeTeam: homeTeam.trim(),
+              awayTeam: awayTeam.trim(),
+              date: todayString,
+            });
+        }
+        if (scoreTotal <= 1) {
+          homeTeam !== '' &&
+            date.includes(`${day}.${month}`) &&
+            under25.push({
+              source: 'vitibet_u25',
+              action: 'under25',
+              isAcca: false,
+              homeTeam: homeTeam.trim(),
+              awayTeam: awayTeam.trim(),
+              date: todayString,
+            });
+        }
+        if (tip === '1' || tip === '2') {
+          homeTeam !== '' &&
+            date.includes(`${day}.${month}`) &&
+            winData.push({
+              source: 'vitibet_win',
+              action: 'win',
+              checked: false,
+              homeTeam: homeTeam.trim(),
+              awayTeam: awayTeam.trim(),
+              date: todayString,
+              prediction: tip === '1' ? homeTeam.trim() : awayTeam.trim(),
+            });
+        }
 
-  //       homeTeam !== '' &&
-  //         date.includes(`${day}.${month}`) &&
-  //         btts.push({
-  //           source: 'vitibet_btts',
-  //           action: bttsYes ? 'btts' : 'btts no',
-  //           isAcca: false,
-  //           homeTeam: homeTeam.trim(),
-  //           awayTeam: awayTeam.trim(),
-  //           date: todayString,
-  //         });
-  //     });
+        homeTeam !== '' &&
+          date.includes(`${day}.${month}`) &&
+          btts.push({
+            source: 'vitibet_btts',
+            action: bttsYes ? 'btts' : 'btts no',
+            isAcca: false,
+            homeTeam: homeTeam.trim(),
+            awayTeam: awayTeam.trim(),
+            date: todayString,
+          });
+      });
 
-  //     // res.json(btts);
-  //   })
-  //   .catch((err) => console.log(err));
+      // res.json(btts);
+    })
+    .catch((err) => console.log(err));
 
   //Goalnow
   await axios(url_goalnow)

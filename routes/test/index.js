@@ -70,8 +70,8 @@ const url_goalnow =
   'https://www.goalsnow.com/accumulator-btts-both-teams-to-score/';
 const url_predutd =
   'https://www.forebet.com/en/football-tips-and-predictions-for-today/predictions-1x2';
-// const url_vitibet =
-//   'https://www.vitibet.com/index.php?clanek=quicktips&sekce=fotbal&lang=en';
+const url_vitibet =
+  'https://www.vitibet.com/index.php?clanek=quicktips&sekce=fotbal&lang=en';
 const url_venasbet = 'https://venasbet.com/under_3_5_goals';
 const url_trustpredict = 'https://trustpredict.com/both-team-to-score';
 const url_soccertipz = 'https://www.soccertipz.com/under-over-2-5-predictions/';
@@ -81,7 +81,7 @@ const url_betprotips = 'https://betprotips.com/football-tips/over-under-tips/';
 const url_freepredicts = `https://freepredicts.com/`;
 const url_soccerpunt = `https://soccerpunt.com/`;
 // const url_wininbets = `https://wininbets.com/both-teams-to-score-tips`;
-const url_wininbets = 'https://wininbets.com/under-over-predictions';
+// const url_wininbets = 'https://wininbets.com/under-over-predictions';
 const url_bettingtips1x2 = 'https://bettingtips1x2.com/';
 // const url_betwizad = 'https://betwizad.com/predictions';
 const url_betwizad = `https://betwizad.com/predictions?date=${year}-${month1}-${day1}`;
@@ -91,8 +91,8 @@ const url_kingspredict = 'https://kingspredict.com/Double_chance';
 const url_victorspredict = 'https://victorspredict.com/store/draws';
 const url_fbp2 = 'https://footballpredictions.com/footballpredictions/';
 
-const url_vitibet =
-  'https://www.vitibet.com/index.php?clanek=tipoftheday&sekce=fotbal&lang=en';
+// const url_vitibet =
+//   'https://www.vitibet.com/index.php?clanek=tipoftheday&sekce=fotbal&lang=en';
 // const url_gnow_accum = 'https://www.goalsnow.com/accumulator-over-2.5-goals/';
 const url_fbp =
   'https://footballpredictions.net/under-over-2-5-goals-betting-tips-predictions';
@@ -291,9 +291,8 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
   // })
   // .catch((err) => console.log(err));
 
-
   // await api1
-  //   .get(url_bettingtips1x2)
+  //   .get(url_vitibet)
   //   .then((response) => {
   // if (response.statusCode === 200 && response.originalStatus === 200) {
   //   // console.log('000', response.body);
@@ -305,43 +304,31 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
   //       $('tr', html).each(function () {
   //         //<-- cannot be a function expression
   //         // const title = $(this).text();
-  //         const homeTeam = $(this).find('td:nth-child(3)').text();
-  //        //  const awayTeam = $(this).find('.homediv11').find('a').text();
-  //        //  const awayTeam = $(this).find('.tips-card__name-first').text().split(' vs ')[1];
-    
-  //        //  const tip = $(this).find('.tips-card__badge').find('span').text().split(' ➤ ')[0];
-  //        //  const odds = $(this).find('.tips-card__badge').find('span').text().split(' ➤ ')[1];
-  //        //  const date = $(this).find('.tips-card__time').find('span').text();
-    
-  //         let day1 = '';
-  //         if (parseInt(day) < 10) {
-  //           day1 = `0${day}`;
-  //         } else {
-  //           day1 = day;
-  //         }
+  //         const date = $(this).find('td:nth-child(1)').text();
+  //         console.log('111', date);
    
-  //         console.log('homeTeam', homeTeam);
-  //        //  console.log('awayTeam', awayTeam);
-  //        //  console.log('tip', tip);
-  //        //  console.log('odds', odds);
-  //        //  console.log('odds2', parseInt(odds) < 2);
-  //        //  console.log('date', date);
-  //        //  console.log('day1', day1);
-  //        //  console.log('month1', month1);
-    
-  //        //  if (tip.includes('Over')) {
-  //        //    homeTeam !== '' && parseInt(odds) < 2 && date.includes(`${day1}/${month1}`) &&
-  //        //    btts.push({
-  //        //      source: 'wininbets_o25',
-  //        //      action: 'over25',
-  //        //      isAcca: false,
-  //        //      homeTeam: homeTeam.trim(),
-  //        //      awayTeam: awayTeam.trim(),
-  //        //      date: todayString,
-  //        //    });
-  //        //  }
-       
+  //         const homeTeam = $(this).find('td:nth-child(2)').text();
+  //         console.log('222', homeTeam);
+   
+  //         const awayTeam = $(this).find('td:nth-child(3)').text();
+  //         const score1 = $(this).find('td:nth-child(4)').text();
+  //         const score2 = $(this).find('td:nth-child(6)').text();
+   
+  //         const isDraw = score1 * 1 === score2 * 1;
+   
+  //         homeTeam !== '' &&
+  //           // date.includes(`${day}.${month}`) &&
+  //           // isDraw &&
+  //           btts.push({
+  //             source: 'vitibet_draw',
+  //             action: 'draws',
+  //             isAcca: false,
+  //             homeTeam: homeTeam.trim(),
+  //             awayTeam: awayTeam.trim(),
+  //             date: todayString,
+  //           });
   //       });
+
   //     } else {
   //       console.log('Failed: ', response.statusCode, response.originalStatus);
   //     }
@@ -349,6 +336,8 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
   //     // res.send('bettingtips crawl loaded');
   //   })
   //   .catch((err) => console.log(err));
+
+  //   console.log('btts', btts);
 
   // await axios(url_bettingtips1x2)
   // .then((response) => {
@@ -447,7 +436,7 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
   // .catch((err) => console.log(err));
 
     //wininbets
-  await axios(url_wininbets)
+  await axios(url_vitibet)
   .then((response) => {
     const html = response.data;
 
@@ -456,82 +445,47 @@ underRouter.get('/load', cors(corsOptions), async (req, res) => {
 
     // const body = $('section:nth-child(2) tbody', html);
 
-    $('.tips-grid__item', html).each(function () {
+    $('tr', html).each(function () {
       //<-- cannot be a function expression
       // const title = $(this).text();
-      const homeTeam = $(this).find('.tips-card__name-first').text().split(' vs ')[0];
-      const awayTeam = $(this).find('.tips-card__name-first').text().split(' vs ')[1];
+      const date = $(this).find('td:nth-child(1)').text();
+      console.log('111', date);
 
-      const tip = $(this).find('.tips-card__badge').find('span').text().split(' ➤ ')[0];
-      const odds = $(this).find('.tips-card__badge').find('span').text().split(' ➤ ')[1];
-      const date = $(this).find('.tips-card__time').find('span').text();
+      // const homeTeam = $(this).find('td:nth-child(2)').text();
       
-      let day1 = '';
-      if (parseInt(dayTom) < 10) {
-        day1 = `0${dayTom}`;
-      } else {
-        day1 = dayTom;
-      }
 
-      if (tip.includes('Over 2.5')) {
-        homeTeam !== '' && parseInt(odds) < 2 && date.includes(`${dayTom}/${month1}`) &&
+      const homeTeam = $(this).find('td:nth-child(3)').text();
+      console.log('222', homeTeam);
+      const awayTeam = $(this).find('td:nth-child(4)').text();
+      console.log('333', awayTeam);
+      const score1 = $(this).find('td:nth-child(6)').text();
+      const score2 = $(this).find('td:nth-child(8)').text();
+      const tip = $(this).find('td:nth-child(12)').text();
+      console.log('444', score1);
+      console.log('555', score2);
+      console.log('555', tip);
+
+      // const isDraw = score1 * 1 === score2 * 1;
+
+      homeTeam !== '' &&
+        date.includes(`${day}.${month}`) &&
+        // isDraw &&
         btts.push({
-          source: 'wininbets_u25',
-          action: 'under25',
+          source: 'vitibet_draw',
+          action: 'draws',
           isAcca: false,
           homeTeam: homeTeam.trim(),
           awayTeam: awayTeam.trim(),
-          date: tomorrowString,
+          date: todayString,
         });
-      }
-   
     });
-
     // res.send('hello over loaded');
   })
   .catch((err) => console.log(err));
 
-  console.log('btts2222', btts);
+  // console.log('btts2222', btts);
 
-  // //VITIBET
-  // await axios(url_vitibet)
-  //   .then((response) => {
-  //     const html = response.data;
-
-  //     // console.log('000', html);
-  //     const $ = cheerio.load(html);
-
-  //     $('tr', html).each(function () {
-  //       //<-- cannot be a function expression
-  //       // const title = $(this).text();
-  //       const date = $(this).find('td:nth-child(1)').text();
-  //       console.log('111', date);
-
-  //       const homeTeam = $(this).find('td:nth-child(2)').text();
-  //       console.log('222', homeTeam);
-
-  //       const awayTeam = $(this).find('td:nth-child(3)').text();
-  //       const score1 = $(this).find('td:nth-child(4)').text();
-  //       const score2 = $(this).find('td:nth-child(6)').text();
-
-        // const isDraw = score1 * 1 === score2 * 1;
-
-        // homeTeam !== '' &&
-        //   // date.includes(`${day}.${month}`) &&
-        //   isDraw &&
-        //   btts.push({
-        //     source: 'vitibet_draw',
-        //     action: 'draws',
-        //     isAcca: false,
-        //     homeTeam: homeTeam.trim(),
-        //     awayTeam: awayTeam.trim(),
-        //     date: todayString,
-        //   });
-  //     });
-
-  //     // res.json(btts);
-  //   })
-  //   .catch((err) => console.log(err));
+ 
 
   // console.log('btts2222', btts);
 
