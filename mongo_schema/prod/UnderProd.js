@@ -27,7 +27,7 @@ const underProdSchema = new Schema(
     countTopU35: { type: Number, required: false },
     countTopU45: { type: Number, required: false },
     over25Count: { type: Number, required: false },
-    isTop: { type: Boolean, required: false },
+    isTop: { type: String, required: false },
   },
   {
     timestamps: true,

@@ -30,7 +30,7 @@ const winProdSchema = new Schema(
     countTopO05W: { type: Number, required: false },
     countTopO15W: { type: Number, required: false },
     countTopXwin: { type: Number, required: false },
-    isTop: { type: Boolean, required: false },
+    isTop: { type: String, required: false },
   },
   {
     timestamps: true,

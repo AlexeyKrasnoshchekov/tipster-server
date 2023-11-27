@@ -28,7 +28,7 @@ const overProdSchema = new Schema(
     countTopO15O: { type: Number, required: false },
     countTopO25O: { type: Number, required: false },
     under25Count: { type: Number, required: false },
-    isTop: { type: Boolean, required: false },
+    isTop: { type: String, required: false },
   },
   {
     timestamps: true,

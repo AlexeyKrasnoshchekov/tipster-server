@@ -29,7 +29,7 @@ const bttsProdSchema = new Schema(
     countTopO05B: { type: Number, required: false },
     countTopO15B: { type: Number, required: false },
     countTopBtts: { type: Number, required: false },
-    isTop: { type: Boolean, required: false },
+    isTop: { type: String, required: false },
   },
   {
     timestamps: true,
