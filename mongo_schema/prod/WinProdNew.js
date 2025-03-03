@@ -1,13 +1,13 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
-const winProdSchema = new Schema(
+const winProdNewSchema = new Schema(
   {
     homeTeam: { type: String, required: true },
     awayTeam: { type: String, required: false },
     prediction: { type: String, required: true },
     count: { type: Number, required: true },
-    sourcesStat: [{ type: String, required: false }],
+    sources: { type: String, required: false },
     // pairsArr: [[{ type: String, required: false }]],
     // pairsArrOW: [[{ type: String, required: false }]],
     // zeroPairsArr: [[{ type: String, required: false }]],
@@ -17,6 +17,7 @@ const winProdSchema = new Schema(
     winNum: { type: Number, required: false },
     xwinNum: { type: Number, required: false },
     winRes: { type: String, required: false },
+    xwinRes: { type: String, required: false },
     over05: { type: String, required: false },
     // hasPairs: { type: String, required: false },
     // zeroPairs: { type: String, required: false },
@@ -44,8 +45,8 @@ const winProdSchema = new Schema(
   }
 );
 
-const WinProd =
-  mongoose.models?.WinProd || mongoose.model('WinProd', winProdSchema);
+const WinProdNew =
+  mongoose.models?.WinProdNew || mongoose.model('WinProdNew', winProdNewSchema);
 
 // export default Headline;
-module.exports = { WinProd };
+module.exports = { WinProdNew };

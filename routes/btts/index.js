@@ -16,6 +16,7 @@ const { getHomeTeamName } = require('../../utils');
 const { Draw } = require('../../mongo_schema/Draw');
 const { Under25 } = require('../../mongo_schema/Under25');
 const { WinData } = require('../../mongo_schema/WinDataModel');
+const { correctScore } = require('../../mongo_schema/CorrectScore');
 
 const today = new Date();
 const yesterday = new Date(today);
@@ -25,6 +26,7 @@ let draws = [];
 let over25 = [];
 let under25 = [];
 let winData = [];
+let correctScoreArr = [];
 
 yesterday.setDate(yesterday.getDate() - 1);
 tomorrow.setDate(tomorrow.getDate() + 1);
@@ -64,32 +66,34 @@ const url_fbp =
   'https://footballpredictions.net/btts-tips-both-teams-to-score-predictions';
 // const url_fbp_o25 =
 //   'https://footballpredictions.net/under-over-2-5-goals-betting-tips-predictions';
-// const url_accum = 'https://footyaccumulators.com/football-tips/btts';
-// const url_fst = 'https://www.freesupertips.com/both-teams-to-score-tips/';
+const url_accum = 'https://footyaccumulators.com/football-tips/btts';
+const url_fst = 'https://www.freesupertips.com/both-teams-to-score-tips/';
 
-const url_betwizad = `https://betwizad.com/predictions?date=${year}-${month1}-${day1}`;
+// const url_betwizad = `https://betwizad.com/predictions?date=${year}-${month1}-${day1}`;
 const url_r2bet = 'https://r2bet.com/gg_btts';
 const url_soccerpunt = `https://soccerpunt.com/`;
 const url_wininbets = `https://wininbets.com/both-teams-to-score-tips`;
-const url_fbp365 =
-  'https://footballprediction365.com/both-teams-to-score-predictions';
-const url_passion = `https://passionpredict.com/both-team-to-score?dt=${year}-${month}-${day}`;
+// const url_fbp365 =
+//   'https://footballprediction365.com/both-teams-to-score-predictions';
+const url_passion = `https://passionpredict.com/both-team-to-score?dt=${year}-${month1}-${day1}`;
 const url_vitibet =
   'https://www.vitibet.com/index.php?clanek=quicktips&sekce=fotbal&lang=en';
-const url_bigfree = 'https://bigfreetips.com/sure-bets-today/';
-const url_kingspredict = 'https://kingspredict.com/btts';
 
+const url_kingspredict = 'https://kingspredict.com/btts';
+// const url_o25tip =
+//   'https://www.over25tips.com/soccer-predictions/correct-score/';
+// const url_bettingclosed = `https://www.bettingclosed.com/predictions/date-matches/${year}-${month1}-${day1}/bet-type/correct-scores`;
 const url_footsuper_btts =
   'https://www.footballsuper.tips/football-accumulators-tips/football-tips-both-teams-to-score-accumulator/';
 
 //OTHER
 const url_footy = 'https://footystats.org/predictions/btts';
-const url_predutd =
-  'https://predictionsunited.com/football-predictions-and-tips/today/both-teams-to-score';
-const url_mighty = 'https://www.mightytips.com/football-predictions/btts/';
-//   const url_wdw = 'https://www.windrawwin.com/accumulator-tips/today/';
+// const url_predutd =
+//   'https://predictionsunited.com/football-predictions-and-tips/today/both-teams-to-score';
+// const url_mighty = 'https://www.mightytips.com/football-predictions/btts/';
+  // const url_wdw = 'https://www.windrawwin.com/accumulator-tips/today/';
 const url_hello = 'https://hellopredict.com/btts';
-const url_betimate = `https://betimate.com/en/football-predictions/both-to-score?date=2023-${month}-${day}`;
+const url_betimate = `https://betimate.com/en/football-predictions/both-to-score?date=2023-${month1}-${day1}`;
 // const url_leaguelane = 'https://leaguelane.com/both-teams-to-score-tips/';
 const url_betprotips =
   'https://betprotips.com/football-tips/both-teams-to-score-tips-btts/';
@@ -97,20 +101,20 @@ const url_kcpredict = 'https://kcpredict.com/both-team-to-score-tips';
 const url_trustpredict = 'https://trustpredict.com/both-team-to-score';
 //   const url_nvtips = 'https://nvtips.com/ru/';
 const url_banker = 'https://bankerpredict.com/both-team-to-score';
-const url_prot = 'https://www.protipster.com/betting-tips/btts';
+// const url_prot = 'https://www.protipster.com/betting-tips/btts';
 const url_venasbet = 'https://venasbet.com/btts_gg';
-const url_fbp2 = 'https://footballpredictions.com/footballpredictions/';
-// const url_mybets =
-//   'https://www.mybets.today/soccer-predictions/both-teams-to-score-predictions/';
-// const url_fbpai =
-//   'https://footballpredictions.ai/football-predictions/btts-predictions/';
+
+const url_mybets =
+  'https://www.mybets.today/soccer-predictions/both-teams-to-score-predictions/';
+const url_fbpai =
+  'https://footballpredictions.ai/football-predictions/btts-predictions/';
 const url_goalnow =
   'https://www.goalsnow.com/accumulator-btts-both-teams-to-score/';
 const url_footsuper =
   'https://www.footballsuper.tips/todays-both-teams-to-score-football-super-tips/';
 
-// const url_soccertipz = 'https://www.soccertipz.com/both-teams-to-score/';
-const url_mines = `https://api.betmines.com/betmines/v1/fixtures/betmines-machine?dateFormat=extended&platform=website&from=2023-${month}-${day}T00:00:00Z&to=2023-0${month}-${dayTom}T07:00:00Z&minOdd=1.3&maxOdd=1.7&limit=20&minProbability=1&maxProbability=100&odds=GG&leagueIds=`;
+const url_soccertipz = 'https://www.soccertipz.com/both-teams-to-score/';
+// const url_mines = `https://api.betmines.com/betmines/v1/fixtures/betmines-machine?dateFormat=extended&platform=website&from=2023-${month}-${day}T00:00:00Z&to=2023-0${month}-${dayTom}T07:00:00Z&minOdd=1.3&maxOdd=1.7&limit=20&minProbability=1&maxProbability=100&odds=GG&leagueIds=`;
 
 // require the middlewares and callback functions from the controller directory
 // const { create, read, removeTodo } = require('../controller');
@@ -186,6 +190,9 @@ bttsRouter.post('/save', async (req, res) => {
           useUnifiedTopology: true,
         }
       );
+
+      // await Btts.deleteMany({ date: data.date });
+
       let newBtts = await new Btts(newBttsObj);
       await newBtts.save(function (err) {
         if (err) return console.error(err);
@@ -200,10 +207,107 @@ bttsRouter.post('/save', async (req, res) => {
   res.json('new preds inserted');
 });
 
-bttsRouter.get('/loadWithVpn', cors(corsOptions), async (req, res) => {
-  console.log('bttsWithVpn111');
+// bttsRouter.get('/loadWithVpn', cors(corsOptions), async (req, res) => {
+//   console.log('bttsWithVpn111');
 
-  // FBP
+
+
+//   // // FBP
+//   // await axios(url_fbp_o25)
+//   // .then((response) => {
+//   //   const html = response.data;
+//   //   // console.log(response.data);
+//   //   // console.log('000', response);
+//   //   const $ = cheerio.load(html);
+
+//   //   $('.accumulator-row', html).each(function () {
+//   //     //<-- cannot be a function expression
+//   //     // const title = $(this).text();
+
+//   //     const teams = $(this).find('.accumulator-name').text();
+
+//   //     const prediction = $(this)
+//   //       .find('.accumulator-name')
+//   //       .find('strong')
+//   //       .text();
+
+//   //     const homeTeam = teams.includes('vs') && teams.split('vs')[0];
+//   //     let awayTeam = teams.includes('vs') && teams.split('vs')[1];
+//   //     awayTeam =
+//   //       awayTeam.includes(prediction) && awayTeam.replace(prediction, '');
+
+//   //     homeTeam !== '' &&
+//   //       prediction.includes('Over') &&
+//   //       under25Vpn.push({
+//   //         source: 'fbp_acc_o25',
+//   //         action: 'over25',
+//   //         isAcca: true,
+//   //         homeTeam:
+//   //           getHomeTeamName(homeTeam.trim()) !== ''
+//   //             ? getHomeTeamName(homeTeam.trim())
+//   //             : homeTeam.trim(),
+//   //         awayTeam: awayTeam.replace(prediction, ''),
+//   //         date: todayString,
+//   //       });
+//   //   });
+
+//   //   // res.send('fbp over loaded');
+//   // })
+//   // .catch((err) => console.log(err));
+
+//   let start = 0;
+//   let next = 1;
+//   let sortedBtts = bttsVpn.sort((a, b) => {
+//     if (a.homeTeam < b.homeTeam) {
+//       return -1;
+//     }
+//     if (a.homeTeam > b.homeTeam) {
+//       return 1;
+//     }
+//     return 0;
+//   });
+
+//   //удаление дублей
+//   while (next < sortedBtts.length) {
+//     if (
+//       sortedBtts[start].homeTeam.trim() === sortedBtts[next].homeTeam.trim()
+//     ) {
+//       if (
+//         sortedBtts[start].action === sortedBtts[next].action &&
+//         sortedBtts[start].source === sortedBtts[next].source
+//       ) {
+//         sortedBtts.splice(next, 1);
+//       }
+//     }
+
+//     start++;
+//     next++;
+//   }
+
+//   mongoose.connect(
+//     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+//     {
+//       useNewUrlParser: true,
+//       useUnifiedTopology: true,
+//     }
+//   );
+//   // console.log('bttsFBP', sortedBtts);
+//   await Btts.insertMany(sortedBtts)
+//     .then(function () {
+//       console.log('Btts VPN inserted'); // Success
+//     })
+//     .catch(function (error) {
+//       console.log(error); // Failure
+//     });
+
+//   await db.disconnect();
+//   res.send('btts VPN loaded');
+// });
+
+bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
+  console.log('btts111', req.query.date);
+
+  //   // FBP
   await axios(url_fbp)
     .then((response) => {
       const html = response.data;
@@ -225,7 +329,7 @@ bttsRouter.get('/loadWithVpn', cors(corsOptions), async (req, res) => {
         const awayTeam = teams.includes('vs') && teams.split('vs')[1];
 
         homeTeam !== '' &&
-          bttsVpn.push({
+        btts.push({
             source: 'fbp_acc_btts',
             action: 'btts',
             isAcca: true,
@@ -239,195 +343,6 @@ bttsRouter.get('/loadWithVpn', cors(corsOptions), async (req, res) => {
       //   res.send('fbp btts ok');
     })
     .catch((err) => console.log(err));
-
-  // // FBP
-  // await axios(url_fbp_o25)
-  // .then((response) => {
-  //   const html = response.data;
-  //   // console.log(response.data);
-  //   // console.log('000', response);
-  //   const $ = cheerio.load(html);
-
-  //   $('.accumulator-row', html).each(function () {
-  //     //<-- cannot be a function expression
-  //     // const title = $(this).text();
-
-  //     const teams = $(this).find('.accumulator-name').text();
-
-  //     const prediction = $(this)
-  //       .find('.accumulator-name')
-  //       .find('strong')
-  //       .text();
-
-  //     const homeTeam = teams.includes('vs') && teams.split('vs')[0];
-  //     let awayTeam = teams.includes('vs') && teams.split('vs')[1];
-  //     awayTeam =
-  //       awayTeam.includes(prediction) && awayTeam.replace(prediction, '');
-
-  //     homeTeam !== '' &&
-  //       prediction.includes('Over') &&
-  //       under25Vpn.push({
-  //         source: 'fbp_acc_o25',
-  //         action: 'over25',
-  //         isAcca: true,
-  //         homeTeam:
-  //           getHomeTeamName(homeTeam.trim()) !== ''
-  //             ? getHomeTeamName(homeTeam.trim())
-  //             : homeTeam.trim(),
-  //         awayTeam: awayTeam.replace(prediction, ''),
-  //         date: todayString,
-  //       });
-  //   });
-
-  //   // res.send('fbp over loaded');
-  // })
-  // .catch((err) => console.log(err));
-
-  let start = 0;
-  let next = 1;
-  let sortedBtts = bttsVpn.sort((a, b) => {
-    if (a.homeTeam < b.homeTeam) {
-      return -1;
-    }
-    if (a.homeTeam > b.homeTeam) {
-      return 1;
-    }
-    return 0;
-  });
-
-  //удаление дублей
-  while (next < sortedBtts.length) {
-    if (
-      sortedBtts[start].homeTeam.trim() === sortedBtts[next].homeTeam.trim()
-    ) {
-      if (
-        sortedBtts[start].action === sortedBtts[next].action &&
-        sortedBtts[start].source === sortedBtts[next].source
-      ) {
-        sortedBtts.splice(next, 1);
-      }
-    }
-
-    start++;
-    next++;
-  }
-
-  mongoose.connect(
-    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
-  );
-  // console.log('bttsFBP', sortedBtts);
-  await Btts.insertMany(sortedBtts)
-    .then(function () {
-      console.log('Btts VPN inserted'); // Success
-    })
-    .catch(function (error) {
-      console.log(error); // Failure
-    });
-
-  await db.disconnect();
-  res.send('btts VPN loaded');
-});
-
-bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
-  console.log('btts111');
-
-  //betwizad
-  await axios(url_betwizad)
-  .then((response) => {
-    const html = response.data;
-
-    // console.log('000', html);
-    const $ = cheerio.load(html);
-
-    // const body = $('section:nth-child(2) tbody', html);
-
-    $('.drow', html).each(function () {
-      //<-- cannot be a function expression
-      // const title = $(this).text();
-      const homeTeam = $(this).find('.teadms').find('.teamd').text().replace(/\r?\n/, '').replace(/\r?\n/, '').replace(/\r?\n/, '').split('                            ')[0];
-      const awayTeam = $(this).find('.teadms').find('.teamd').text().replace(/\r?\n/, '').replace(/\r?\n/, '').replace(/\r?\n/, '').split('                            ')[1];
-
-      const score = $(this).find('.col-7').find('.leftbar').find('div:nth-child(6)').text();
-      const score1 = score.split('-')[0];
-      const score2 = score.split('-')[1];
-      
-      
-      const isDraw = score1 * 1 === score2 * 1;
-      const homeScore = score1 > 0;
-      const awayScore = score2 > 0;
-
-      const bttsYes = homeScore && awayScore;
-      const scoreTotal = score1 * 1 + score2 * 1;
-      const win1 = score1 * 1 > score2 * 1;
-      const win2 = score1 * 1 < score2 * 1;
-
-      // console.log('homeTeam', homeTeam.trim());
-      // console.log('awayTeam', awayTeam.trim());
-      // console.log('cs', cs);
-      
-      homeTeam !== '' &&
-          btts.push({
-            source: 'betwizad_btts',
-            action: bttsYes ? 'btts' : 'btts no',
-            isAcca: false,
-            homeTeam: homeTeam.trim(),
-            awayTeam: awayTeam.trim(),
-            date: todayString,
-          });
-        homeTeam !== '' &&
-          isDraw &&
-          draws.push({
-            source: 'betwizad_draw',
-            action: 'draws',
-            isAcca: false,
-            homeTeam: homeTeam.trim(),
-            awayTeam: awayTeam.trim(),
-            date: todayString,
-          });
-          if (scoreTotal >= 3) {
-            homeTeam !== '' &&
-            over25.push({
-                source: 'betwizad_o25',
-                action: 'over25',
-                checked: false,
-                homeTeam: homeTeam.trim(),
-                awayTeam: awayTeam.trim(),
-                date: todayString,
-              });
-          }
-          if (scoreTotal <= 2) {
-            homeTeam !== '' &&
-            under25.push({
-                source: 'betwizad_u25',
-                action: 'under25',
-                isAcca: false,
-                homeTeam: homeTeam.trim(),
-                awayTeam: awayTeam.trim(),
-                date: todayString,
-              });
-          }
-          if (win1 || win2) {
-            homeTeam !== '' &&
-            winData.push({
-                source: 'betwizad_win',
-                action: 'win',
-                checked: false,
-                homeTeam: homeTeam.trim(),
-                awayTeam: awayTeam.trim(),
-                date: todayString,
-                prediction: win1 ? homeTeam.trim() : awayTeam.trim(),
-              });
-          }
-   
-    });
-
-    // res.send('hello over loaded');
-  })
-  .catch((err) => console.log(err));
 
   //wininbets
   await axios(url_wininbets)
@@ -480,7 +395,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
               isAcca: false,
               homeTeam: homeTeam.trim(),
               awayTeam: awayTeam.trim(),
-              date: todayString,
+              date: req.query.date,
             });
         }
       });
@@ -531,7 +446,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
             .text();
 
           homeTeam !== '' &&
-            date.includes(`${month}/${day1}`) &&
+            date.includes(`${month1}/${day1}`) &&
             probabilityOver !== '' &&
             Number(probabilityOver) > 58 &&
             btts.push({
@@ -543,7 +458,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
                   ? getHomeTeamName(homeTeam.trim())
                   : homeTeam.trim().replace('FC ', ''),
               awayTeam,
-              date: todayString,
+              date: req.query.date,
             });
         }
 
@@ -554,7 +469,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
             .text();
 
           homeTeam !== '' &&
-            date.includes(`${month}/0${day}`) &&
+            date.includes(`${month1}/0${day}`) &&
             probabilityUnder !== '' &&
             Number(probabilityUnder) > 58 &&
             btts.push({
@@ -566,7 +481,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
                   ? getHomeTeamName(homeTeam.trim())
                   : homeTeam.trim().replace('FC ', ''),
               awayTeam,
-              date: todayString,
+              date: req.query.date,
             });
         }
         // console.log('probabilityOver', Number(probabilityOver));
@@ -609,7 +524,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
   //               ? getHomeTeamName(homeTeam.trim())
   //               : homeTeam.trim().replace('FC ', ''),
   //           awayTeam,
-  //           date: todayString,
+  //           date: req.query.date,
   //         });
   //     });
 
@@ -653,7 +568,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
                 ? getHomeTeamName(homeTeam.trim())
                 : homeTeam.trim().replace('FC ', ''),
             awayTeam,
-            date: todayString,
+            date: req.query.date,
           });
       });
 
@@ -695,7 +610,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
             isAcca: false,
             homeTeam: homeTeam.trim(),
             awayTeam: awayTeam.trim(),
-            date: todayString,
+            date: req.query.date,
           });
       });
 
@@ -739,7 +654,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
             isAcca: false,
             homeTeam: homeTeam.trim(),
             awayTeam: awayTeam.trim(),
-            date: todayString,
+            date: req.query.date,
           });
       });
 
@@ -768,7 +683,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
             isAcca: true,
             homeTeam: homeTeam.trim(),
             awayTeam: awayTeam.trim(),
-            date: todayString,
+            date: req.query.date,
           });
       });
 
@@ -806,7 +721,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
   //           checked: false,
   //           homeTeam,
   //           awayTeam,
-  //           date: todayString,
+  //           date: req.query.date,
   //         });
   //     });
 
@@ -853,7 +768,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
                 ? getHomeTeamName(homeTeam1.trim())
                 : homeTeam1.trim(),
             awayTeam,
-            date: todayString,
+            date: req.query.date,
           });
       });
 
@@ -862,44 +777,44 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
     .catch((err) => console.log(err));
 
   // MYBETS
-  // await axios(url_mybets)
-  //   .then((response) => {
-  //     const html = response.data;
+  await axios(url_mybets)
+    .then((response) => {
+      const html = response.data;
 
-  //     // console.log('000', html);
-  //     const $ = cheerio.load(html);
+      // console.log('000', html);
+      const $ = cheerio.load(html);
 
-  //     $('.linkgames', html).each(function () {
-  //       //<-- cannot be a function expression
-  //       // const title = $(this).text();
-  //       // const homeTeam = $(this).find('.homeTeam').find('span:first').text();
-  //       const homeTeam = $(this).find('.homespan').text();
-  //       const awayTeam = $(this).find('.awayspan').text();
-  //       const bttsText = $(this).find('.tipdiv').find('span:first').text();
-  //       const bttsYes = bttsText === 'Yes';
-  //       // console.log('over25Mybets', over25);
+      $('.linkgames', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        // const homeTeam = $(this).find('.homeTeam').find('span:first').text();
+        const homeTeam = $(this).find('.homespan').text();
+        const awayTeam = $(this).find('.awayspan').text();
+        const bttsText = $(this).find('.tipdiv').find('span:first').text();
+        const bttsYes = bttsText === 'Yes';
+        // console.log('over25Mybets', over25);
 
-  //       // if (homeTeam.trim() === 'Accrington ST') {
-  //       //   console.log('over25 HT', getHomeTeamName(homeTeam.trim()))
-  //       // };
+        // if (homeTeam.trim() === 'Accrington ST') {
+        //   console.log('over25 HT', getHomeTeamName(homeTeam.trim()))
+        // };
 
-  //       homeTeam !== '' &&
-  //         btts.push({
-  //           source: 'mybets_btts',
-  //           action: bttsYes ? 'btts' : 'btts no',
-  //           checked: false,
-  //           homeTeam:
-  //             getHomeTeamName(homeTeam.trim()) !== ''
-  //               ? getHomeTeamName(homeTeam.trim())
-  //               : homeTeam.trim(),
-  //           awayTeam,
-  //           date: todayString,
-  //         });
-  //     });
+        homeTeam !== '' &&
+          btts.push({
+            source: 'mybets_btts',
+            action: bttsYes ? 'btts' : 'btts no',
+            checked: false,
+            homeTeam:
+              getHomeTeamName(homeTeam.trim()) !== ''
+                ? getHomeTeamName(homeTeam.trim())
+                : homeTeam.trim(),
+            awayTeam,
+            date: req.query.date,
+          });
+      });
 
-  //     // res.json(over25);
-  //   })
-  //   .catch((err) => console.log(err));
+      // res.json(over25);
+    })
+    .catch((err) => console.log(err));
 
   //PASSION
   await axios(url_passion)
@@ -936,7 +851,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
                 ? getHomeTeamName(homeTeam.trim())
                 : homeTeam.trim(),
             awayTeam,
-            date: todayString,
+            date: req.query.date,
           });
       });
 
@@ -967,7 +882,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
             isAcca: false,
             homeTeam: homeTeam.trim(),
             awayTeam: awayTeam.trim(),
-            date: todayString,
+            date: req.query.date,
           });
       });
 
@@ -976,73 +891,75 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
     .catch((err) => console.log(err));
 
   //ACCUM
-  //   await axios(url_accum)
-  //     .then((response) => {
-  //       const html = response.data;
-  //       // console.log('000', html);
-  //       const $ = cheerio.load(html);
-  //       const accumArr = [];
+    await axios(url_accum)
+      .then((response) => {
+        const html = response.data;
+        // console.log('000', html);
+        const $ = cheerio.load(html);
+        const accumArr = [];
 
-  //       $('.zWPB', html).each(function () {
-  //         const accumElem = $(this).find('div:first').text();
-  //         const accumDate = $(this).find('.date').text();
-  //         // console.log('accumDate', accumDate);
-  //         accumArr.push({ team: accumElem, predictionDate: accumDate });
-  //       });
+        $('.zWPB', html).each(function () {
+          const accumElem = $(this).find('div:first').text();
+          const accumDate = $(this).find('.date').text();
+          // console.log('accumDate', accumDate);
+          accumArr.push({ team: accumElem, predictionDate: accumDate });
+        });
 
-  //       for (let i = 0; i < accumArr.length - 1; i++) {
-  //         let accumObj = {
-  //           source: 'accum',
-  //           action: 'btts',
-  //           checked: false,
-  //           homeTeam: '',
-  //           date: todayString,
-  //           predictionDate: '',
-  //         };
+        for (let i = 0; i < accumArr.length - 1; i++) {
+          let accumObj = {
+            source: 'accum',
+            action: 'btts',
+            checked: false,
+            homeTeam: '',
+            date: todayString,
+            predictionDate: '',
+          };
 
-  //         if (i === 0 || i % 2 === 0) {
-  //           accumObj.homeTeam = accumArr[i].team.trim();
-  //           accumObj.predictionDate = accumArr[i + 1].predictionDate;
-  //         }
-  //         // console.log('accumArr[i]', accumArr[i]);
-  //         // console.log('accumObj', accumObj);
-  //         accumObj.homeTeam !== '' && btts.push(accumObj);
-  //       }
+          if (i === 0 || i % 2 === 0) {
+            accumObj.homeTeam = accumArr[i].team.trim();
+            accumObj.predictionDate = accumArr[i + 1].predictionDate;
+          }
+          // console.log('accumArr[i]', accumArr[i]);
+          // console.log('accumObj', accumObj);
+          accumObj.homeTeam !== '' && btts.push(accumObj);
+        }
 
-  //       res.send('accum btts ok');
-  //     })
-  //     .catch((err) => console.log(err));
+        res.send('accum btts ok');
+      })
+      .catch((err) => console.log(err));
 
   //FST
-  // await axios(url_fst)
-  //   .then((response) => {
-  //     const html = response.data;
-  //     // const over25 = [];
-  //     const $ = cheerio.load(html);
+  await axios(url_fst)
+    .then((response) => {
+      const html = response.data;
+      // const over25 = [];
+      const $ = cheerio.load(html);
 
-  //     $('.Leg__title', html).each(function () {
-  //       let homeTeam = '';
-  //       let awayTeam = '';
+      $('.Leg__title', html).each(function () {
+        let homeTeam = '';
+        let awayTeam = '';
 
-  //       homeTeam = $(this).find('.Leg__lose').text().split('vs')[0];
-  //       awayTeam = $(this).find('.Leg__lose').text().split('vs')[1];
+        homeTeam = $(this).find('.Leg__lose').text().split('vs')[0];
+        awayTeam = $(this).find('.Leg__lose').text().split('vs')[1];
 
-  //       homeTeam !== '' &&
-  //         btts.push({
-  //           source: 'fst_btts',
-  //           action: 'btts',
-  //           isAcca: false,
-  //           homeTeam: homeTeam.trim(),
-  //           awayTeam,
-  //           date: todayString,
-  //         });
-  //     });
+        homeTeam !== '' &&
+          btts.push({
+            source: 'fst_btts',
+            action: 'btts',
+            isAcca: false,
+            homeTeam: homeTeam.trim(),
+            awayTeam,
+            date: req.query.date,
+          });
+      });
 
-  //     //   res.send('fst btts ok');
-  //   })
-  //   .catch((err) => console.log(err));
+      //   res.send('fst btts ok');
+    })
+    .catch((err) => console.log(err));
 
-  // //PROT
+
+
+  //PROT
   // await axios(url_prot)
   //   .then((response) => {
   //     const html = response.data;
@@ -1054,55 +971,25 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
   //       //<-- cannot be a function expression
   //       // const title = $(this).text();
   //       const teams = $(this).find('.details-pick__match-data__teams').text();
+  //       const pred = $(this).find('.details-pick__match-data__outcome').text();
   //       const homeTeam = teams.split(' VS ')[0];
   //       const awayTeam = teams.split(' VS ')[1];
 
   //       homeTeam !== '' &&
+  //         pred.includes('Both teams will score') &&
   //         btts.push({
   //           source: 'prot_btts',
   //           action: 'btts',
-  //           isAcca: false,
+  //           isAcca: true,
   //           homeTeam: homeTeam.trim(),
   //           awayTeam: awayTeam.trim(),
-  //           date: todayString,
+  //           date: req.query.date,
   //         });
   //     });
 
-  //     //   res.send('prot btts ok');
+  //     // res.send('prot over loaded');
   //   })
   //   .catch((err) => console.log(err));
-
-  //PROT
-  await axios(url_prot)
-    .then((response) => {
-      const html = response.data;
-
-      // console.log('000', html);
-      const $ = cheerio.load(html);
-
-      $('.details-pick', html).each(function () {
-        //<-- cannot be a function expression
-        // const title = $(this).text();
-        const teams = $(this).find('.details-pick__match-data__teams').text();
-        const pred = $(this).find('.details-pick__match-data__outcome').text();
-        const homeTeam = teams.split(' VS ')[0];
-        const awayTeam = teams.split(' VS ')[1];
-
-        homeTeam !== '' &&
-          pred.includes('Both teams will score') &&
-          btts.push({
-            source: 'prot_btts',
-            action: 'btts',
-            isAcca: true,
-            homeTeam: homeTeam.trim(),
-            awayTeam: awayTeam.trim(),
-            date: todayString,
-          });
-      });
-
-      // res.send('prot over loaded');
-    })
-    .catch((err) => console.log(err));
 
   //BANKER
   await axios(url_banker)
@@ -1136,7 +1023,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
             checked: false,
             homeTeam: homeTeam.trim(),
             awayTeam: awayTeam.trim(),
-            date: todayString,
+            date: req.query.date,
           });
       });
 
@@ -1145,44 +1032,44 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
     .catch((err) => console.log(err));
 
   //WDW
-  //   await axios(url_wdw)
-  //   .then((response) => {
-  //     const html = response.data;
+    // await axios(url_wdw)
+    // .then((response) => {
+    //   const html = response.data;
 
-  //     // console.log('000', html);
-  //     const $ = cheerio.load(html);
+    //   // console.log('000', html);
+    //   const $ = cheerio.load(html);
 
-  //     $('tr', html).each(function () {
-  //       //<-- cannot be a function expression
-  //       // const title = $(this).text();
-  //       const homeTeam = $(this)
-  //         .find('td:nth-child(2)')
-  //         .find('a:first')
-  //         .text()
-  //         .split(' v ')[0];
-  //       const awayTeam = $(this)
-  //         .find('td:nth-child(2)')
-  //         .find('a:first')
-  //         .text()
-  //         .split(' v ')[1];
-  //       const bet = $(this)
-  //         .find('td:nth-child(3)')
-  //         .text();
+    //   $('tr', html).each(function () {
+    //     //<-- cannot be a function expression
+    //     // const title = $(this).text();
+    //     const homeTeam = $(this)
+    //       .find('td:nth-child(2)')
+    //       .find('a:first')
+    //       .text()
+    //       .split(' v ')[0];
+    //     const awayTeam = $(this)
+    //       .find('td:nth-child(2)')
+    //       .find('a:first')
+    //       .text()
+    //       .split(' v ')[1];
+    //     const bet = $(this)
+    //       .find('td:nth-child(3)')
+    //       .text();
 
-  //       homeTeam !== '' && bet.includes('BTTS Yes') &&
-  //         btts.push({
-  //           source: 'wdw',
-  //           action: 'btts',
-  //           checked: false,
-  //           homeTeam: homeTeam.trim(),
-  //           awayTeam: awayTeam.trim(),
-  //           date: todayString,
-  //         });
-  //     });
+    //     homeTeam !== '' && bet.includes('BTTS Yes') &&
+    //       btts.push({
+    //         source: 'wdw',
+    //         action: 'btts',
+    //         checked: false,
+    //         homeTeam: homeTeam.trim(),
+    //         awayTeam: awayTeam.trim(),
+    //         date: req.query.date,
+    //       });
+    //   });
 
-  //   //   res.send('banker btts ok');
-  //   })
-  //   .catch((err) => console.log(err));
+    // //   res.send('banker btts ok');
+    // })
+    // .catch((err) => console.log(err));
 
   //venasbet
   await axios(url_venasbet)
@@ -1212,7 +1099,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
               getHomeTeamName(awayTeam.trim()) !== ''
                 ? getHomeTeamName(awayTeam.trim())
                 : awayTeam.trim(),
-            date: todayString,
+            date: req.query.date,
           });
       });
 
@@ -1220,133 +1107,56 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
     })
     .catch((err) => console.log(err));
 
-  
-
-  // //bigfree
-  await axios(url_bigfree)
-    .then((response) => {
-      const html = response.data;
-
-      // console.log('000', html);
-      const $ = cheerio.load(html);
-
-      $('.card', html).each(function () {
-        const homeTeam = $(this)
-          .find('.card-header')
-          .find('div:nth-child(1)')
-          .text()
-          .split(' vs ')[0];
-        const awayTeam = $(this)
-          .find('.card-header')
-          .find('div:nth-child(1)')
-          .text()
-          .split(' vs ')[1];
-
-        const tip = $(this).find('.card-title').text();
-
-        if (tip.includes('Over 2.5')) {
-          homeTeam !== '' &&
-            over25.push({
-              source: 'bigfree_o25',
-              action: 'over25',
-              checked: false,
-              homeTeam: homeTeam.trim(),
-              awayTeam: awayTeam.trim(),
-              date: todayString,
-            });
-        }
-        if (tip.includes('Both Team to Score')) {
-          homeTeam !== '' &&
-            btts.push({
-              source: 'bigfree_btts',
-              action: 'btts',
-              isAcca: false,
-              homeTeam: homeTeam.trim(),
-              awayTeam: awayTeam.trim(),
-              date: todayString,
-            });
-        }
-        if (tip.includes('Under 2.5')) {
-          homeTeam !== '' &&
-            under25.push({
-              source: 'bigfree_u25',
-              action: 'under25',
-              isAcca: false,
-              homeTeam: homeTeam.trim(),
-              awayTeam: awayTeam.trim(),
-              date: todayString,
-            });
-        }
-        if (tip.includes(`${homeTeam}`) || tip.includes(`${awayTeam}`)) {
-          homeTeam !== '' &&
-            winData.push({
-              source: 'bigfree_win',
-              action: 'win',
-              checked: false,
-              homeTeam: homeTeam.trim(),
-              awayTeam: awayTeam.trim(),
-              date: todayString,
-              prediction: tip.includes(`${homeTeam}`)
-                ? homeTeam.trim()
-                : awayTeam.trim(),
-            });
-        }
-      });
-
-      // res.json(btts);
-    })
-    .catch((err) => console.log(err));
-
   //fbp365
-  await axios(url_fbp365)
-    .then((response) => {
-      const html = response.data;
+  // await axios(url_fbp365)
+  //   .then((response) => {
+  //     const html = response.data;
 
-      // console.log('000', html);
-      const $ = cheerio.load(html);
+  //     // console.log('000', html);
+  //     const $ = cheerio.load(html);
 
-      $('div[data-testid="statsTip"]', html).each(function () {
-        //<-- cannot be a function expression
-        // const title = $(this).text();
-        // const homeTeam = $(this).find('div:nth-child(2)').find('div:nth-child(1)').find('div:nth-child(1)').text();
-        // const awayTeam = $(this).find('div:nth-child(2)').find('div:nth-child(1)').find('div:nth-child(2)').text();
-        // const tip = $(this).find('div:nth-child(3)').find('div:nth-child(1)').text();
+  //     $('div[data-testid="statsTip"]', html).each(function () {
+  //       //<-- cannot be a function expression
+  //       // const title = $(this).text();
+  //       // const homeTeam = $(this).find('div:nth-child(2)').find('div:nth-child(1)').find('div:nth-child(1)').text();
+  //       // const awayTeam = $(this).find('div:nth-child(2)').find('div:nth-child(1)').find('div:nth-child(2)').text();
+  //       // const tip = $(this).find('div:nth-child(3)').find('div:nth-child(1)').text();
 
-        const homeTeam = $(this)
-          .find('div:nth-child(2)')
-          .find('div:nth-child(1)')
-          .find('div:nth-child(1)')
-          .find('div')
-          .text();
-        //  console.log('homeTeam000', homeTeam.trim());
-        const awayTeam = $(this)
-          .find('div:nth-child(2)')
-          .find('div:nth-child(1)')
-          .find('div:nth-child(2)')
-          .find('div')
-          .text();
-        //  console.log('awayTeam000', awayTeam.trim());
-        const tip = $(this)
-          .find('div:nth-child(3)')
-          .find('div:nth-child(1)')
-          .text();
-        //  console.log('tip000', tip);
+  //       const homeTeam = $(this)
+  //         .find('div:nth-child(2)')
+  //         .find('div:nth-child(1)')
+  //         .find('div:nth-child(1)')
+  //         .find('div')
+  //         .text();
+  //       //  console.log('homeTeam000', homeTeam.trim());
+  //       const awayTeam = $(this)
+  //         .find('div:nth-child(2)')
+  //         .find('div:nth-child(1)')
+  //         .find('div:nth-child(2)')
+  //         .find('div')
+  //         .text();
+  //       //  console.log('awayTeam000', awayTeam.trim());
+  //       const tip = $(this)
+  //         .find('div:nth-child(3)')
+  //         .find('div:nth-child(1)')
+  //         .text();
+  //       //  console.log('tip000', tip);
 
-        homeTeam !== '' &&
-          tip.includes('Yes') &&
-          btts.push({
-            source: 'fbp365_btts',
-            action: 'btts',
-            isAcca: true,
-            homeTeam: homeTeam.trim(),
-            awayTeam: awayTeam.trim(),
-            date: todayString,
-          });
-      });
+  //       homeTeam !== '' &&
+  //         tip.includes('Yes') &&
+  //         btts.push({
+  //           source: 'fbp365_btts',
+  //           action: 'btts',
+  //           isAcca: true,
+  //           homeTeam: homeTeam.trim(),
+  //           awayTeam: awayTeam.trim(),
+  //           date: req.query.date,
+  //         });
+  //     });
 
-      // res.send('r2bet over loaded');
-    })
-    .catch((err) => console.log(err));
+  //     // res.send('r2bet over loaded');
+  //   })
+  //   .catch((err) => console.log(err));
 
   //soccerpunt
   await axios(url_soccerpunt)
@@ -1376,30 +1186,30 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
         // console.log('333', awayTeam);
         // console.log('444', tip);
 
-        if (tip.includes('WIN')) {
-          homeTeam !== '' &&
-            winData.push({
-              source: 'soccerpunt_win',
-              action: 'win',
-              isAcca: true,
-              homeTeam: homeTeam.trim(),
-              awayTeam: awayTeam.trim(),
-              date: todayString,
-              prediction: tip.includes(homeTeam.trim()) ? homeTeam : awayTeam,
-            });
-        }
-        if (tip.includes('1X') || tip.includes('X2')) {
-          homeTeam !== '' &&
-            winData.push({
-              source: 'soccerpunt_win',
-              action: 'xwin',
-              isAcca: true,
-              homeTeam: homeTeam.trim(),
-              awayTeam: awayTeam.trim(),
-              date: todayString,
-              prediction: tip.includes('1X') ? homeTeam : awayTeam,
-            });
-        }
+        // if (tip.includes('WIN')) {
+        //   homeTeam !== '' &&
+        //     winData.push({
+        //       source: 'soccerpunt_win',
+        //       action: 'win',
+        //       isAcca: true,
+        //       homeTeam: homeTeam.trim(),
+        //       awayTeam: awayTeam.trim(),
+        //       date: req.query.date,
+        //       prediction: tip.includes(homeTeam.trim()) ? homeTeam : awayTeam,
+        //     });
+        // }
+        // if (tip.includes('1X') || tip.includes('X2')) {
+        //   homeTeam !== '' &&
+        //     winData.push({
+        //       source: 'soccerpunt_win',
+        //       action: 'xwin',
+        //       isAcca: true,
+        //       homeTeam: homeTeam.trim(),
+        //       awayTeam: awayTeam.trim(),
+        //       date: req.query.date,
+        //       prediction: tip.includes('1X') ? homeTeam : awayTeam,
+        //     });
+        // }
         if (tip.includes('OVER 2.5 GOALS')) {
           homeTeam !== '' &&
             over25.push({
@@ -1408,7 +1218,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
               isAcca: true,
               homeTeam: homeTeam.trim(),
               awayTeam: awayTeam.trim(),
-              date: todayString,
+              date: req.query.date,
             });
         }
         if (tip.includes('BTS / YES')) {
@@ -1419,7 +1229,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
               isAcca: true,
               homeTeam: homeTeam.trim(),
               awayTeam: awayTeam.trim(),
-              date: todayString,
+              date: req.query.date,
             });
         }
         if (tip.includes('X')) {
@@ -1430,7 +1240,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
               isAcca: true,
               homeTeam: homeTeam.trim(),
               awayTeam: awayTeam.trim(),
-              date: todayString,
+              date: req.query.date,
             });
         }
         if (tip.includes('UNDER 2.5 GOALS')) {
@@ -1441,7 +1251,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
               isAcca: false,
               homeTeam: homeTeam.trim(),
               awayTeam: awayTeam.trim(),
-              date: todayString,
+              date: req.query.date,
             });
         }
       });
@@ -1450,193 +1260,118 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
     })
     .catch((err) => console.log(err));
 
-    //FBP2
-    await axios(url_fbp2)
-    .then((response) => {
-      const html = response.data;
-      // console.log(response.data);
-      // console.log('000', html);
-      const $ = cheerio.load(html);
+    
 
-      $('.divTableRow', html).each(function () {
-        //<-- cannot be a function expression
-        // const title = $(this).text();
-        // const homeTeam = $(this).find('.teams').find('.home-team').find('span:nth-child(1)').text();
-        const homeTeam = $(this).find('.divTableCell1').find('.teamnaam').text();
-        // console.log('homeTeam000', homeTeam);
+    
+  // //VITIBET
+  // await axios(url_vitibet)
+  //   .then((response) => {
+  //     const html = response.data;
 
-        const awayTeam = $(this).find('.divTableCell3').find('.teamnaam').text();
-        // console.log('awayTeam000', awayTeam);
-        let score = $(this).find('.divTableCell2').find('.divTableCell2').find('span:nth-child(1)').text();
-        score = score.replace('Prediction:', '');
+  //     // console.log('000', html);
+  //     const $ = cheerio.load(html);
 
-        const score1 = score.split('-')[0];
-        const score2 = score.split('-')[1];
-        // console.log('homeTeam000', homeTeam);
-        // console.log('awayTeam000', awayTeam);
-        // console.log('score000', score.trim());
+  //     $('tr', html).each(function () {
+  //       //<-- cannot be a function expression
+  //       // const title = $(this).text();
+  //       const date = $(this).find('td:nth-child(1)').text();
+  //       const homeTeam = $(this).find('td:nth-child(3)').text();
+  //       const awayTeam = $(this).find('td:nth-child(4)').text();
+  //       const score1 = $(this).find('td:nth-child(6)').text();
+  //       const score2 = $(this).find('td:nth-child(8)').text();
+  //       const tip = $(this).find('td:nth-child(12)').text();
 
-        const isDraw = score1 * 1 === score2 * 1;
-        const homeScore = score1 > 0;
-        const awayScore = score2 > 0;
+  //       const homeScore = score1 > 0;
+  //       const awayScore = score2 > 0;
 
-        const bttsYes = homeScore && awayScore;
-        const scoreTotal = score1 * 1 + score2 * 1;
-        const win1 = score1 * 1 > score2 * 1;
-        const win2 = score1 * 1 < score2 * 1;
+  //       const bttsYes = homeScore && awayScore;
+  //       const scoreTotal = score1 * 1 + score2 * 1;
+  //       const isDraw = score1 * 1 === score2 * 1;
+  //       // console.log('bttsYes', bttsYes);
+  //       // console.log('homeTeam', homeTeam);
+  //       // console.log('tip222', tip);
 
-        homeTeam !== '' &&
-          btts.push({
-            source: 'fbp2_btts',
-            action: bttsYes ? 'btts' : 'btts no',
-            isAcca: false,
-            homeTeam: homeTeam.trim(),
-            awayTeam: awayTeam.trim(),
-            date: todayString,
-          });
-        homeTeam !== '' &&
-          isDraw &&
-          draws.push({
-            source: 'fbp2_draw',
-            action: 'draws',
-            isAcca: false,
-            homeTeam: homeTeam.trim(),
-            awayTeam: awayTeam.trim(),
-            date: todayString,
-          });
-          if (scoreTotal >= 3) {
-            homeTeam !== '' &&
-            over25.push({
-                source: 'fbp2_o25',
-                action: 'over25',
-                checked: false,
-                homeTeam: homeTeam.trim(),
-                awayTeam: awayTeam.trim(),
-                date: todayString,
-              });
-          }
-          if (scoreTotal <= 2) {
-            homeTeam !== '' &&
-            under25.push({
-                source: 'fbp2_u25',
-                action: 'under25',
-                isAcca: false,
-                homeTeam: homeTeam.trim(),
-                awayTeam: awayTeam.trim(),
-                date: todayString,
-              });
-          }
-          if (win1 || win2) {
-            homeTeam !== '' &&
-            winData.push({
-                source: 'fbp2_win',
-                action: 'win',
-                checked: false,
-                homeTeam: homeTeam.trim(),
-                awayTeam: awayTeam.trim(),
-                date: todayString,
-                prediction: win1 ? homeTeam.trim() : awayTeam.trim(),
-              });
-          }
-      });
+  //       // homeTeam !== '' && score1 !== '' && score2 !== '' && correctScoreArr.push({
+  //       //   source: 'vitibet_cs',
+  //       //   score: `${score1}-${score2}`,
+  //       //   homeTeam: homeTeam.trim(),
+  //       //   awayTeam: awayTeam.trim(),
+  //       //   date: req.query.date,
+  //       // });
 
-      // res.json(over25);
-    })
-    .catch((err) => console.log(err));
+  //       if (isDraw) {
+  //         homeTeam !== '' &&
+  //           date.includes(`${day1}.${month1}`) &&
+  //           draws.push({
+  //             source: 'vitibet_draw',
+  //             action: 'draws',
+  //             isAcca: false,
+  //             homeTeam: homeTeam.trim(),
+  //             awayTeam: awayTeam.trim(),
+  //             date: req.query.date,
+  //           });
+  //       }
+  //       homeTeam !== '' && score1 !== '' && score2 !== '' && correctScoreArr.push({
+  //         source: 'vitibet_cs',
+  //         score: `${score1}-${score2}`,
+  //         homeTeam: homeTeam.trim(),
+  //         awayTeam: awayTeam.trim(),
+  //         date: req.query.date,
+  //       });
+  //       if (scoreTotal >= 3) {
+  //         homeTeam !== '' &&
+  //           date.includes(`${day1}.${month1}`) &&
+  //           over25.push({
+  //             source: 'vitibet_o25',
+  //             action: 'over25',
+  //             checked: false,
+  //             homeTeam: homeTeam.trim(),
+  //             awayTeam: awayTeam.trim(),
+  //             date: req.query.date,
+  //           });
+  //       }
+      
+  //       if (scoreTotal <= 2) {
+  //         homeTeam !== '' &&
+  //           date.includes(`${day1}.${month1}`) &&
+  //           under25.push({
+  //             source: 'vitibet_u25',
+  //             action: 'under25',
+  //             isAcca: false,
+  //             homeTeam: homeTeam.trim(),
+  //             awayTeam: awayTeam.trim(),
+  //             date: req.query.date,
+  //           });
+  //       }
+  //       // if (tip === '1' || tip === '2') {
+  //       //   homeTeam !== '' &&
+  //       //     date.includes(`${day1}.${month1}`) &&
+  //       //     winData.push({
+  //       //       source: 'vitibet_win',
+  //       //       action: 'win',
+  //       //       checked: false,
+  //       //       homeTeam: homeTeam.trim(),
+  //       //       awayTeam: awayTeam.trim(),
+  //       //       date: req.query.date,
+  //       //       prediction: tip === '1' ? homeTeam.trim() : awayTeam.trim(),
+  //       //     });
+  //       // }
 
-  //VITIBET
-  await axios(url_vitibet)
-    .then((response) => {
-      const html = response.data;
+  //       // homeTeam !== '' &&
+  //       //   date.includes(`${day1}.${month1}`) &&
+  //       //   btts.push({
+  //       //     source: 'vitibet_btts',
+  //       //     action: bttsYes ? 'btts' : 'btts no',
+  //       //     isAcca: false,
+  //       //     homeTeam: homeTeam.trim(),
+  //       //     awayTeam: awayTeam.trim(),
+  //       //     date: req.query.date,
+  //       //   });
+  //     });
 
-      // console.log('000', html);
-      const $ = cheerio.load(html);
-
-      $('tr', html).each(function () {
-        //<-- cannot be a function expression
-        // const title = $(this).text();
-        const date = $(this).find('td:nth-child(1)').text();
-        const homeTeam = $(this).find('td:nth-child(3)').text();
-        const awayTeam = $(this).find('td:nth-child(4)').text();
-        const score1 = $(this).find('td:nth-child(6)').text();
-        const score2 = $(this).find('td:nth-child(8)').text();
-        const tip = $(this).find('td:nth-child(12)').text();
-
-        const homeScore = score1 > 0;
-        const awayScore = score2 > 0;
-
-        const bttsYes = homeScore && awayScore;
-        const scoreTotal = score1 * 1 + score2 * 1;
-        const isDraw = score1 * 1 === score2 * 1;
-        console.log('bttsYes', bttsYes);
-        console.log('homeTeam', homeTeam);
-        console.log('tip222', tip);
-
-        if (isDraw) {
-          homeTeam !== '' &&
-            date.includes(`${day}.${month}`) &&
-            draws.push({
-              source: 'vitibet_draw',
-              action: 'draws',
-              isAcca: false,
-              homeTeam: homeTeam.trim(),
-              awayTeam: awayTeam.trim(),
-              date: todayString,
-            });
-        }
-        if (scoreTotal >= 3) {
-          homeTeam !== '' &&
-            date.includes(`${day}.${month}`) &&
-            over25.push({
-              source: 'vitibet_o25',
-              action: 'over25',
-              checked: false,
-              homeTeam: homeTeam.trim(),
-              awayTeam: awayTeam.trim(),
-              date: todayString,
-            });
-        }
-        if (scoreTotal <= 1) {
-          homeTeam !== '' &&
-            date.includes(`${day}.${month}`) &&
-            under25.push({
-              source: 'vitibet_u25',
-              action: 'under25',
-              isAcca: false,
-              homeTeam: homeTeam.trim(),
-              awayTeam: awayTeam.trim(),
-              date: todayString,
-            });
-        }
-        if (tip === '1' || tip === '2') {
-          homeTeam !== '' &&
-            date.includes(`${day}.${month}`) &&
-            winData.push({
-              source: 'vitibet_win',
-              action: 'win',
-              checked: false,
-              homeTeam: homeTeam.trim(),
-              awayTeam: awayTeam.trim(),
-              date: todayString,
-              prediction: tip === '1' ? homeTeam.trim() : awayTeam.trim(),
-            });
-        }
-
-        homeTeam !== '' &&
-          date.includes(`${day}.${month}`) &&
-          btts.push({
-            source: 'vitibet_btts',
-            action: bttsYes ? 'btts' : 'btts no',
-            isAcca: false,
-            homeTeam: homeTeam.trim(),
-            awayTeam: awayTeam.trim(),
-            date: todayString,
-          });
-      });
-
-      // res.json(btts);
-    })
-    .catch((err) => console.log(err));
+  //     // res.json(btts);
+  //   })
+  //   .catch((err) => console.log(err));
 
   //Goalnow
   await axios(url_goalnow)
@@ -1675,7 +1410,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
           awayTeam !== '' &&
           awayTeam.includes(other2) &&
           awayTeam.replace(other2, '');
-        console.log('awayTeam', awayTeam);
+        // console.log('awayTeam', awayTeam);
         // let homeTeam1 = '';
         // if (homeTeam.includes('2.5 Goals')) {
         //   homeTeam1 = homeTeam.split('Over 2.5 Goals ')[1];
@@ -1695,7 +1430,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
                 ? getHomeTeamName(homeTeam.trim())
                 : homeTeam.trim(),
             awayTeam: awayTeam,
-            date: todayString,
+            date: req.query.date,
           });
       });
 
@@ -1703,98 +1438,98 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
     })
     .catch((err) => console.log(err));
   //Fbpai
-  // await axios(url_fbpai)
-  //   .then((response) => {
-  //     const html = response.data;
-
-  //     // console.log('000', html);
-  //     const $ = cheerio.load(html);
-
-  //     $('.footgame', html).each(function () {
-  //       //<-- cannot be a function expression
-  //       // const title = $(this).text();
-
-  //       const isPred = $(this).find('.match-tip-show').text();
-
-  //       if (isPred === 'Yes') {
-  //         const homeTeam = $(this)
-  //           .find('.match-teams')
-  //           .find('div:first')
-  //           .text();
-  //         const awayTeam = $(this)
-  //           .find('.match-teams')
-  //           .find('div:nth-child(2)')
-  //           .text();
-  //         homeTeam !== '' &&
-  //           awayTeam !== '' &&
-  //           btts.push({
-  //             source: 'fbpai_btts',
-  //             action: 'btts',
-  //             checked: false,
-  //             homeTeam:
-  //               getHomeTeamName(homeTeam.trim()) !== ''
-  //                 ? getHomeTeamName(homeTeam.trim())
-  //                 : homeTeam.trim(),
-  //             awayTeam:
-  //               getHomeTeamName(awayTeam.trim()) !== ''
-  //                 ? getHomeTeamName(awayTeam.trim())
-  //                 : awayTeam.trim(),
-  //             date: todayString,
-  //           });
-  //       }
-  //     });
-
-  //     // res.json(over25);
-  //   })
-  //   .catch((err) => console.log(err));
-
-  // MIGHTY
-  await axios(url_mighty)
+  await axios(url_fbpai)
     .then((response) => {
       const html = response.data;
 
       // console.log('000', html);
       const $ = cheerio.load(html);
 
-      $('.mtl-index-page-matches__item', html).each(function () {
+      $('.footgame', html).each(function () {
         //<-- cannot be a function expression
         // const title = $(this).text();
-        const homeTeam = $(this)
-          .find('.mtl-index-page-matches__name')
-          .text()
-          .split(' vs ')[0];
-        const awayTeam = $(this)
-          .find('.mtl-index-page-matches__name')
-          .text()
-          .split(' vs ')[1];
-        const predicDate = $(this)
-          .find('.mtl-index-page-matches__date')
-          .find('p:first')
-          .find('time:first')
-          .text();
 
-        if (homeTeam.trim() === 'Accrington ST') {
-          console.log('btts HT', getHomeTeamName(homeTeam.trim()));
-        }
+        const isPred = $(this).find('.match-tip-show').text();
 
-        todayString.includes(predicDate) &&
+        if (isPred === 'Yes') {
+          const homeTeam = $(this)
+            .find('.match-teams')
+            .find('div:first')
+            .text();
+          const awayTeam = $(this)
+            .find('.match-teams')
+            .find('div:nth-child(2)')
+            .text();
           homeTeam !== '' &&
-          btts.push({
-            source: 'mighty_btts',
-            action: 'btts',
-            checked: false,
-            homeTeam:
-              getHomeTeamName(homeTeam.trim()) !== ''
-                ? getHomeTeamName(homeTeam.trim())
-                : homeTeam.trim(),
-            awayTeam,
-            date: todayString,
-          });
+            awayTeam !== '' &&
+            btts.push({
+              source: 'fbpai_btts',
+              action: 'btts',
+              checked: false,
+              homeTeam:
+                getHomeTeamName(homeTeam.trim()) !== ''
+                  ? getHomeTeamName(homeTeam.trim())
+                  : homeTeam.trim(),
+              awayTeam:
+                getHomeTeamName(awayTeam.trim()) !== ''
+                  ? getHomeTeamName(awayTeam.trim())
+                  : awayTeam.trim(),
+              date: todayString,
+            });
+        }
       });
 
-      // res.json(btts);
+      // res.json(over25);
     })
     .catch((err) => console.log(err));
+
+  // MIGHTY
+  // await axios(url_mighty)
+  //   .then((response) => {
+  //     const html = response.data;
+
+  //     // console.log('000', html);
+  //     const $ = cheerio.load(html);
+
+  //     $('.mtl-index-page-matches__item', html).each(function () {
+  //       //<-- cannot be a function expression
+  //       // const title = $(this).text();
+  //       const homeTeam = $(this)
+  //         .find('.mtl-index-page-matches__name')
+  //         .text()
+  //         .split(' vs ')[0];
+  //       const awayTeam = $(this)
+  //         .find('.mtl-index-page-matches__name')
+  //         .text()
+  //         .split(' vs ')[1];
+  //       const predicDate = $(this)
+  //         .find('.mtl-index-page-matches__date')
+  //         .find('p:first')
+  //         .find('time:first')
+  //         .text();
+
+  //       if (homeTeam.trim() === 'Accrington ST') {
+  //         console.log('btts HT', getHomeTeamName(homeTeam.trim()));
+  //       }
+
+  //       todayString.includes(predicDate) &&
+  //         homeTeam !== '' &&
+  //         btts.push({
+  //           source: 'mighty_btts',
+  //           action: 'btts',
+  //           checked: false,
+  //           homeTeam:
+  //             getHomeTeamName(homeTeam.trim()) !== ''
+  //               ? getHomeTeamName(homeTeam.trim())
+  //               : homeTeam.trim(),
+  //           awayTeam,
+  //           date: todayString,
+  //         });
+  //     });
+
+  //     // res.json(btts);
+  //   })
+  //   .catch((err) => console.log(err));
 
   //Mines
   // await axios(url_mines)
@@ -1904,7 +1639,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
               getHomeTeamName(awayTeam.trim()) !== ''
                 ? getHomeTeamName(awayTeam.trim())
                 : awayTeam.trim(),
-            date: todayString,
+            date: req.query.date,
           });
       });
 
@@ -1950,7 +1685,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
               getHomeTeamName(awayTeam.trim()) !== ''
                 ? getHomeTeamName(awayTeam.trim())
                 : awayTeam.trim(),
-            date: todayString,
+            date: req.query.date,
           });
       });
 
@@ -1959,56 +1694,56 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
     .catch((err) => console.log(err));
 
   //PREDUTD
-  await axios(url_predutd)
-    .then((response) => {
-      const html = response.data;
+  // await axios(url_predutd)
+  //   .then((response) => {
+  //     const html = response.data;
 
-      // console.log('000', html);
-      const $ = cheerio.load(html);
+  //     // console.log('000', html);
+  //     const $ = cheerio.load(html);
 
-      const body = $('#mainRow', html)
-        .find('div:nth-child(2)')
-        .find('div:nth-child(1)');
+  //     const body = $('#mainRow', html)
+  //       .find('div:nth-child(2)')
+  //       .find('div:nth-child(1)');
 
-      $('div', body).each(function () {
-        //<-- cannot be a function expression
-        // const title = $(this).text();
-        const homeTeam = $(this)
-          .find('thead:nth-child(1)')
-          .find('th')
-          .text()
-          .split(' - ')[0];
-        let awayTeam = $(this)
-          .find('thead:nth-child(1)')
-          .find('th')
-          .text()
-          .split(' - ')[1];
-        let part = $(this)
-          .find('thead:nth-child(1)')
-          .find('th')
-          .find('.text-muted')
-          .text();
-        awayTeam = awayTeam.replace(`${part}`, '');
-        //  console.log('homeTeam222', homeTeam);
+  //     $('div', body).each(function () {
+  //       //<-- cannot be a function expression
+  //       // const title = $(this).text();
+  //       const homeTeam = $(this)
+  //         .find('thead:nth-child(1)')
+  //         .find('th')
+  //         .text()
+  //         .split(' - ')[0];
+  //       let awayTeam = $(this)
+  //         .find('thead:nth-child(1)')
+  //         .find('th')
+  //         .text()
+  //         .split(' - ')[1];
+  //       let part = $(this)
+  //         .find('thead:nth-child(1)')
+  //         .find('th')
+  //         .find('.text-muted')
+  //         .text();
+  //       awayTeam = awayTeam.replace(`${part}`, '');
+  //       //  console.log('homeTeam222', homeTeam);
 
-        let pred = $(this).find('thead').find('th').text();
+  //       let pred = $(this).find('thead').find('th').text();
 
-        homeTeam !== '' &&
-          btts.push({
-            source: 'predutd_btts',
-            action:
-              (pred.includes('BTTS @') && 'btts') ||
-              (pred.includes('BTTS - No') && 'btts no'),
-            checked: false,
-            homeTeam: homeTeam.trim(),
-            awayTeam: awayTeam.trim(),
-            date: todayString,
-          });
-      });
+  //       homeTeam !== '' &&
+  //         btts.push({
+  //           source: 'predutd_btts',
+  //           action:
+  //             (pred.includes('BTTS @') && 'btts') ||
+  //             (pred.includes('BTTS - No') && 'btts no'),
+  //           checked: false,
+  //           homeTeam: homeTeam.trim(),
+  //           awayTeam: awayTeam.trim(),
+  //           date: req.query.date,
+  //         });
+  //     });
 
-      // res.send('banker over loaded');
-    })
-    .catch((err) => console.log(err));
+  //     // res.send('banker over loaded');
+  //   })
+  //   .catch((err) => console.log(err));
 
   // kingspredict
   await axios(url_kingspredict)
@@ -2044,7 +1779,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
             isAcca: false,
             homeTeam: homeTeam.trim(),
             awayTeam: awayTeam,
-            date: todayString,
+            date: req.query.date,
           });
       });
 
@@ -2053,51 +1788,51 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
     .catch((err) => console.log(err));
 
   //SOCCERTIPZ
-  // await axios(url_soccertipz)
-  //   .then((response) => {
-  //     const html = response.data;
+  await axios(url_soccertipz)
+    .then((response) => {
+      const html = response.data;
 
-  //     // console.log('000', html);
-  //     const $ = cheerio.load(html);
+      // console.log('000', html);
+      const $ = cheerio.load(html);
 
-  //     $('tr', html).each(function () {
-  //       //<-- cannot be a function expression
-  //       // const title = $(this).text();
-  //       const homeTeam = $(this)
-  //         .find('td:nth-child(2)')
-  //         .text()
-  //         .split(/\r?\n/)[0];
-  //       const awayTeam = $(this)
-  //         .find('td:nth-child(2)')
-  //         .text()
-  //         .split(/\r?\n/)[1];
+      $('tr', html).each(function () {
+        //<-- cannot be a function expression
+        // const title = $(this).text();
+        const homeTeam = $(this)
+          .find('td:nth-child(2)')
+          .text()
+          .split(/\r?\n/)[0];
+        const awayTeam = $(this)
+          .find('td:nth-child(2)')
+          .text()
+          .split(/\r?\n/)[1];
 
-  //       const tip = $(this).find('td:nth-child(3)').text();
+        const tip = $(this).find('td:nth-child(3)').text();
 
-  //       homeTeam &&
-  //         homeTeam !== '' &&
-  //         awayTeam &&
-  //         awayTeam !== '' &&
-  //         tip.includes('YES') &&
-  //         btts.push({
-  //           source: 'soccertipz_btts',
-  //           action: 'btts',
-  //           checked: false,
-  //           homeTeam:
-  //             getHomeTeamName(homeTeam.trim()) !== ''
-  //               ? getHomeTeamName(homeTeam.trim())
-  //               : homeTeam.trim(),
-  //           awayTeam:
-  //             getHomeTeamName(awayTeam.trim()) !== ''
-  //               ? getHomeTeamName(awayTeam.trim())
-  //               : awayTeam.trim(),
-  //           date: todayString,
-  //         });
-  //     });
+        homeTeam &&
+          homeTeam !== '' &&
+          awayTeam &&
+          awayTeam !== '' &&
+          tip.includes('YES') &&
+          btts.push({
+            source: 'soccertipz_btts',
+            action: 'btts',
+            checked: false,
+            homeTeam:
+              getHomeTeamName(homeTeam.trim()) !== ''
+                ? getHomeTeamName(homeTeam.trim())
+                : homeTeam.trim(),
+            awayTeam:
+              getHomeTeamName(awayTeam.trim()) !== ''
+                ? getHomeTeamName(awayTeam.trim())
+                : awayTeam.trim(),
+            date: todayString,
+          });
+      });
 
-  //     // res.json(over25);
-  //   })
-  //   .catch((err) => console.log(err));
+      // res.json(over25);
+    })
+    .catch((err) => console.log(err));
 
   let start = 0;
   let next = 1;
@@ -2140,7 +1875,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
     return 0;
   });
 
-  //удаление дублей
+
   while (next1 < sortedDraws.length) {
     if (
       sortedDraws[start1].homeTeam.trim() === sortedDraws[next1].homeTeam.trim()
@@ -2156,6 +1891,9 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
     start1++;
     next1++;
   }
+
+  //удаление дублей
+  console.log('over25_222', over25);
   let start2 = 0;
   let next2 = 1;
   let sortedOver25 = over25.sort((a, b) => {
@@ -2185,6 +1923,8 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
     start2++;
     next2++;
   }
+  console.log('sortedOver25_222', sortedOver25);
+
   let start3 = 0;
   let next3 = 1;
   let sortedUnder25 = under25.sort((a, b) => {
@@ -2253,7 +1993,17 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
   );
 
   sortedBtts = sortedBtts.filter(elem => {return elem.homeTeam !== ''});
-  console.log('sortedBtts', sortedBtts);
+
+  // console.log('correctScoreArr', correctScoreArr);
+  await correctScore.insertMany(correctScoreArr)
+  .then(function () {
+    console.log('correctScore inserted'); // Success
+  })
+  .catch(function (error) {
+    console.log(error); // Failure
+  });
+
+  // console.log('sortedBtts', sortedBtts);
   await Btts.insertMany(sortedBtts)
     .then(function () {
       console.log('Btts inserted'); // Success
@@ -2295,7 +2045,7 @@ bttsRouter.get('/load', cors(corsOptions), async (req, res) => {
     });
 
   await db.disconnect();
-  res.send('btts loaded');
+  // res.send('btts loaded');
 });
 
 // bttsRouter.get('/loadOther', cors(corsOptions), async (req, res) => {

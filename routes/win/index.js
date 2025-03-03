@@ -11,6 +11,9 @@ const cheerio = require('cheerio');
 const fns = require('date-fns');
 const db = require('../../db');
 const { WinData } = require('../../mongo_schema/WinDataModel');
+const { correctScore } = require('../../mongo_schema/CorrectScore');
+const { csProd } = require('../../mongo_schema/prod/CsProd');
+const { csProdNew } = require('../../mongo_schema/prod/CsProdNew');
 
 const ORIGIN = process.env.ORIGIN;
 
@@ -33,6 +36,7 @@ const todayString = formattedToday.toString();
 const year = today.getFullYear();
 const day = today.getDate();
 const dayTom = tomorrow.getDate();
+
 let month = today.getMonth();
 month = month < 10 ? `${month + 1}` : month + 1;
 let month1 = '';
@@ -42,7 +46,21 @@ if (parseInt(month) < 10) {
   month1 = month;
 }
 
-const url_passion = `https://passionpredict.com/home-wins?dt=${year}-${month}-${day}`;
+let day1 = '';
+if (parseInt(day) < 10) {
+  day1 = `0${day}`;
+} else {
+  day1 = day;
+}
+
+let day2 = '';
+if (parseInt(dayTom) < 10) {
+  day2 = `0${dayTom}`;
+} else {
+  day2 = dayTom;
+}
+
+const url_passion = `https://passionpredict.com/home-wins?dt=${year}-${month1}-${day1}`;
 const url_predutd =
   'https://predictionsunited.com/football-predictions-and-tips/today/outcome';
 const url_banker1 = 'https://bankerpredict.com/home-wins';
@@ -62,7 +80,7 @@ const url_kingspredict = 'https://kingspredict.com/Double_chance';
 // const url_bankerAway = 'https://bankerpredict.com/away-wins';
 // const url_soccertipz = 'https://www.soccertipz.com/sure-bets-predictions/';
 
-// const url_betgenuine_acc = 'https://betgenuine.com/sure-win-prediction-today';
+const url_betgenuine_acc = 'https://betgenuine.com/sure-win-prediction-today';
 const url_o25tips = 'https://www.over25tips.com/soccer-stats/must-win-teams/';
 const url_vitibet =
   'https://www.vitibet.com/index.php?clanek=tipoftheday&sekce=fotbal&lang=en';
@@ -73,7 +91,9 @@ const url_prot = 'https://www.protipster.com/betting-tips/1x2';
 // const url_nvtips = 'https://nvtips.com/ru/';
 const url_venasbet = 'https://venasbet.com/double_chance';
 const url_r2bet = 'https://r2bet.com/double_chance';
-const url_betimate = `https://betimate.com/en/football-predictions/predictions-1x2?date=2023-${month}-${day}`;
+const url_betimate = `https://betimate.com/en/football-predictions/predictions-1x2?date=${year}-${month1}-${day1}`;
+
+
 
 // const url_suresoccer = 'https://www.suresoccerpredict.com/direct-win-prediction/';
 // const url_wbo = 'https://www.winonbetonline.com/';
@@ -82,8 +102,8 @@ const url_betimate = `https://betimate.com/en/football-predictions/predictions-1
 const url_hello = 'https://hellopredict.com/Double_chance';
 const url_mybets = 'https://www.mybets.today/recommended-soccer-predictions/';
 // const url_mines = `https://api.betmines.com/betmines/v1/fixtures/betmines-machine?dateFormat=extended&platform=website&from=2023-08-${day}T00:00:00Z&to=2023-08-${dayTom}T07:00:00Z&minOdd=1.3&maxOdd=1.6&limit=20&minProbability=1&maxProbability=100&odds=1X,X2&leagueIds=`;
-const url_mines1 = `https://api.betmines.com/betmines/v1/fixtures/betmines-machine?dateFormat=extended&platform=website&from=2023-${month}-${day}T21:00:00Z&to=2023-${month}-${dayTom}T21:00:00Z&minOdd=1.1&maxOdd=1.6&limit=20&minProbability=1&maxProbability=100&odds=1&leagueIds=`;
-const url_mines2 = `https://api.betmines.com/betmines/v1/fixtures/betmines-machine?dateFormat=extended&platform=website&from=2023-${month}-${day}T21:00:00Z&to=2023-${month}-${dayTom}T21:00:00Z&minOdd=1.1&maxOdd=1.6&limit=20&minProbability=1&maxProbability=100&odds=2&leagueIds=`;
+const url_mines1 = `https://api.betmines.com/betmines/v1/fixtures/betmines-machine?dateFormat=extended&platform=website&from=${year}-${month1}-${day1}T21:00:00Z&to=${year}-${month1}-${day2}T21:00:00Z&minOdd=1.1&maxOdd=1.6&limit=20&minProbability=1&maxProbability=100&odds=1&leagueIds=`;
+const url_mines2 = `https://api.betmines.com/betmines/v1/fixtures/betmines-machine?dateFormat=extended&platform=website&from=${year}-${month1}-${day1}T21:00:00Z&to=${year}-${month1}-${day2}T21:00:00Z&minOdd=1.1&maxOdd=1.6&limit=20&minProbability=1&maxProbability=100&odds=2&leagueIds=`;
 const url_fbp =
   'https://footballpredictions.net/sure-bets-sure-win-predictions';
 
@@ -167,11 +187,97 @@ winRouter.post('/save', async (req, res) => {
     console.log('new preds saved succussfully!');
   }
 
-  res.json('new preds inserted');
+  // res.json('new preds inserted');
 });
 
-winRouter.get('/loadWithVpn', cors(corsOptions), async (req, res) => {
-  console.log('winWithVpn111');
+winRouter.get('/getCs', async (req, res) => {
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  );
+
+  const correctScoreArr = await correctScore.find({ date: req.query.date });
+  await db.disconnect();
+  // console.log('correctScoreArr',correctScoreArr)
+  res.json(correctScoreArr);
+});
+winRouter.get('/delCsProd', async (req, res) => {
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  );
+  await correctScore.deleteMany({ date: req.query.date });
+  // const csProdArr = await csProd.find({ date: req.query.date });
+  await db.disconnect();
+  // console.log('csProdArr',csProdArr);
+  // res.json(csProdArr);
+});
+winRouter.get('/getCsProd', async (req, res) => {
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  );
+  // await correctScore.deleteMany({ date: req.query.date });
+  //let zeros = BttsProd.find({ date: item, resultScore: '0 - 0' });
+  // const csProdArr = await csProd.find({ date: '26.10.2024'});
+  const csProdArr = await csProdNew.find();
+  // const csProdHW = await csProd.find({ totalHomeWin: 0 });
+  // const csProdAW = await csProd.find({ totalAwayWin: 0 });
+  // const csProdArr = [...csProdHW, ...csProdAW];
+  await db.disconnect();
+  // console.log('csProdArr',csProdArr);
+  res.json(csProdArr);
+});
+winRouter.post('/saveCsProd', async (req, res) => {
+  let data = req.body;
+
+    // data.forEach(async (elem) => {      
+
+      mongoose.connect(
+        'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+        {
+          useNewUrlParser: true,
+          // useCreateIndex: true,
+          useUnifiedTopology: true,
+        }
+      );
+
+      if (data.length !== 0) {
+        // await csProd.deleteMany({ date: data[0].date });
+    
+        await csProd.insertMany(data)
+          .then(function () {
+            console.log('csProd Prod inserted'); // Success
+          })
+          .catch(function (error) {
+            console.log(error); // Failure
+          });
+      }
+
+      // let newCsProd = await new csProd(elem);
+      // await newCsProd.save(function (err) {
+      //   if (err) return console.error(err);
+      //   console.log('new csProd saved succussfully!');
+      // });
+
+      await db.disconnect();
+    // });
+    console.log('new preds saved succussfully!');
+
+  // res.json('new preds inserted');
+});
+
+winRouter.get('/load', cors(corsOptions), async (req, res) => {
+  console.log('win111', req.query.date);
 
   //FBP
   await axios(url_fbp)
@@ -202,71 +308,22 @@ winRouter.get('/loadWithVpn', cors(corsOptions), async (req, res) => {
         predictionDate.includes(`${day}`) &&
           homeTeam !== '' &&
           prediction !== '' &&
-          winDataVpn.push({
+          winData.push({
             source: 'fbp_win',
             action: 'win',
             homeTeam: homeTeam,
             isAcca: true,
             awayTeam,
-            date: todayString,
+            date: req.query.date,
             prediction: prediction.includes(homeTeam) ? homeTeam : awayTeam,
             predictionDate: predictionDate,
           });
       });
 
-      // res.json(btts);
+      // res.json('fbp win loaded');
     })
     .catch((err) => console.log(err));
 
-  let start = 0;
-  let next = 1;
-  let sortedWin = winDataVpn.sort((a, b) => {
-    if (a.homeTeam < b.homeTeam) {
-      return -1;
-    }
-    if (a.homeTeam > b.homeTeam) {
-      return 1;
-    }
-    return 0;
-  });
-
-  //удаление дублей
-  while (next < sortedWin.length) {
-    if (sortedWin[start].homeTeam.trim() === sortedWin[next].homeTeam.trim()) {
-      if (
-        sortedWin[start].action === sortedWin[next].action &&
-        sortedWin[start].source === sortedWin[next].source
-      ) {
-        sortedWin.splice(next, 1);
-      }
-    }
-
-    start++;
-    next++;
-  }
-
-  mongoose.connect(
-    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
-  );
-  // console.log('sortedBtts', sortedBtts);
-  await WinData.insertMany(sortedWin)
-    .then(function () {
-      console.log('Win VPN inserted'); // Success
-    })
-    .catch(function (error) {
-      console.log(error); // Failure
-    });
-
-  await db.disconnect();
-  res.send('win VPN loaded');
-});
-
-winRouter.get('/load', cors(corsOptions), async (req, res) => {
-  console.log('win111');
   //SOCCERTIPZ
   await axios(url_soccertipz)
     .then((response) => {
@@ -301,7 +358,7 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
             isAcca: false,
             homeTeam: homeTeam.trim(),
             awayTeam: awayTeam.trim(),
-            date: todayString,
+            date: req.query.date,
             prediction: tip.includes('1') ? homeTeam : awayTeam,
           });
       });
@@ -385,7 +442,7 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
             checked: false,
             homeTeam: homeTeam.trim(),
             awayTeam: awayTeam.trim(),
-            date: todayString,
+            date: req.query.date,
             prediction: homeTeam.trim(),
           });
       });
@@ -425,7 +482,7 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
             checked: false,
             homeTeam: homeTeam.trim(),
             awayTeam: awayTeam.trim(),
-            date: todayString,
+            date: req.query.date,
             prediction: awayTeam.trim(),
           });
       });
@@ -468,7 +525,7 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
             isAcca: false,
             homeTeam: homeTeam.trim(),
             awayTeam: awayTeam.trim(),
-            date: todayString,
+            date: req.query.date,
             prediction: tip.includes('1X') ? homeTeam : awayTeam,
           });
       });
@@ -511,7 +568,7 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
             isAcca: false,
             homeTeam: homeTeam.trim(),
             awayTeam: awayTeam.trim(),
-            date: todayString,
+            date: req.query.date,
             prediction:
               tip.includes('1') || tip.includes('1X') ? homeTeam : awayTeam,
           });
@@ -547,7 +604,7 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
             isAcca: false,
             homeTeam: homeTeam.trim(),
             awayTeam: awayTeam.trim(),
-            date: todayString,
+            date: req.query.date,
             prediction:
               (pred.includes('1') && homeTeam) ||
               (pred.includes('2') && awayTeam),
@@ -558,7 +615,7 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
     })
     .catch((err) => console.log(err));
 
-  // //PASSION
+  //PASSION
   await axios(url_passion)
     .then((response) => {
       const html = response.data;
@@ -588,7 +645,7 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
             homeTeam: elem,
             awayTeam: '',
             prediction: elem,
-            date: todayString,
+            date: req.query.date,
           });
       });
 
@@ -596,7 +653,7 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
     })
     .catch((err) => console.log(err));
 
-  // //O25TIPS
+  //O25TIPS
   await axios(url_o25tips)
     .then((response) => {
       const html = response.data;
@@ -637,7 +694,7 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
                 isAcca: true,
                 homeTeam: homeTeam.trim(),
                 awayTeam: awayTeam.trim(),
-                date: todayString,
+                date: req.query.date,
                 prediction: tip,
               });
           });
@@ -649,66 +706,59 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
     .catch((err) => console.log(err));
 
   //betimate
-  await axios(url_betimate)
-    .then((response) => {
-      const html = response.data;
-      // console.log(response.data);
-      //  console.log('000', html);
-      const $ = cheerio.load(html);
+  // await axios(url_betimate)
+  //   .then((response) => {
+  //     const html = response.data;
+  //     // console.log(response.data);
+  //     //  console.log('000', html);
+  //     const $ = cheerio.load(html);
 
-      $('.prediction-body', html).each(function () {
-        //<-- cannot be a function expression
-        // const title = $(this).text();
-        const homeTeam = $(this).find('.homeTeam').text();
-        //  console.log('homeTeam000', homeTeam);
+  //     $('.prediction-body', html).each(function () {
+  //       //<-- cannot be a function expression
+  //       // const title = $(this).text();
+  //       const homeTeam = $(this).find('.homeTeam').text();
+  //       //  console.log('homeTeam000', homeTeam);
 
-        const awayTeam = $(this).find('.awayTeam').text();
-        const date = $(this).find('.date_bah').text();
-        //  console.log('date111', date);
-        //  console.log('date222', `${month}/${day}`);
+  //       const awayTeam = $(this).find('.awayTeam').text();
+  //       const date = $(this).find('.date_bah').text();
+  //       //  console.log('date111', date);
+  //       //  console.log('date222', `${month}/${day}`);
 
-        let probabilityWin = '';
+  //       let probabilityWin = '';
 
-        const prediction = $(this).find('.predict').find('span').text();
-        //  console.log('prediction000', prediction);
+  //       const prediction = $(this).find('.predict').find('span').text();
+  //       //  console.log('prediction000', prediction);
 
-        const win1Yes = prediction.includes('1');
-        const win2Yes = prediction.includes('2');
+  //       const win1Yes = prediction.includes('1');
+  //       const win2Yes = prediction.includes('2');
 
-        if (win1Yes || win2Yes) {
-          probabilityWin = win1Yes
-            ? $(this).find('.probability').find('div:nth-child(1)').text()
-            : $(this).find('.probability').find('div:nth-child(3)').text();
-        }
-        //  console.log('over25Fbp', probabilityUnder);
+  //       if (win1Yes || win2Yes) {
+  //         probabilityWin = win1Yes
+  //           ? $(this).find('.probability').find('div:nth-child(1)').text()
+  //           : $(this).find('.probability').find('div:nth-child(3)').text();
+  //       }
+  //       //  console.log('over25Fbp', probabilityUnder);
 
-        let day1 = '';
-        if (parseInt(day) < 10) {
-          day1 = `0${day}`;
-        } else {
-          day1 = day;
-        }
+  //       // (homeTeam !== '' && date.includes(`${month1}/${day1}`) && win1Yes) ||
+  //       //   (win2Yes &&
+  //       //     winData.push({
+  //       //       source: 'betimate_win',
+  //       //       // action: `win ${probabilityWin}`,
+  //       //       action: `win`,
+  //       //       checked: false,
+  //       //       homeTeam:
+  //       //         getHomeTeamName(homeTeam.trim()) !== ''
+  //       //           ? getHomeTeamName(homeTeam.trim())
+  //       //           : homeTeam.trim().replace('FC ', ''),
+  //       //       awayTeam,
+  //       //       date: req.query.date,
+  //       //       prediction: win1Yes ? homeTeam : awayTeam,
+  //       //     }));
+  //     });
 
-        (homeTeam !== '' && date.includes(`${month}/${day1}`) && win1Yes) ||
-          (win2Yes &&
-            winData.push({
-              source: 'betimate_win',
-              // action: `win ${probabilityWin}`,
-              action: `win`,
-              checked: false,
-              homeTeam:
-                getHomeTeamName(homeTeam.trim()) !== ''
-                  ? getHomeTeamName(homeTeam.trim())
-                  : homeTeam.trim().replace('FC ', ''),
-              awayTeam,
-              date: todayString,
-              prediction: win1Yes ? homeTeam : awayTeam,
-            }));
-      });
-
-      // res.json(over25);
-    })
-    .catch((err) => console.log(err));
+  //     // res.json(over25);
+  //   })
+  //   .catch((err) => console.log(err));
 
   //wininbets
   await axios(url_wininbets)
@@ -753,7 +803,7 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
 
         if (tip.trim() === '1') {
           homeTeam !== '' &&
-            parseInt(odds) < 2 &&
+            // parseInt(odds) < 2 &&
             date.includes(`${day1}/${month1}`) &&
             winData.push({
               source: 'wininbets_win',
@@ -761,7 +811,7 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
               isAcca: false,
               homeTeam: homeTeam.trim(),
               awayTeam: awayTeam.trim(),
-              date: todayString,
+              date: req.query.date,
               prediction:
                 tip.trim() === '1' ? homeTeam.trim() : awayTeam.trim(),
             });
@@ -776,7 +826,7 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
               isAcca: false,
               homeTeam: homeTeam.trim(),
               awayTeam: awayTeam.trim(),
-              date: todayString,
+              date: req.query.date,
               prediction:
                 tip.trim() === '2' ? awayTeam.trim() : homeTeam.trim(),
             });
@@ -791,7 +841,7 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
               isAcca: false,
               homeTeam: homeTeam.trim(),
               awayTeam: awayTeam.trim(),
-              date: todayString,
+              date: req.query.date,
               prediction:
                 tip.trim() === '1X' ? awayTeam.trim() : homeTeam.trim(),
             });
@@ -806,7 +856,7 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
               isAcca: false,
               homeTeam: homeTeam.trim(),
               awayTeam: awayTeam.trim(),
-              date: todayString,
+              date: req.query.date,
               prediction:
                 tip.trim() === 'X2' ? awayTeam.trim() : homeTeam.trim(),
             });
@@ -818,72 +868,72 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
     .catch((err) => console.log(err));
 
   //PREDUTD
-  await axios(url_predutd)
-    .then((response) => {
-      const html = response.data;
+  // await axios(url_predutd)
+  //   .then((response) => {
+  //     const html = response.data;
 
-      // console.log('000', html);
-      const $ = cheerio.load(html);
+  //     // console.log('000', html);
+  //     const $ = cheerio.load(html);
 
-      const body = $('#mainRow', html)
-        .find('div:nth-child(2)')
-        .find('div:nth-child(1)');
+  //     const body = $('#mainRow', html)
+  //       .find('div:nth-child(2)')
+  //       .find('div:nth-child(1)');
 
-      $('div', body).each(function () {
-        //<-- cannot be a function expression
-        // const title = $(this).text();
-        const homeTeam = $(this)
-          .find('thead:nth-child(1)')
-          .find('th')
-          .text()
-          .split(' - ')[0];
-        let awayTeam = $(this)
-          .find('thead:nth-child(1)')
-          .find('th')
-          .text()
-          .split(' - ')[1];
-        let part = $(this)
-          .find('thead:nth-child(1)')
-          .find('th')
-          .find('.text-muted')
-          .text();
-        awayTeam = awayTeam.replace(`${part}`, '');
-        //  console.log('homeTeam222', homeTeam);
+  //     $('div', body).each(function () {
+  //       //<-- cannot be a function expression
+  //       // const title = $(this).text();
+  //       const homeTeam = $(this)
+  //         .find('thead:nth-child(1)')
+  //         .find('th')
+  //         .text()
+  //         .split(' - ')[0];
+  //       let awayTeam = $(this)
+  //         .find('thead:nth-child(1)')
+  //         .find('th')
+  //         .text()
+  //         .split(' - ')[1];
+  //       let part = $(this)
+  //         .find('thead:nth-child(1)')
+  //         .find('th')
+  //         .find('.text-muted')
+  //         .text();
+  //       awayTeam = awayTeam.replace(`${part}`, '');
+  //       //  console.log('homeTeam222', homeTeam);
 
-        let pred = $(this).find('thead').find('th').text();
-        let action = '';
-        let prediction = '';
+  //       let pred = $(this).find('thead').find('th').text();
+  //       let action = '';
+  //       let prediction = '';
 
-        if (pred.includes('Team 1 @')) {
-          action = 'win';
-          prediction = homeTeam.trim();
-        } else if (pred.includes('Team 2 @')) {
-          action = 'win';
-          prediction = awayTeam.trim();
-        } else if (pred.includes('Team 1 Win Or Draw @')) {
-          action = 'xwin';
-          prediction = homeTeam.trim();
-        } else if (pred.includes('Team 2 Win Or Draw @')) {
-          action = 'xwin';
-          prediction = awayTeam.trim();
-        }
+  //       if (pred.includes('Team 1 @')) {
+  //         action = 'win';
+  //         prediction = homeTeam.trim();
+  //       } else if (pred.includes('Team 2 @')) {
+  //         action = 'win';
+  //         prediction = awayTeam.trim();
+  //       } else if (pred.includes('Team 1 Win Or Draw @')) {
+  //         action = 'xwin';
+  //         prediction = homeTeam.trim();
+  //       } else if (pred.includes('Team 2 Win Or Draw @')) {
+  //         action = 'xwin';
+  //         prediction = awayTeam.trim();
+  //       }
 
-        homeTeam !== '' &&
-          pred !== '' &&
-          winData.push({
-            source: 'predutd_win',
-            action: action,
-            checked: false,
-            homeTeam: homeTeam.trim(),
-            awayTeam: awayTeam.trim(),
-            date: todayString,
-            prediction: prediction,
-          });
-      });
+  //       homeTeam !== '' &&
+  //         pred !== '' &&
+  //         winData.push({
+  //           source: 'predutd_win',
+  //           action: action,
+  //           checked: false,
+  //           homeTeam: homeTeam.trim(),
+  //           awayTeam: awayTeam.trim(),
+  //           date: req.query.date,
+  //           prediction: prediction,
+  //         });
+  //     });
 
-      // res.send('banker over loaded');
-    })
-    .catch((err) => console.log(err));
+  //     // res.send('banker over loaded');
+  //   })
+  //   .catch((err) => console.log(err));
 
   // //VITIBET
   // await axios(url_vitibet)
@@ -1000,108 +1050,108 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
   //   .catch((err) => console.log(err));
 
   //fbp365
-  await axios(url_fbp365)
-    .then((response) => {
-      const html = response.data;
+  // await axios(url_fbp365)
+  //   .then((response) => {
+  //     const html = response.data;
 
-      // console.log('000', html);
-      const $ = cheerio.load(html);
+  //     // console.log('000', html);
+  //     const $ = cheerio.load(html);
 
-      $('div[data-testid="statsTip"]', html).each(function () {
-        //<-- cannot be a function expression
-        // const title = $(this).text();
-        //  const homeTeam = $(this).find('div:nth-child(2)').find('div:nth-child(1)').find('div:nth-child(1)').text();
-        //  const awayTeam = $(this).find('div:nth-child(2)').find('div:nth-child(1)').find('div:nth-child(2)').text();
-        //  const tip = $(this).find('div:nth-child(3)').find('div:nth-child(1)').text();
+  //     $('div[data-testid="statsTip"]', html).each(function () {
+  //       //<-- cannot be a function expression
+  //       // const title = $(this).text();
+  //       //  const homeTeam = $(this).find('div:nth-child(2)').find('div:nth-child(1)').find('div:nth-child(1)').text();
+  //       //  const awayTeam = $(this).find('div:nth-child(2)').find('div:nth-child(1)').find('div:nth-child(2)').text();
+  //       //  const tip = $(this).find('div:nth-child(3)').find('div:nth-child(1)').text();
 
-        const homeTeam = $(this)
-          .find('div:nth-child(2)')
-          .find('div:nth-child(1)')
-          .find('div:nth-child(1)')
-          .find('div')
-          .text();
-        //  console.log('homeTeam000', homeTeam.trim());
-        const awayTeam = $(this)
-          .find('div:nth-child(2)')
-          .find('div:nth-child(1)')
-          .find('div:nth-child(2)')
-          .find('div')
-          .text();
-        //  console.log('awayTeam000', awayTeam.trim());
-        const tip = $(this)
-          .find('div:nth-child(3)')
-          .find('div:nth-child(1)')
-          .text();
-        //  console.log('tip000', tip);
+  //       const homeTeam = $(this)
+  //         .find('div:nth-child(2)')
+  //         .find('div:nth-child(1)')
+  //         .find('div:nth-child(1)')
+  //         .find('div')
+  //         .text();
+  //       //  console.log('homeTeam000', homeTeam.trim());
+  //       const awayTeam = $(this)
+  //         .find('div:nth-child(2)')
+  //         .find('div:nth-child(1)')
+  //         .find('div:nth-child(2)')
+  //         .find('div')
+  //         .text();
+  //       //  console.log('awayTeam000', awayTeam.trim());
+  //       const tip = $(this)
+  //         .find('div:nth-child(3)')
+  //         .find('div:nth-child(1)')
+  //         .text();
+  //       //  console.log('tip000', tip);
 
-        homeTeam !== '' &&
-          winData.push({
-            source: 'fbp365_win',
-            action: 'win',
-            isAcca: true,
-            homeTeam: homeTeam.trim(),
-            awayTeam: awayTeam.trim(),
-            date: todayString,
-            prediction: tip.includes(`${homeTeam.trim()}`)
-              ? awayTeam.trim()
-              : homeTeam.trim(),
-          });
-      });
+  //       // homeTeam !== '' &&
+  //       //   winData.push({
+  //       //     source: 'fbp365_win',
+  //       //     action: 'win',
+  //       //     isAcca: true,
+  //       //     homeTeam: homeTeam.trim(),
+  //       //     awayTeam: awayTeam.trim(),
+  //       //     date: req.query.date,
+  //       //     prediction: tip.includes(`${homeTeam.trim()}`)
+  //       //       ? awayTeam.trim()
+  //       //       : homeTeam.trim(),
+  //       //   });
+  //     });
 
-      // res.send('r2bet over loaded');
-    })
-    .catch((err) => console.log(err));
+  //     // res.send('r2bet over loaded');
+  //   })
+  //   .catch((err) => console.log(err));
 
   // MINES;
-  await axios(url_mines1)
-    .then((response) => {
-      const data = response.data;
+  // await axios(url_mines1)
+  //   .then((response) => {
+  //     const data = response.data;
 
-      data.forEach((elem) => {
-        elem !== '' &&
-          elem.bestOddProbability > 74 &&
-          winData.push({
-            source: 'mines_win',
-            // action: `win ${elem.bestOdd} ${elem.bestOddProbability}%`,
-            action: `win`,
-            homeTeam: elem.localTeam.name,
-            awayTeam: elem.visitorTeam.name,
-            prediction:
-              elem.bestOdd === '2'
-                ? elem.visitorTeam.name
-                : elem.localTeam.name,
-            date: todayString,
-          });
-      });
+  //     data.forEach((elem) => {
+  //       elem !== '' &&
+  //         elem.bestOddProbability > 74 &&
+  //         winData.push({
+  //           source: 'mines_win',
+  //           // action: `win ${elem.bestOdd} ${elem.bestOddProbability}%`,
+  //           action: `win`,
+  //           homeTeam: elem.localTeam.name,
+  //           awayTeam: elem.visitorTeam.name,
+  //           prediction:
+  //             elem.bestOdd === '2'
+  //               ? elem.visitorTeam.name
+  //               : elem.localTeam.name,
+  //           date: req.query.date,
+  //         });
+  //     });
 
-      // res.json(btts);
-    })
-    .catch((err) => console.log(err));
+  //     // res.json(btts);
+  //   })
+  //   .catch((err) => console.log(err));
   // MINES;
-  await axios(url_mines2)
-    .then((response) => {
-      const data = response.data;
+  // await axios(url_mines2)
+  //   .then((response) => {
+  //     const data = response.data;
 
-      data.forEach((elem) => {
-        elem !== '' &&
-          elem.bestOddProbability > 74 &&
-          winData.push({
-            source: 'mines_win',
-            // action: `win ${elem.bestOdd} ${elem.bestOddProbability}%`,
-            action: `win`,
-            homeTeam: elem.localTeam.name,
-            awayTeam: elem.visitorTeam.name,
-            prediction:
-              elem.bestOdd === '2'
-                ? elem.visitorTeam.name
-                : elem.localTeam.name,
-            date: todayString,
-          });
-      });
+  //     data.forEach((elem) => {
+  //       elem !== '' &&
+  //         elem.bestOddProbability > 74 &&
+  //         winData.push({
+  //           source: 'mines_win',
+  //           // action: `win ${elem.bestOdd} ${elem.bestOddProbability}%`,
+  //           action: `win`,
+  //           homeTeam: elem.localTeam.name,
+  //           awayTeam: elem.visitorTeam.name,
+  //           prediction:
+  //             elem.bestOdd === '2'
+  //               ? elem.visitorTeam.name
+  //               : elem.localTeam.name,
+  //           date: req.query.date,
+  //         });
+  //     });
 
-      // res.json(btts);
-    })
-    .catch((err) => console.log(err));
+  //     // res.json(btts);
+  //   })
+  //   .catch((err) => console.log(err));
 
   // // MYBETS
   await axios(url_mybets)
@@ -1138,7 +1188,7 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
             isAcca: true,
             homeTeam: homeTeam,
             awayTeam: awayTeam,
-            date: todayString,
+            date: req.query.date,
             prediction: prediction.includes('1') ? homeTeam : awayTeam,
           });
       });
@@ -1184,7 +1234,7 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
               checked: false,
               homeTeam: homeTeam.trim(),
               awayTeam: awayTeam.trim(),
-              date: todayString,
+              date: req.query.date,
               prediction: tip.includes('1X') ? homeTeam : awayTeam,
             });
         }
@@ -1194,7 +1244,7 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
     })
     .catch((err) => console.log(err));
 
-  // // FOOTY HOME
+  // FOOTY HOME
   await axios(url_footy1)
     .then((response) => {
       const html = response.data;
@@ -1209,10 +1259,10 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
         homeTeam = homeTeam.replace('Home Win ', '');
         let awayTeam = $(this).find('.betHeaderTitle').text().split(' vs ')[1];
 
-        let odds = $(this).find('.odds').text();
-        // console.log('odds', odds);
-        odds = odds.replace('Odds', '');
-        odds = parseFloat(odds);
+        // let odds = $(this).find('.odds').text();
+        // // console.log('odds', odds);
+        // odds = odds.replace('Odds', '');
+        // odds = parseFloat(odds);
 
         // console.log('odds', odds);
 
@@ -1223,13 +1273,13 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
         awayTeam = awayTeam && awayTeam.trim();
 
         homeTeam !== '' &&
-          odds < 1.7 &&
+          // odds < 1.7 &&
           winData.push({
             source: 'footy_win',
             action: 'win',
             homeTeam: homeTeam,
             awayTeam: awayTeam,
-            date: todayString,
+            date: req.query.date,
             prediction: homeTeam,
           });
       });
@@ -1238,7 +1288,7 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
     })
     .catch((err) => console.log(err));
 
-  // // FOOTY AWAY
+  // FOOTY AWAY
   await axios(url_footy2)
     .then((response) => {
       const html = response.data;
@@ -1272,7 +1322,7 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
             action: 'win',
             homeTeam: homeTeam,
             awayTeam: awayTeam,
-            date: todayString,
+            date: req.query.date,
             prediction: awayTeam,
           });
       });
@@ -1304,7 +1354,7 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
             checked: false,
             homeTeam: homeTeam.trim(),
             awayTeam: awayTeam.trim(),
-            date: todayString,
+            date: req.query.date,
             prediction:
               tip.includes('1') || tip.includes('1X') ? homeTeam : awayTeam,
           });
@@ -1315,37 +1365,37 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
     .catch((err) => console.log(err));
 
   //PROT
-  await axios(url_prot)
-    .then((response) => {
-      const html = response.data;
+  // await axios(url_prot)
+  //   .then((response) => {
+  //     const html = response.data;
 
-      // console.log('000', html);
-      const $ = cheerio.load(html);
+  //     // console.log('000', html);
+  //     const $ = cheerio.load(html);
 
-      $('.details-pick', html).each(function () {
-        //<-- cannot be a function expression
-        // const title = $(this).text();
-        const teams = $(this).find('.details-pick__match-data__teams').text();
-        const homeTeam = teams.split(' VS ')[0];
-        const awayTeam = teams.split(' VS ')[1];
+  //     $('.details-pick', html).each(function () {
+  //       //<-- cannot be a function expression
+  //       // const title = $(this).text();
+  //       const teams = $(this).find('.details-pick__match-data__teams').text();
+  //       const homeTeam = teams.split(' VS ')[0];
+  //       const awayTeam = teams.split(' VS ')[1];
 
-        const tip = $(this).find('.details-pick__match-data__outcome').text();
+  //       const tip = $(this).find('.details-pick__match-data__outcome').text();
 
-        homeTeam !== '' &&
-          winData.push({
-            source: 'prot_win',
-            action: 'win',
-            isAcca: false,
-            homeTeam: homeTeam.trim(),
-            awayTeam: awayTeam.trim(),
-            date: todayString,
-            prediction: tip.includes(homeTeam) ? homeTeam : awayTeam,
-          });
-      });
+  //       homeTeam !== '' &&
+  //         winData.push({
+  //           source: 'prot_win',
+  //           action: 'win',
+  //           isAcca: false,
+  //           homeTeam: homeTeam.trim(),
+  //           awayTeam: awayTeam.trim(),
+  //           date: req.query.date,
+  //           prediction: tip.includes(homeTeam) ? homeTeam : awayTeam,
+  //         });
+  //     });
 
-      // res.json(over25);
-    })
-    .catch((err) => console.log(err));
+  //     // res.json(over25);
+  //   })
+  //   .catch((err) => console.log(err));
 
   //r2bet
   await axios(url_r2bet)
@@ -1370,7 +1420,7 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
             checked: false,
             homeTeam: homeTeam.trim(),
             awayTeam: awayTeam.trim(),
-            date: todayString,
+            date: req.query.date,
             prediction:
               tip.includes('1') || tip.includes('1X') ? homeTeam : awayTeam,
           });
@@ -1416,7 +1466,7 @@ winRouter.get('/load', cors(corsOptions), async (req, res) => {
             checked: false,
             homeTeam: homeTeam.trim(),
             awayTeam: awayTeam.trim(),
-            date: todayString,
+            date: req.query.date,
             prediction:
               tip.includes('1') || tip.includes('1X') ? homeTeam : awayTeam,
           });

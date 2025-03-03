@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
-const bttsProdSchema = new Schema(
+const bttsProdNewSchema = new Schema(
   {
     homeTeam: { type: String, required: true },
     awayTeam: { type: String, required: false },
@@ -10,7 +10,8 @@ const bttsProdSchema = new Schema(
     bttsYesNum: { type: Number, required: false },
     bttsNoNum: { type: Number, required: false },
     resultScore: { type: String, required: false },
-    sourcesStat: [{ type: String, required: false }],
+    sources: { type: String, required: false },
+    csEvScore: { type: Number, required: false },
     // pairsArr: [[{ type: String, required: false }]],
     // csHighScore: [{ type: String, required: false }],
     bttsRes: { type: String, required: false },
@@ -39,8 +40,8 @@ const bttsProdSchema = new Schema(
   }
 );
 
-const BttsProd =
-  mongoose.models?.BttsProd || mongoose.model('BttsProd', bttsProdSchema);
+const BttsProdNew =
+  mongoose.models?.BttsProdNew || mongoose.model('BttsProdNew', bttsProdNewSchema);
 
 // export default Headline;
-module.exports = { BttsProd };
+module.exports = { BttsProdNew };

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
-const underProdSchema = new Schema(
+const underProdNewSchema = new Schema(
   {
     homeTeam: { type: String, required: true },
     awayTeam: { type: String, required: false },
@@ -9,7 +9,8 @@ const underProdSchema = new Schema(
     numAcca: { type: Number, required: true },
     action: { type: String, required: true },
     resultScore: { type: String, required: false },
-    sources: [{ type: String, required: false }],
+    sources: { type: String, required: false },
+    csEvScore: { type: Number, required: false },
     // pairsArr: [[{ type: String, required: false }]],
     // underYes: { type: String, required: false },
     // under45: { type: String, required: false },
@@ -37,8 +38,8 @@ const underProdSchema = new Schema(
   }
 );
 
-const UnderProd =
-  mongoose.models?.UnderProd || mongoose.model('UnderProd', underProdSchema);
+const UnderProdNew =
+  mongoose.models?.UnderProdNew || mongoose.model('UnderProdNew', underProdNewSchema);
 
 // export default Headline;
-module.exports = { UnderProd };
+module.exports = { UnderProdNew };

@@ -1,17 +1,19 @@
 // require express and it's router component
 const express = require('express');
+const fns = require('date-fns');
 require('dotenv').config();
 const cors = require('cors');
 const mongoose = require('mongoose');
 mongoose.set('strictQuery', true);
 const { getHomeTeamName, formatHomeTeamName } = require('../../utils');
 
+
 const axios = require('axios');
 const cheerio = require('cheerio');
-const fns = require('date-fns');
 const db = require('../../db');
 const { Result } = require('../../mongo_schema/Result');
 const { ZeroCounter } = require('../../mongo_schema/ZeroCounter');
+const { csProd } = require('../../mongo_schema/prod/CsProd');
 
 const ORIGIN = process.env.ORIGIN;
 
@@ -67,6 +69,8 @@ resultRouter.get('/delete', cors(corsOptions), async (req, res) => {
 });
 
 resultRouter.get('/get', async (req, res) => {
+  console.log('req.query.date222', req.query.date);
+
   mongoose.connect(
     'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
     {
@@ -77,8 +81,83 @@ resultRouter.get('/get', async (req, res) => {
 
   const resultsArr = await Result.find({ date: req.query.date });
   await db.disconnect();
+    console.log('resultsArr',resultsArr);
+  res.json(resultsArr);
+});
+resultRouter.get('/getZeroResults', async (req, res) => {
+  // const Today = new Date();
+  // Today.setDate(Today.getDate());
+  const SevenDaysAgo = new Date();
+  SevenDaysAgo.setDate(SevenDaysAgo.getDate() - 7);
+
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  );
+
+  const resultsArr = await Result.find({
+    createdAt: {
+      $gte: fns.startOfDay(SevenDaysAgo),
+      // $lte: endOfDay(new Date())
+    },
+    score: /0 - 0/i
+    // date: '29.11.2023'
+  });
+  // console.log('resultsArr444',resultsArr.filter(elem => elem.score.includes('0 - 0')));
+  // console.log('resultsArr444',resultsArr);
+  // console.log('resultsArr555',resultsArr[resultsArr.length - 1].createdAt > SevenDaysAgo)
+
+  // const filResZeros = resultsArr.filter(elem => elem.createdAt > SevenDaysAgo);
+  // console.log('resultsArr333',filResZeros)
+  await db.disconnect();
 
   res.json(resultsArr);
+});
+resultRouter.get('/getCSZeros', async (req, res) => {
+  console.log('req.query.date', req.query.dates);
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      // useCreateIndex: true,
+      useUnifiedTopology: true,
+    }
+  );
+
+  const CSZerosArr = await csProd.find({ result: /0 - 0/i });
+
+  await db.disconnect();
+  // console.log('UnderProdArr',UnderProdArr)
+  res.json(CSZerosArr);
+});
+resultRouter.get('/getCSAll', async (req, res) => {
+  console.log('req.query.date', new Date('01/31/2024'));
+  mongoose.connect(
+    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      // useCreateIndex: true,
+      useUnifiedTopology: true,
+    }
+  );
+
+  let date = new Date('01/31/2024');
+
+  const CSZerosArr = await csProd.find({
+    createdAt: {
+      $gte: fns.startOfDay(date),
+      // $lte: endOfDay(new Date())
+    }
+  });
+
+  // let csZerosFil = CSZerosArr.filter(elem => Object.keys(elem).length > 9);
+
+  await db.disconnect();
+  console.log('CSZerosArr',CSZerosArr)
+  res.json(CSZerosArr);
 });
 
 resultRouter.get('/getZeroCounter', async (req, res) => {
@@ -165,7 +244,8 @@ resultRouter.post('/saveZeroCounter', async (req, res) => {
 });
 
 resultRouter.get('/load', cors(corsOptions), async (req, res) => {
-  console.log('result111');
+  // console.log('result111', formattedToday);
+  console.log('yesterdayString222', req.query.date);
   // //result2
   await axios(url_result2)
     .then((response) => {
@@ -183,7 +263,7 @@ resultRouter.get('/load', cors(corsOptions), async (req, res) => {
           score !== '' &&
           awayTeam !== '' &&
           homeTeam !== '' &&
-          yesterdayString !== ''
+          req.query.date !== ''
         ) {
           results2.push({
             score,
@@ -192,7 +272,7 @@ resultRouter.get('/load', cors(corsOptions), async (req, res) => {
                 ? getHomeTeamName(homeTeam.trim())
                 : homeTeam.trim(),
             awayTeam,
-            date: yesterdayString,
+            date: req.query.date,
           });
         }
       });
@@ -217,8 +297,9 @@ resultRouter.get('/load', cors(corsOptions), async (req, res) => {
 
         if ( 
         status === 'Pen' &&
+        status === 'Pst' &&
         homeTeam !== '' &&
-        yesterdayString !== '') {
+        req.query.date !== '') {
           // console.log('homeTeam222', homeTeam);
 
           let penElem = results2.filter(elem => elem.homeTeam === homeTeam || elem.homeTeam.includes(homeTeam) || homeTeam.includes(elem.homeTeam) || elem.homeTeam === getHomeTeamName(homeTeam))[0];
@@ -228,7 +309,7 @@ resultRouter.get('/load', cors(corsOptions), async (req, res) => {
               score: penElem.score,
               homeTeam: penElem.homeTeam,
               awayTeam: penElem.awayTeam,
-              date: yesterdayString,
+              date: req.query.date,
             });
           }
         }
@@ -237,9 +318,10 @@ resultRouter.get('/load', cors(corsOptions), async (req, res) => {
         if (
           score !== '' &&
           status !== 'Pen' &&
+          status !== 'Pst' &&
           awayTeam !== '' &&
           homeTeam !== '' &&
-          yesterdayString !== ''
+          req.query.date !== ''
         ) {
           results.push({
             score,
@@ -248,7 +330,7 @@ resultRouter.get('/load', cors(corsOptions), async (req, res) => {
                 ? getHomeTeamName(homeTeam.trim())
                 : homeTeam.trim(),
             awayTeam,
-            date: yesterdayString,
+            date: req.query.date,
           });
         }
       });
@@ -256,24 +338,31 @@ resultRouter.get('/load', cors(corsOptions), async (req, res) => {
     .catch((err) => console.log(err));
     console.log('results333', results);
 
-  mongoose.connect(
-    'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
-  );
+    try {
+      mongoose.connect(
+        'mongodb+srv://admin:aQDYgPK9EwiuRuOV@cluster0.2vcd6.mongodb.net/?retryWrites=true&w=majority',
+        {
+          useNewUrlParser: true,
+          useUnifiedTopology: true,
+        }
+      );
+      console.log('Connected to MongoDB');
+  } catch (error) {
+      console.log('Could not connect to MongoDB');
+      throw error;
+  }
 
-  results = results.map((result) => {
-    result.homeTeam = formatHomeTeamName(result.homeTeam);
-    result.awayTeam = formatHomeTeamName(result.awayTeam);
 
-    result.homeTeam = getHomeTeamName(result.homeTeam);
-    result.awayTeam = getHomeTeamName(result.awayTeam);
+  // results = results.map((result) => {
+  //   result.homeTeam = formatHomeTeamName(result.homeTeam);
+  //   result.awayTeam = formatHomeTeamName(result.awayTeam);
 
-    return result;
-  });
-  console.log('results111', results);
+  //   result.homeTeam = getHomeTeamName(result.homeTeam);
+  //   result.awayTeam = getHomeTeamName(result.awayTeam);
+
+  //   return result;
+  // });
+  // console.log('results111', results);
   await Result.insertMany(results)
     .then(function () {
       console.log('Results inserted'); // Success

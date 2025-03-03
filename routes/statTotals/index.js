@@ -323,9 +323,51 @@ prodRouter.get('/getOverStatTotal', async (req, res) => {
   );
 
   const OverProdArr = await OverStatTotal.find({ date: req.query.date });
-  await db.disconnect();
   console.log('OverProdArr',OverProdArr)
+  // let OverProdArr1 = OverProdArr.filter(elem => elem._id !== '740d57f4-a4fa-4ac6-8849-c9dafd8a9aad')
   res.json(OverProdArr);
+  await db.disconnect();
+
+  
+
+  // OverProdArr.push({
+  //   action: 'over25',
+  //   source: 'betstat_o05',
+  //   totalPreds: 0,
+  //   date: '09.01.2024',
+  //   over05Count: 0,
+  //   over05Eff: 0,
+  //   over15Count: 0,
+  //   over15Eff: 0,
+  //   over25Count: 0,
+  //   over25Eff: 0
+  // },{
+  //   action: 'over25',
+  //   source: 'overl_o05',
+  //   totalPreds: 0,
+  //   date: '09.01.2024',
+  //   over05Count: 0,
+  //   over05Eff: 0,
+  //   over15Count: 0,
+  //   over15Eff: 0,
+  //   over25Count: 0,
+  //   over25Eff: 0
+  // })
+  
+
+  // if (OverProdArr.length !== 0) {
+  //   await OverStatTotal.deleteMany({ date: OverProdArr[0].date });
+
+  //   await OverStatTotal.insertMany(OverProdArr1)
+  //     .then(function () {
+  //       console.log('over Stat Total updated'); // Success
+  //     })
+  //     .catch(function (error) {
+  //       console.log(error); // Failure
+  //     });
+  // }
+  
+ 
 });
 
 prodRouter.post('/updateOverProd', async (req, res) => {
@@ -388,7 +430,7 @@ prodRouter.post('/saveOverStatTotal', async (req, res) => {
       }
     );
     // console.log('sortedBtts', sortedBtts);
-    // await OverStatTotal.deleteMany({ date: data[0].date });
+    await OverStatTotal.deleteMany({ date: data[0].date });
     await OverStatTotal.insertMany(data)
       .then(function () {
         console.log('Over Stat Total inserted'); // Success
@@ -481,7 +523,7 @@ prodRouter.post('/saveWinStatTotal', async (req, res) => {
       }
     );
     // console.log('sortedBtts', sortedBtts);
-    // await WinStatTotal.deleteMany({ date: data[0].date });
+    await WinStatTotal.deleteMany({ date: data[0].date });
     await WinStatTotal.insertMany(data)
       .then(function () {
         console.log('Win Daily Stat inserted'); // Success
@@ -576,7 +618,7 @@ prodRouter.post('/saveDrawStatTotal', async (req, res) => {
       }
     );
     // console.log('sortedBtts', sortedBtts);
-    // await DrawStatTotal.deleteMany({ date: data[0].date });
+    await DrawStatTotal.deleteMany({ date: data[0].date });
     await DrawStatTotal.insertMany(data)
       .then(function () {
         console.log('Draw Stat Total inserted'); // Success

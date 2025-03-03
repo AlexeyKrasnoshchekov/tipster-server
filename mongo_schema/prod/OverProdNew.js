@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
-const overProdSchema = new Schema(
+const overProdNewSchema = new Schema(
   {
     homeTeam: { type: String, required: true },
     awayTeam: { type: String, required: false },
@@ -9,7 +9,8 @@ const overProdSchema = new Schema(
     numAcca: { type: Number, required: true },
     action: { type: String, required: true },
     resultScore: { type: String, required: false },
-    sourcesStat: [{ type: String, required: false }],
+    sources: { type: String, required: false },
+    csEvScore: { type: Number, required: false },
     // pairsArr: [[{ type: String, required: false }]],
     // zeroPairsArr: [[{ type: String, required: false }]],
     // csHighScore: [{ type: String, required: false }],
@@ -40,8 +41,8 @@ const overProdSchema = new Schema(
   }
 );
 
-const OverProd =
-  mongoose.models?.OverProd || mongoose.model('OverProd', overProdSchema);
+const OverProdNew =
+  mongoose.models?.OverProdNew || mongoose.model('OverProdNew', overProdNewSchema);
 
 // export default Headline;
-module.exports = { OverProd };
+module.exports = { OverProdNew };

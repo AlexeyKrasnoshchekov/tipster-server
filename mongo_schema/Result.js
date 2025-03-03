@@ -9,7 +9,7 @@ const Result = mongoose.model(
       score: { type: String, required: false },
       homeTeam: { type: String, required: false },
       awayTeam: { type: String, required: false },
-      date: { type: String, required: true },
+      date: { type: String, required: false },
     },
     {
       timestamps: true,
